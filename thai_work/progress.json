@@ -1,0 +1,604 @@
+{
+ "001・アーサー王ver1.07.ks.scn": {
+  "packed": true,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 809,
+  "tr_total": 814
+ },
+ "002・祟り神ver1.08.ks.scn": {
+  "packed": true,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 554,
+  "tr_total": 555
+ },
+ "003・巫女の秘密ver1.11.ks.scn": {
+  "packed": true,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 953,
+  "tr_total": 961
+ },
+ "004・学院初日ver1.04.ks.scn": {
+  "packed": true,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 489,
+  "tr_total": 490
+ },
+ "005・鍛錬ver1.04.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 313
+ },
+ "006・レナ登場ver1.03.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 629
+ },
+ "007・レナ転入ver1.03.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 585
+ },
+ "008・仕切り直しver1.02.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 193
+ },
+ "009・謎の欠片ver1.03.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 781
+ },
+ "010・リフレッシュver1.04.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 1221
+ },
+ "011・襲来ver1.04.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 439
+ },
+ "012・病床ver1.06.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 789
+ },
+ "013・欠片集めver1.06.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 512
+ },
+ "014・合体編ver1.03.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 653
+ },
+ "015・ノーマルendver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 298
+ },
+ "100・芳乃－語らいver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 286
+ },
+ "101・芳乃－弁当ver1.02.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 678
+ },
+ "102・芳乃－告白ver1.03.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 805
+ },
+ "103・芳乃－氷解ver1.04.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 664
+ },
+ "104・芳乃－記者会見ver1.05.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 665
+ },
+ "105・芳乃－少女漫画ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 348
+ },
+ "106・芳乃－キスver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 659
+ },
+ "107・芳乃－獣耳ver1.02.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 810
+ },
+ "108・芳乃－解呪ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 648
+ },
+ "109・芳乃－平穏ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 318
+ },
+ "110・芳乃－初体験ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 561
+ },
+ "111・芳乃－その後ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 549
+ },
+ "112・芳乃－２回目ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 178
+ },
+ "113・芳乃－母上様ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 446
+ },
+ "114・芳乃－ＥＰver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 116
+ },
+ "200・茉子－語らいver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 211
+ },
+ "201・茉子－婚約解消ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 656
+ },
+ "202・茉子－実家ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 1012
+ },
+ "203・茉子－子犬ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 565
+ },
+ "204・茉子－気持ちver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 594
+ },
+ "205・茉子－デートver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 1134
+ },
+ "206・茉子－オナニーver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 554
+ },
+ "207・茉子－初体験ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 550
+ },
+ "208・茉子－いちゃラヴver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 547
+ },
+ "209・茉子－暴走改編ver1.01.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 996
+ },
+ "210・茉子－エピローグver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 201
+ },
+ "301・ムラサメちゃんルート０１ver1.3.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 628
+ },
+ "302・ムラサメちゃんルート０２ver1.3.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 758
+ },
+ "303・ムラサメちゃんルート０３ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 550
+ },
+ "304・ムラサメちゃんルート０４ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 340
+ },
+ "305・ムラサメちゃんルート０５ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 938
+ },
+ "306・ムラサメちゃんルート０６ver1.3.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 687
+ },
+ "307・ムラサメちゃんルート０７ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 417
+ },
+ "308・ムラサメちゃんルート０８ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 438
+ },
+ "309・ムラサメちゃんルート０９ver1.3.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 410
+ },
+ "310・ムラサメちゃんルート１０ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 1320
+ },
+ "311・ムラサメちゃんルート１１ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 603
+ },
+ "312・ムラサメちゃんルート１２ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 576
+ },
+ "313・ムラサメちゃんルート１３ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 615
+ },
+ "314・ムラサメちゃんルート１４ver1.3.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 357
+ },
+ "315・ムラサメちゃんルート１５ver1.3.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 263
+ },
+ "316・ムラサメちゃんルート１６ver1.2.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 140
+ },
+ "414レナ・イザナウ.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 724
+ },
+ "415レナ・欠片吸収.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 451
+ },
+ "416レナ・クレイジーファイト.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 633
+ },
+ "417レナ・エニシ.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 818
+ },
+ "418レナ・馴染む.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 700
+ },
+ "419レナ・ラップランドの味覚.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 636
+ },
+ "420レナ・お泊まり会.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 618
+ },
+ "421レナ・玉石の女神.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 465
+ },
+ "422レナ・日常デート.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 476
+ },
+ "423レナ・叢雲より生じたる.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 819
+ },
+ "424レナ・トモダチ.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 488
+ },
+ "425レナ・呪いの真実.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 297
+ },
+ "426レナ・前夜.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 327
+ },
+ "427レナ・古の祝詞.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 627
+ },
+ "428レナ・未来への祭祀.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 163
+ },
+ "501・サブ－新たな日々ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 398
+ },
+ "502・サブ－アルバイトver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 397
+ },
+ "503・サブ－小春の目覚めver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 455
+ },
+ "504・サブ－芦花の目覚めver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 490
+ },
+ "505・サブ－ピンとくる２人ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 290
+ },
+ "506・サブ－恋愛協定ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 336
+ },
+ "507・サブ－選択肢ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 485
+ },
+ "508a・サブ－こはるんver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 171
+ },
+ "508b・サブ－芦花姉ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 260
+ },
+ "509・サブ－分岐ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 213
+ },
+ "511・サブ－小春（初体験）ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 379
+ },
+ "512・サブ－小春（その後）ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 326
+ },
+ "521・サブ－芦花（初体験）ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 588
+ },
+ "522・サブ－芦花（その後）ver1.00.ks.scn": {
+  "packed": false,
+  "verified": false,
+  "decompiled": true,
+  "tr_filled": 0,
+  "tr_total": 268
+ }
+}

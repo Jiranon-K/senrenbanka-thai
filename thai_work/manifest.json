@@ -1,0 +1,604 @@
+[
+ {
+  "file": "001・アーサー王ver1.07.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 812,
+  "choices": 2
+ },
+ {
+  "file": "002・祟り神ver1.08.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 555,
+  "choices": 0
+ },
+ {
+  "file": "003・巫女の秘密ver1.11.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 961,
+  "choices": 0
+ },
+ {
+  "file": "004・学院初日ver1.04.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 490,
+  "choices": 0
+ },
+ {
+  "file": "005・鍛錬ver1.04.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 313,
+  "choices": 0
+ },
+ {
+  "file": "006・レナ登場ver1.03.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 627,
+  "choices": 2
+ },
+ {
+  "file": "007・レナ転入ver1.03.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 585,
+  "choices": 0
+ },
+ {
+  "file": "008・仕切り直しver1.02.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 193,
+  "choices": 0
+ },
+ {
+  "file": "009・謎の欠片ver1.03.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 781,
+  "choices": 0
+ },
+ {
+  "file": "010・リフレッシュver1.04.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 1212,
+  "choices": 9
+ },
+ {
+  "file": "011・襲来ver1.04.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 439,
+  "choices": 0
+ },
+ {
+  "file": "012・病床ver1.06.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 787,
+  "choices": 2
+ },
+ {
+  "file": "013・欠片集めver1.06.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 512,
+  "choices": 0
+ },
+ {
+  "file": "014・合体編ver1.03.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 651,
+  "choices": 2
+ },
+ {
+  "file": "015・ノーマルendver1.01.ks.scn",
+  "route": "Common",
+  "is_h": false,
+  "blocks": 298,
+  "choices": 0
+ },
+ {
+  "file": "100・芳乃－語らいver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 286,
+  "choices": 0
+ },
+ {
+  "file": "101・芳乃－弁当ver1.02.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 678,
+  "choices": 0
+ },
+ {
+  "file": "102・芳乃－告白ver1.03.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 805,
+  "choices": 0
+ },
+ {
+  "file": "103・芳乃－氷解ver1.04.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 664,
+  "choices": 0
+ },
+ {
+  "file": "104・芳乃－記者会見ver1.05.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 665,
+  "choices": 0
+ },
+ {
+  "file": "105・芳乃－少女漫画ver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 348,
+  "choices": 0
+ },
+ {
+  "file": "106・芳乃－キスver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 659,
+  "choices": 0
+ },
+ {
+  "file": "107・芳乃－獣耳ver1.02.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 810,
+  "choices": 0
+ },
+ {
+  "file": "108・芳乃－解呪ver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 648,
+  "choices": 0
+ },
+ {
+  "file": "109・芳乃－平穏ver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 318,
+  "choices": 0
+ },
+ {
+  "file": "110・芳乃－初体験ver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": true,
+  "blocks": 561,
+  "choices": 0
+ },
+ {
+  "file": "111・芳乃－その後ver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": true,
+  "blocks": 549,
+  "choices": 0
+ },
+ {
+  "file": "112・芳乃－２回目ver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": true,
+  "blocks": 178,
+  "choices": 0
+ },
+ {
+  "file": "113・芳乃－母上様ver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 446,
+  "choices": 0
+ },
+ {
+  "file": "114・芳乃－ＥＰver1.01.ks.scn",
+  "route": "Yoshino",
+  "is_h": false,
+  "blocks": 116,
+  "choices": 0
+ },
+ {
+  "file": "200・茉子－語らいver1.00.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 211,
+  "choices": 0
+ },
+ {
+  "file": "201・茉子－婚約解消ver1.01.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 656,
+  "choices": 0
+ },
+ {
+  "file": "202・茉子－実家ver1.01.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 1012,
+  "choices": 0
+ },
+ {
+  "file": "203・茉子－子犬ver1.01.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 565,
+  "choices": 0
+ },
+ {
+  "file": "204・茉子－気持ちver1.00.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 594,
+  "choices": 0
+ },
+ {
+  "file": "205・茉子－デートver1.00.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 1134,
+  "choices": 0
+ },
+ {
+  "file": "206・茉子－オナニーver1.00.ks.scn",
+  "route": "Mako",
+  "is_h": true,
+  "blocks": 554,
+  "choices": 0
+ },
+ {
+  "file": "207・茉子－初体験ver1.00.ks.scn",
+  "route": "Mako",
+  "is_h": true,
+  "blocks": 550,
+  "choices": 0
+ },
+ {
+  "file": "208・茉子－いちゃラヴver1.00.ks.scn",
+  "route": "Mako",
+  "is_h": true,
+  "blocks": 547,
+  "choices": 0
+ },
+ {
+  "file": "209・茉子－暴走改編ver1.01.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 996,
+  "choices": 0
+ },
+ {
+  "file": "210・茉子－エピローグver1.00.ks.scn",
+  "route": "Mako",
+  "is_h": false,
+  "blocks": 201,
+  "choices": 0
+ },
+ {
+  "file": "301・ムラサメちゃんルート０１ver1.3.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 628,
+  "choices": 0
+ },
+ {
+  "file": "302・ムラサメちゃんルート０２ver1.3.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 758,
+  "choices": 0
+ },
+ {
+  "file": "303・ムラサメちゃんルート０３ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 550,
+  "choices": 0
+ },
+ {
+  "file": "304・ムラサメちゃんルート０４ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 340,
+  "choices": 0
+ },
+ {
+  "file": "305・ムラサメちゃんルート０５ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 938,
+  "choices": 0
+ },
+ {
+  "file": "306・ムラサメちゃんルート０６ver1.3.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 687,
+  "choices": 0
+ },
+ {
+  "file": "307・ムラサメちゃんルート０７ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 417,
+  "choices": 0
+ },
+ {
+  "file": "308・ムラサメちゃんルート０８ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 438,
+  "choices": 0
+ },
+ {
+  "file": "309・ムラサメちゃんルート０９ver1.3.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 410,
+  "choices": 0
+ },
+ {
+  "file": "310・ムラサメちゃんルート１０ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 1320,
+  "choices": 0
+ },
+ {
+  "file": "311・ムラサメちゃんルート１１ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 603,
+  "choices": 0
+ },
+ {
+  "file": "312・ムラサメちゃんルート１２ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 576,
+  "choices": 0
+ },
+ {
+  "file": "313・ムラサメちゃんルート１３ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 615,
+  "choices": 0
+ },
+ {
+  "file": "314・ムラサメちゃんルート１４ver1.3.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 357,
+  "choices": 0
+ },
+ {
+  "file": "315・ムラサメちゃんルート１５ver1.3.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 263,
+  "choices": 0
+ },
+ {
+  "file": "316・ムラサメちゃんルート１６ver1.2.ks.scn",
+  "route": "Murasame",
+  "is_h": false,
+  "blocks": 140,
+  "choices": 0
+ },
+ {
+  "file": "414レナ・イザナウ.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 724,
+  "choices": 0
+ },
+ {
+  "file": "415レナ・欠片吸収.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 451,
+  "choices": 0
+ },
+ {
+  "file": "416レナ・クレイジーファイト.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 633,
+  "choices": 0
+ },
+ {
+  "file": "417レナ・エニシ.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 818,
+  "choices": 0
+ },
+ {
+  "file": "418レナ・馴染む.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 700,
+  "choices": 0
+ },
+ {
+  "file": "419レナ・ラップランドの味覚.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 636,
+  "choices": 0
+ },
+ {
+  "file": "420レナ・お泊まり会.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 618,
+  "choices": 0
+ },
+ {
+  "file": "421レナ・玉石の女神.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 465,
+  "choices": 0
+ },
+ {
+  "file": "422レナ・日常デート.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 476,
+  "choices": 0
+ },
+ {
+  "file": "423レナ・叢雲より生じたる.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 819,
+  "choices": 0
+ },
+ {
+  "file": "424レナ・トモダチ.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 488,
+  "choices": 0
+ },
+ {
+  "file": "425レナ・呪いの真実.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 297,
+  "choices": 0
+ },
+ {
+  "file": "426レナ・前夜.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 327,
+  "choices": 0
+ },
+ {
+  "file": "427レナ・古の祝詞.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 627,
+  "choices": 0
+ },
+ {
+  "file": "428レナ・未来への祭祀.ks.scn",
+  "route": "Lena",
+  "is_h": false,
+  "blocks": 163,
+  "choices": 0
+ },
+ {
+  "file": "501・サブ－新たな日々ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 398,
+  "choices": 0
+ },
+ {
+  "file": "502・サブ－アルバイトver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 397,
+  "choices": 0
+ },
+ {
+  "file": "503・サブ－小春の目覚めver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 455,
+  "choices": 0
+ },
+ {
+  "file": "504・サブ－芦花の目覚めver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 490,
+  "choices": 0
+ },
+ {
+  "file": "505・サブ－ピンとくる２人ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 290,
+  "choices": 0
+ },
+ {
+  "file": "506・サブ－恋愛協定ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 336,
+  "choices": 0
+ },
+ {
+  "file": "507・サブ－選択肢ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 483,
+  "choices": 2
+ },
+ {
+  "file": "508a・サブ－こはるんver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 171,
+  "choices": 0
+ },
+ {
+  "file": "508b・サブ－芦花姉ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 260,
+  "choices": 0
+ },
+ {
+  "file": "509・サブ－分岐ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": false,
+  "blocks": 213,
+  "choices": 0
+ },
+ {
+  "file": "511・サブ－小春（初体験）ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": true,
+  "blocks": 379,
+  "choices": 0
+ },
+ {
+  "file": "512・サブ－小春（その後）ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": true,
+  "blocks": 326,
+  "choices": 0
+ },
+ {
+  "file": "521・サブ－芦花（初体験）ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": true,
+  "blocks": 588,
+  "choices": 0
+ },
+ {
+  "file": "522・サブ－芦花（その後）ver1.00.ks.scn",
+  "route": "Sub",
+  "is_h": true,
+  "blocks": 268,
+  "choices": 0
+ }
+]
