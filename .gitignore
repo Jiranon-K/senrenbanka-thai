@@ -1,0 +1,36 @@
+# Senren Banka — Thai Translation toolkit
+# This repo lives inside the GAME directory. To avoid ever committing
+# copyrighted game assets (or multi-GB archives), we IGNORE EVERYTHING by
+# default and then explicitly un-ignore only our own tools + translation data.
+
+# 1) ignore every top-level entry
+/*
+
+# 2) un-ignore safe top-level files
+!/.gitignore
+!/README.md
+!/LICENSE
+
+# 3) tools/  — our pipeline scripts + guide (NOT the 3rd-party FreeMote binaries)
+!/tools/
+/tools/FreeMote/
+
+# 4) thai_work/ — keep only our translation data + dashboards
+!/thai_work/
+/thai_work/*
+!/thai_work/th/
+!/thai_work/glossary.csv
+!/thai_work/PROGRESS.md
+!/thai_work/manifest.json
+!/thai_work/progress.json
+
+# 5) within th/: keep Thai translations (idx -> th), drop the source dumps
+#    (*.src.tsv contain the original JP + official EN text = copyrighted)
+/thai_work/th/*.src.tsv
+
+# ---- NEVER commit (redundant with the whitelist, kept explicit for safety) ----
+# *.xp3 / *.xp3.orig                game archives (Yuzusoft assets, multi-GB)
+# thai_work/strings_cn.csv          master CSV (contains JP + official EN)
+# thai_work/fonts/                  base/merged/variant font binaries (build locally)
+# thai_work/{json_cn,psb_cn,pe_extract}/   decompiled scenarios (copyrighted)
+# dataxp3/ scnxp3/ savedata/ ...    extracted game data
