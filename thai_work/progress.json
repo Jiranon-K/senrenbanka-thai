@@ -49,7 +49,7 @@
   "tr_total": 585
  },
  "008・仕切り直しver1.02.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
