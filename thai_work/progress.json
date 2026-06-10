@@ -70,10 +70,10 @@
   "tr_total": 1221
  },
  "011・襲来ver1.04.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 429,
   "tr_total": 439
  },
  "012・病床ver1.06.ks.scn": {
