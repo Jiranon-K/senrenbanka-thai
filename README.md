@@ -83,18 +83,18 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 <!-- snapshot — สร้างใหม่ด้วย: python tools/track.py report  (ดูไฟล์เต็ม thai_work/PROGRESS.md) -->
 
-**7/86 packed · 0 verified**
+**8/86 packed · 0 verified**
 
 | Route | Packed | ไฟล์ |
 |---|--:|--:|
-| Common | 7 | 13 |
+| Common | 8 | 13 |
 | Yoshino | 0 | 15 |
 | Murasame | 0 | 16 |
 | Mako | 0 | 11 |
 | Lena | 0 | 17 |
 | Sub | 0 | 14 |
 
-### Common (7/13 packed)
+### Common (8/13 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -105,7 +105,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 | 005・鍛錬 | 313 | 0 |  | 📦 packed |
 | 008・仕切り直し | 193 | 0 |  | 📦 packed |
 | 009・謎の欠片 | 781 | 0 |  | 📦 packed |
-| 010・リフレッシュ | 1212 | 9 |  | 🔧 decompiled |
+| 010・リフレッシュ | 1212 | 9 |  | 📦 packed |
 | 011・襲来 | 439 | 0 |  | 🔧 decompiled |
 | 012・病床 | 787 | 2 |  | 🔧 decompiled |
 | 013・欠片集め | 512 | 0 |  | 🔧 decompiled |
