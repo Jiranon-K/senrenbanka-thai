@@ -83,18 +83,18 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 <!-- snapshot — สร้างใหม่ด้วย: python tools/track.py report  (ดูไฟล์เต็ม thai_work/PROGRESS.md) -->
 
-**4/86 packed · 0 verified**
+**5/86 packed · 0 verified**
 
 | Route | Packed | ไฟล์ |
 |---|--:|--:|
-| Common | 4 | 13 |
+| Common | 5 | 13 |
 | Yoshino | 0 | 15 |
 | Murasame | 0 | 16 |
 | Mako | 0 | 11 |
 | Lena | 0 | 17 |
 | Sub | 0 | 14 |
 
-### Common (4/13 packed)
+### Common (5/13 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -102,7 +102,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 | 002・祟り神 | 555 | 0 |  | 📦 packed |
 | 003・巫女の秘密 | 961 | 0 |  | 📦 packed |
 | 004・学院初日 | 490 | 0 |  | 📦 packed |
-| 005・鍛錬 | 313 | 0 |  | 🔧 decompiled |
+| 005・鍛錬 | 313 | 0 |  | 📦 packed |
 | 008・仕切り直し | 193 | 0 |  | 🔧 decompiled |
 | 009・謎の欠片 | 781 | 0 |  | 🔧 decompiled |
 | 010・リフレッシュ | 1212 | 9 |  | 🔧 decompiled |
