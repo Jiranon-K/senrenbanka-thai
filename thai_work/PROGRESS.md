@@ -1,9 +1,9 @@
 # Senren Banka — Thai Translation Progress
 
-**6/86 packed · 0 verified**
+**7/86 packed · 0 verified**
 
 
-## Common  (6/13 packed)
+## Common  (7/13 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -13,7 +13,7 @@
 | 004・学院初日ver1.04.ks.scn | 490 | 0 |  | 📦 packed |
 | 005・鍛錬ver1.04.ks.scn | 313 | 0 |  | 📦 packed |
 | 008・仕切り直しver1.02.ks.scn | 193 | 0 |  | 📦 packed |
-| 009・謎の欠片ver1.03.ks.scn | 781 | 0 |  | 🔧 decompiled |
+| 009・謎の欠片ver1.03.ks.scn | 781 | 0 |  | 📦 packed |
 | 010・リフレッシュver1.04.ks.scn | 1212 | 9 |  | 🔧 decompiled |
 | 011・襲来ver1.04.ks.scn | 439 | 0 |  | 🔧 decompiled |
 | 012・病床ver1.06.ks.scn | 787 | 2 |  | 🔧 decompiled |
