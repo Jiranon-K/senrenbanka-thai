@@ -52,21 +52,21 @@
   "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 193,
   "tr_total": 193
  },
  "009・謎の欠片ver1.03.ks.scn": {
   "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 777,
   "tr_total": 781
  },
  "010・リフレッシュver1.04.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 1219,
   "tr_total": 1221
  },
  "011・襲来ver1.04.ks.scn": {
