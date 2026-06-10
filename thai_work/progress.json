@@ -28,10 +28,10 @@
   "tr_total": 490
  },
  "005・鍛錬ver1.04.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 306,
   "tr_total": 313
  },
  "006・レナ登場ver1.03.ks.scn": {

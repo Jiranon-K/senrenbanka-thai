@@ -109,6 +109,11 @@ def cmd_set():
     scn, field = sys.argv[2], sys.argv[3]
     val = (sys.argv[4] != "0") if len(sys.argv) > 4 else True
     prog = json.load(open(PROG, encoding="utf-8"))
+    hits = [k for k in prog if scn in k]
+    if len(hits) == 1:
+        scn = hits[0]                      # substring match (e.g. "005" -> full stem)
+    elif len(hits) > 1:
+        sys.exit(f"ambiguous '{scn}': {hits}")
     prog.setdefault(scn, {})[field] = val
     json.dump(prog, open(PROG,"w",encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"set {scn}.{field} = {val}")
