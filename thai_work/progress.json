@@ -56,7 +56,7 @@
   "tr_total": 193
  },
  "009・謎の欠片ver1.03.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
