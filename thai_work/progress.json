@@ -77,10 +77,10 @@
   "tr_total": 439
  },
  "012・病床ver1.06.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 774,
   "tr_total": 789
  },
  "013・欠片集めver1.06.ks.scn": {
