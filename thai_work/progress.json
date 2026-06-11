@@ -84,10 +84,10 @@
   "tr_total": 789
  },
  "013・欠片集めver1.06.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 510,
   "tr_total": 512
  },
  "014・合体編ver1.03.ks.scn": {
