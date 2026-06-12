@@ -98,10 +98,10 @@
   "tr_total": 653
  },
  "015・ノーマルendver1.01.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 294,
   "tr_total": 298
  },
  "100・芳乃－語らいver1.01.ks.scn": {

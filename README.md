@@ -83,18 +83,18 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 <!-- snapshot — สร้างใหม่ด้วย: python tools/track.py report  (ดูไฟล์เต็ม thai_work/PROGRESS.md) -->
 
-**12/86 packed · 0 verified**
+**13/86 packed · 0 verified**
 
 | Route | Packed | ไฟล์ |
 |---|--:|--:|
-| Common | 12 | 13 |
+| Common | 13 | 13 |
 | Yoshino | 0 | 15 |
 | Murasame | 0 | 16 |
 | Mako | 0 | 11 |
 | Lena | 0 | 17 |
 | Sub | 0 | 14 |
 
-### Common (12/13 packed)
+### Common (13/13 packed ✅)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -110,7 +110,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 | 012・病床 | 787 | 2 |  | 📦 packed |
 | 013・欠片集め | 512 | 0 |  | 📦 packed |
 | 014・合体編 | 651 | 2 |  | 📦 packed |
-| 015・ノーマルend | 298 | 0 |  | 🔧 decompiled |
+| 015・ノーマルend | 298 | 0 |  | 📦 packed |
 
 > เส้นทางอื่น (Yoshino / Murasame / Mako / Lena / Sub) ยัง `🔧 decompiled` — ดูรายไฟล์ใน [`thai_work/PROGRESS.md`](thai_work/PROGRESS.md). 🔞 = H-scene (ทำทีหลัง)
 
