@@ -1,9 +1,9 @@
 # Senren Banka — Thai Translation Progress
 
-**4/86 packed · 0 verified**
+**13/86 packed · 0 verified**
 
 
-## Common  (4/13 packed)
+## Common  (13/13 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -11,15 +11,15 @@
 | 002・祟り神ver1.08.ks.scn | 555 | 0 |  | 📦 packed |
 | 003・巫女の秘密ver1.11.ks.scn | 961 | 0 |  | 📦 packed |
 | 004・学院初日ver1.04.ks.scn | 490 | 0 |  | 📦 packed |
-| 005・鍛錬ver1.04.ks.scn | 313 | 0 |  | 🔧 decompiled |
-| 008・仕切り直しver1.02.ks.scn | 193 | 0 |  | 🔧 decompiled |
-| 009・謎の欠片ver1.03.ks.scn | 781 | 0 |  | 🔧 decompiled |
-| 010・リフレッシュver1.04.ks.scn | 1212 | 9 |  | 🔧 decompiled |
-| 011・襲来ver1.04.ks.scn | 439 | 0 |  | 🔧 decompiled |
-| 012・病床ver1.06.ks.scn | 787 | 2 |  | 🔧 decompiled |
-| 013・欠片集めver1.06.ks.scn | 512 | 0 |  | 🔧 decompiled |
-| 014・合体編ver1.03.ks.scn | 651 | 2 |  | 🔧 decompiled |
-| 015・ノーマルendver1.01.ks.scn | 298 | 0 |  | 🔧 decompiled |
+| 005・鍛錬ver1.04.ks.scn | 313 | 0 |  | 📦 packed |
+| 008・仕切り直しver1.02.ks.scn | 193 | 0 |  | 📦 packed |
+| 009・謎の欠片ver1.03.ks.scn | 781 | 0 |  | 📦 packed |
+| 010・リフレッシュver1.04.ks.scn | 1212 | 9 |  | 📦 packed |
+| 011・襲来ver1.04.ks.scn | 439 | 0 |  | 📦 packed |
+| 012・病床ver1.06.ks.scn | 787 | 2 |  | 📦 packed |
+| 013・欠片集めver1.06.ks.scn | 512 | 0 |  | 📦 packed |
+| 014・合体編ver1.03.ks.scn | 651 | 2 |  | 📦 packed |
+| 015・ノーマルendver1.01.ks.scn | 298 | 0 |  | 📦 packed |
 
 ## Yoshino  (0/15 packed)
 
