@@ -1,9 +1,9 @@
 # Senren Banka — Thai Translation Progress
 
-**11/86 packed · 0 verified**
+**12/86 packed · 0 verified**
 
 
-## Common  (11/13 packed)
+## Common  (12/13 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -18,7 +18,7 @@
 | 011・襲来ver1.04.ks.scn | 439 | 0 |  | 📦 packed |
 | 012・病床ver1.06.ks.scn | 787 | 2 |  | 📦 packed |
 | 013・欠片集めver1.06.ks.scn | 512 | 0 |  | 📦 packed |
-| 014・合体編ver1.03.ks.scn | 651 | 2 |  | 🔧 decompiled |
+| 014・合体編ver1.03.ks.scn | 651 | 2 |  | 📦 packed |
 | 015・ノーマルendver1.01.ks.scn | 298 | 0 |  | 🔧 decompiled |
 
 ## Yoshino  (0/15 packed)
