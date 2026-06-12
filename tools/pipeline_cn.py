@@ -110,6 +110,7 @@ def cmd_export():
     print(f"exported {len(rows)} lines -> {CSVF}")
 
 def cmd_import():
+    sub = sys.argv[2] if len(sys.argv) > 2 else None   # optional: import only files matching substring
     blk = {}; cho = {}                                   # per file: {int idx: row} and {choice n: row}
     with open(CSVF, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
@@ -121,6 +122,7 @@ def cmd_import():
     for jf in sorted(glob.glob(os.path.join(JSOND, "*.ks.json"))):
         if jf.endswith(".resx.json"): continue
         name = os.path.basename(jf)
+        if sub and sub not in name: continue
         d = json.load(open(jf, encoding="utf-8")); changed = False
         be = blk.get(name)
         if be:
