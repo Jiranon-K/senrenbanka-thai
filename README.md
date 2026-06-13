@@ -83,7 +83,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 <!-- snapshot — สร้างใหม่ด้วย: python tools/track.py report  (ดูไฟล์เต็ม thai_work/PROGRESS.md) -->
 
-**16/86 packed · 0 verified**
+**16/86 packed · 16 verified**
 
 | Route | Packed | ไฟล์ |
 |---|--:|--:|
@@ -94,27 +94,27 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 | Lena | 0 | 17 |
 | Sub | 0 | 14 |
 
-### Common (13/13 packed ✅)
+### Common (13/13 verified ✅)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
-| 001・アーサー王 | 812 | 2 |  | 📦 packed |
-| 002・祟り神 | 555 | 0 |  | 📦 packed |
-| 003・巫女の秘密 | 961 | 0 |  | 📦 packed |
-| 004・学院初日 | 490 | 0 |  | 📦 packed |
-| 005・鍛錬 | 313 | 0 |  | 📦 packed |
-| 008・仕切り直し | 193 | 0 |  | 📦 packed |
-| 009・謎の欠片 | 781 | 0 |  | 📦 packed |
-| 010・リフレッシュ | 1212 | 9 |  | 📦 packed |
-| 011・襲来 | 439 | 0 |  | 📦 packed |
-| 012・病床 | 787 | 2 |  | 📦 packed |
-| 013・欠片集め | 512 | 0 |  | 📦 packed |
-| 014・合体編 | 651 | 2 |  | 📦 packed |
-| 015・ノーマルend | 298 | 0 |  | 📦 packed |
+| 001・アーサー王 | 812 | 2 |  | ✅ verified |
+| 002・祟り神 | 555 | 0 |  | ✅ verified |
+| 003・巫女の秘密 | 961 | 0 |  | ✅ verified |
+| 004・学院初日 | 490 | 0 |  | ✅ verified |
+| 005・鍛錬 | 313 | 0 |  | ✅ verified |
+| 008・仕切り直し | 193 | 0 |  | ✅ verified |
+| 009・謎の欠片 | 781 | 0 |  | ✅ verified |
+| 010・リフレッシュ | 1212 | 9 |  | ✅ verified |
+| 011・襲来 | 439 | 0 |  | ✅ verified |
+| 012・病床 | 787 | 2 |  | ✅ verified |
+| 013・欠片集め | 512 | 0 |  | ✅ verified |
+| 014・合体編 | 651 | 2 |  | ✅ verified |
+| 015・ノーマルend | 298 | 0 |  | ✅ verified |
 
 > เส้นทางอื่น (Yoshino / Murasame / Mako / Lena / Sub) ยัง `🔧 decompiled` — ดูรายไฟล์ใน [`thai_work/PROGRESS.md`](thai_work/PROGRESS.md). 🔞 = H-scene (ทำทีหลัง)
 
-สถานะ: ⬜ pending · 🔧 decompiled · ✏️ partial · 📝 translated · 📦 packed · ✅ verified
+สถานะ: ⬜ pending · 🔧 decompiled · ✏️ partial · 📝 translated · ✅ verified · ✅ verified
 
 ---
 

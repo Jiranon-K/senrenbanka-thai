@@ -1,25 +1,25 @@
 # Senren Banka — Thai Translation Progress
 
-**16/86 packed · 0 verified**
+**16/86 packed · 16 verified**
 
 
 ## Common  (13/13 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
-| 001・アーサー王ver1.07.ks.scn | 812 | 2 |  | 📦 packed |
-| 002・祟り神ver1.08.ks.scn | 555 | 0 |  | 📦 packed |
-| 003・巫女の秘密ver1.11.ks.scn | 961 | 0 |  | 📦 packed |
-| 004・学院初日ver1.04.ks.scn | 490 | 0 |  | 📦 packed |
-| 005・鍛錬ver1.04.ks.scn | 313 | 0 |  | 📦 packed |
-| 008・仕切り直しver1.02.ks.scn | 193 | 0 |  | 📦 packed |
-| 009・謎の欠片ver1.03.ks.scn | 781 | 0 |  | 📦 packed |
-| 010・リフレッシュver1.04.ks.scn | 1212 | 9 |  | 📦 packed |
-| 011・襲来ver1.04.ks.scn | 439 | 0 |  | 📦 packed |
-| 012・病床ver1.06.ks.scn | 787 | 2 |  | 📦 packed |
-| 013・欠片集めver1.06.ks.scn | 512 | 0 |  | 📦 packed |
-| 014・合体編ver1.03.ks.scn | 651 | 2 |  | 📦 packed |
-| 015・ノーマルendver1.01.ks.scn | 298 | 0 |  | 📦 packed |
+| 001・アーサー王ver1.07.ks.scn | 812 | 2 |  | ✅ verified |
+| 002・祟り神ver1.08.ks.scn | 555 | 0 |  | ✅ verified |
+| 003・巫女の秘密ver1.11.ks.scn | 961 | 0 |  | ✅ verified |
+| 004・学院初日ver1.04.ks.scn | 490 | 0 |  | ✅ verified |
+| 005・鍛錬ver1.04.ks.scn | 313 | 0 |  | ✅ verified |
+| 008・仕切り直しver1.02.ks.scn | 193 | 0 |  | ✅ verified |
+| 009・謎の欠片ver1.03.ks.scn | 781 | 0 |  | ✅ verified |
+| 010・リフレッシュver1.04.ks.scn | 1212 | 9 |  | ✅ verified |
+| 011・襲来ver1.04.ks.scn | 439 | 0 |  | ✅ verified |
+| 012・病床ver1.06.ks.scn | 787 | 2 |  | ✅ verified |
+| 013・欠片集めver1.06.ks.scn | 512 | 0 |  | ✅ verified |
+| 014・合体編ver1.03.ks.scn | 651 | 2 |  | ✅ verified |
+| 015・ノーマルendver1.01.ks.scn | 298 | 0 |  | ✅ verified |
 
 ## Yoshino  (0/15 packed)
 
@@ -66,9 +66,9 @@
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
-| 200・茉子－語らいver1.00.ks.scn | 211 | 0 |  | 📦 packed |
-| 201・茉子－婚約解消ver1.01.ks.scn | 656 | 0 |  | 📦 packed |
-| 202・茉子－実家ver1.01.ks.scn | 1012 | 0 |  | 📦 packed |
+| 200・茉子－語らいver1.00.ks.scn | 211 | 0 |  | ✅ verified |
+| 201・茉子－婚約解消ver1.01.ks.scn | 656 | 0 |  | ✅ verified |
+| 202・茉子－実家ver1.01.ks.scn | 1012 | 0 |  | ✅ verified |
 | 203・茉子－子犬ver1.01.ks.scn | 565 | 0 |  | 🔧 decompiled |
 | 204・茉子－気持ちver1.00.ks.scn | 594 | 0 |  | 🔧 decompiled |
 | 205・茉子－デートver1.00.ks.scn | 1134 | 0 |  | 🔧 decompiled |
