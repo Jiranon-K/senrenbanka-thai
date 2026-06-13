@@ -210,10 +210,10 @@
   "tr_total": 116
  },
  "200・茉子－語らいver1.00.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 211,
   "tr_total": 211
  },
  "201・茉子－婚約解消ver1.01.ks.scn": {
