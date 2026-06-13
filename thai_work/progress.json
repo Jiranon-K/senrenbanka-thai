@@ -1,35 +1,35 @@
 {
  "001・アーサー王ver1.07.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 809,
   "tr_total": 814
  },
  "002・祟り神ver1.08.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 554,
   "tr_total": 555
  },
  "003・巫女の秘密ver1.11.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 953,
   "tr_total": 961
  },
  "004・学院初日ver1.04.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 489,
   "tr_total": 490
  },
  "005・鍛錬ver1.04.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 306,
   "tr_total": 313
@@ -50,56 +50,56 @@
  },
  "008・仕切り直しver1.02.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 193,
   "tr_total": 193
  },
  "009・謎の欠片ver1.03.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 777,
   "tr_total": 781
  },
  "010・リフレッシュver1.04.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 1219,
   "tr_total": 1221
  },
  "011・襲来ver1.04.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 429,
   "tr_total": 439
  },
  "012・病床ver1.06.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 774,
   "tr_total": 789
  },
  "013・欠片集めver1.06.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 510,
   "tr_total": 512
  },
  "014・合体編ver1.03.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 651,
   "tr_total": 653
  },
  "015・ノーマルendver1.01.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 294,
   "tr_total": 298
@@ -211,21 +211,21 @@
  },
  "200・茉子－語らいver1.00.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 211,
   "tr_total": 211
  },
  "201・茉子－婚約解消ver1.01.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 637,
   "tr_total": 656
  },
  "202・茉子－実家ver1.01.ks.scn": {
   "packed": true,
-  "verified": false,
+  "verified": true,
   "decompiled": true,
   "tr_filled": 1010,
   "tr_total": 1012
