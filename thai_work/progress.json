@@ -231,10 +231,10 @@
   "tr_total": 1012
  },
  "203・茉子－子犬ver1.01.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 480,
   "tr_total": 565
  },
  "204・茉子－気持ちver1.00.ks.scn": {
