@@ -217,10 +217,10 @@
   "tr_total": 211
  },
  "201・茉子－婚約解消ver1.01.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 637,
   "tr_total": 656
  },
  "202・茉子－実家ver1.01.ks.scn": {
