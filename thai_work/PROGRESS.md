@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**16/86 packed · 16 verified**
+**17/86 packed · 16 verified**
 
 
 ## Common  (13/13 packed)
@@ -62,14 +62,14 @@
 | 315・ムラサメちゃんルート１５ver1.3.ks.scn | 263 | 0 |  | 🔧 decompiled |
 | 316・ムラサメちゃんルート１６ver1.2.ks.scn | 140 | 0 |  | 🔧 decompiled |
 
-## Mako  (3/11 packed)
+## Mako  (4/11 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
 | 200・茉子－語らいver1.00.ks.scn | 211 | 0 |  | ✅ verified |
 | 201・茉子－婚約解消ver1.01.ks.scn | 656 | 0 |  | ✅ verified |
 | 202・茉子－実家ver1.01.ks.scn | 1012 | 0 |  | ✅ verified |
-| 203・茉子－子犬ver1.01.ks.scn | 565 | 0 |  | 🔧 decompiled |
+| 203・茉子－子犬ver1.01.ks.scn | 565 | 0 |  | 📦 packed |
 | 204・茉子－気持ちver1.00.ks.scn | 594 | 0 |  | 🔧 decompiled |
 | 205・茉子－デートver1.00.ks.scn | 1134 | 0 |  | 🔧 decompiled |
 | 206・茉子－オナニーver1.00.ks.scn | 554 | 0 | 🔞 | 🔧 decompiled |
