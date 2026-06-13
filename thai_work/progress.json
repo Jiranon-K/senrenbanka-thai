@@ -224,10 +224,10 @@
   "tr_total": 656
  },
  "202・茉子－実家ver1.01.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 1010,
   "tr_total": 1012
  },
  "203・茉子－子犬ver1.01.ks.scn": {
