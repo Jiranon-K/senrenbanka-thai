@@ -238,10 +238,10 @@
   "tr_total": 565
  },
  "204・茉子－気持ちver1.00.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
-  "tr_filled": 0,
+  "tr_filled": 594,
   "tr_total": 594
  },
  "205・茉子－デートver1.00.ks.scn": {
