@@ -114,7 +114,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 > เส้นทางอื่น (Yoshino / Murasame / Mako / Lena / Sub) ยัง `🔧 decompiled` — ดูรายไฟล์ใน [`thai_work/PROGRESS.md`](thai_work/PROGRESS.md). 🔞 = H-scene (ทำทีหลัง)
 
-สถานะ: ⬜ pending · 🔧 decompiled · ✏️ partial · 📝 translated · ✅ verified · ✅ verified
+สถานะ: ⬜ pending · 🔧 decompiled · ✏️ partial · 📝 translated · 📦 packed · ✅ verified
 
 ---
 
