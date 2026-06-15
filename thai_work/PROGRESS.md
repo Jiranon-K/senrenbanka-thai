@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**24/86 packed · 16 verified**
+**24/86 packed · 24 verified**
 
 
 ## Common  (13/13 packed)
@@ -69,14 +69,14 @@
 | 200・茉子－語らいver1.00.ks.scn | 211 | 0 |  | ✅ verified |
 | 201・茉子－婚約解消ver1.01.ks.scn | 656 | 0 |  | ✅ verified |
 | 202・茉子－実家ver1.01.ks.scn | 1012 | 0 |  | ✅ verified |
-| 203・茉子－子犬ver1.01.ks.scn | 565 | 0 |  | 📦 packed |
-| 204・茉子－気持ちver1.00.ks.scn | 594 | 0 |  | 📦 packed |
-| 205・茉子－デートver1.00.ks.scn | 1134 | 0 |  | 📦 packed |
-| 206・茉子－オナニーver1.00.ks.scn | 554 | 0 | 🔞 | 📦 packed |
-| 207・茉子－初体験ver1.00.ks.scn | 550 | 0 | 🔞 | 📦 packed |
-| 208・茉子－いちゃラヴver1.00.ks.scn | 547 | 0 | 🔞 | 📦 packed |
-| 209・茉子－暴走改編ver1.01.ks.scn | 996 | 0 |  | 📦 packed |
-| 210・茉子－エピローグver1.00.ks.scn | 201 | 0 |  | 📦 packed |
+| 203・茉子－子犬ver1.01.ks.scn | 565 | 0 |  | ✅ verified |
+| 204・茉子－気持ちver1.00.ks.scn | 594 | 0 |  | ✅ verified |
+| 205・茉子－デートver1.00.ks.scn | 1134 | 0 |  | ✅ verified |
+| 206・茉子－オナニーver1.00.ks.scn | 554 | 0 | 🔞 | ✅ verified |
+| 207・茉子－初体験ver1.00.ks.scn | 550 | 0 | 🔞 | ✅ verified |
+| 208・茉子－いちゃラヴver1.00.ks.scn | 547 | 0 | 🔞 | ✅ verified |
+| 209・茉子－暴走改編ver1.01.ks.scn | 996 | 0 |  | ✅ verified |
+| 210・茉子－エピローグver1.00.ks.scn | 201 | 0 |  | ✅ verified |
 
 ## Lena  (0/17 packed)
 
