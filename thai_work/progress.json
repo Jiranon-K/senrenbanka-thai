@@ -294,7 +294,7 @@
   "tr_total": 628
  },
  "302・ムラサメちゃんルート０２ver1.3.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
