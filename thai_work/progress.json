@@ -315,7 +315,7 @@
   "tr_total": 340
  },
  "305・ムラサメちゃんルート０５ver1.2.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
