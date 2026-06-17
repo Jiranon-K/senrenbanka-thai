@@ -329,7 +329,7 @@
   "tr_total": 687
  },
  "307・ムラサメちゃんルート０７ver1.2.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
