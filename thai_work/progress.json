@@ -336,7 +336,7 @@
   "tr_total": 417
  },
  "308・ムラサメちゃんルート０８ver1.2.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
