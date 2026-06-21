@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**33/86 packed · 24 verified**
+**34/86 packed · 24 verified**
 
 
 ## Common  (13/13 packed)
@@ -41,7 +41,7 @@
 | 113・芳乃－母上様ver1.01.ks.scn | 446 | 0 |  | 🔧 decompiled |
 | 114・芳乃－ＥＰver1.01.ks.scn | 116 | 0 |  | 🔧 decompiled |
 
-## Murasame  (9/16 packed)
+## Murasame  (10/16 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -54,7 +54,7 @@
 | 307・ムラサメちゃんルート０７ver1.2.ks.scn | 417 | 0 |  | 📦 packed |
 | 308・ムラサメちゃんルート０８ver1.2.ks.scn | 438 | 0 |  | 📦 packed |
 | 309・ムラサメちゃんルート０９ver1.3.ks.scn | 410 | 0 |  | 📦 packed |
-| 310・ムラサメちゃんルート１０ver1.2.ks.scn | 1320 | 0 |  | 🔧 decompiled |
+| 310・ムラサメちゃんルート１０ver1.2.ks.scn | 1320 | 0 |  | 📦 packed |
 | 311・ムラサメちゃんルート１１ver1.2.ks.scn | 603 | 0 |  | 🔧 decompiled |
 | 312・ムラサメちゃんルート１２ver1.2.ks.scn | 576 | 0 |  | 🔧 decompiled |
 | 313・ムラサメちゃんルート１３ver1.2.ks.scn | 615 | 0 |  | 🔧 decompiled |
