@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**24/86 packed · 24 verified**
+**40/86 packed · 31 verified**
 
 
 ## Common  (13/13 packed)
@@ -41,26 +41,26 @@
 | 113・芳乃－母上様ver1.01.ks.scn | 446 | 0 |  | 🔧 decompiled |
 | 114・芳乃－ＥＰver1.01.ks.scn | 116 | 0 |  | 🔧 decompiled |
 
-## Murasame  (0/16 packed)
+## Murasame  (16/16 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
-| 301・ムラサメちゃんルート０１ver1.3.ks.scn | 628 | 0 |  | 🔧 decompiled |
-| 302・ムラサメちゃんルート０２ver1.3.ks.scn | 758 | 0 |  | 🔧 decompiled |
-| 303・ムラサメちゃんルート０３ver1.2.ks.scn | 550 | 0 |  | 🔧 decompiled |
-| 304・ムラサメちゃんルート０４ver1.2.ks.scn | 340 | 0 |  | 🔧 decompiled |
-| 305・ムラサメちゃんルート０５ver1.2.ks.scn | 938 | 0 |  | 🔧 decompiled |
-| 306・ムラサメちゃんルート０６ver1.3.ks.scn | 687 | 0 |  | 🔧 decompiled |
-| 307・ムラサメちゃんルート０７ver1.2.ks.scn | 417 | 0 |  | 🔧 decompiled |
-| 308・ムラサメちゃんルート０８ver1.2.ks.scn | 438 | 0 |  | 🔧 decompiled |
-| 309・ムラサメちゃんルート０９ver1.3.ks.scn | 410 | 0 |  | 🔧 decompiled |
-| 310・ムラサメちゃんルート１０ver1.2.ks.scn | 1320 | 0 |  | 🔧 decompiled |
-| 311・ムラサメちゃんルート１１ver1.2.ks.scn | 603 | 0 |  | 🔧 decompiled |
-| 312・ムラサメちゃんルート１２ver1.2.ks.scn | 576 | 0 |  | 🔧 decompiled |
-| 313・ムラサメちゃんルート１３ver1.2.ks.scn | 615 | 0 |  | 🔧 decompiled |
-| 314・ムラサメちゃんルート１４ver1.3.ks.scn | 357 | 0 |  | 🔧 decompiled |
-| 315・ムラサメちゃんルート１５ver1.3.ks.scn | 263 | 0 |  | 🔧 decompiled |
-| 316・ムラサメちゃんルート１６ver1.2.ks.scn | 140 | 0 |  | 🔧 decompiled |
+| 301・ムラサメちゃんルート０１ver1.3.ks.scn | 628 | 0 |  | 📦 packed |
+| 302・ムラサメちゃんルート０２ver1.3.ks.scn | 758 | 0 |  | 📦 packed |
+| 303・ムラサメちゃんルート０３ver1.2.ks.scn | 550 | 0 |  | 📦 packed |
+| 304・ムラサメちゃんルート０４ver1.2.ks.scn | 340 | 0 |  | 📦 packed |
+| 305・ムラサメちゃんルート０５ver1.2.ks.scn | 938 | 0 |  | 📦 packed |
+| 306・ムラサメちゃんルート０６ver1.3.ks.scn | 687 | 0 |  | 📦 packed |
+| 307・ムラサメちゃんルート０７ver1.2.ks.scn | 417 | 0 |  | 📦 packed |
+| 308・ムラサメちゃんルート０８ver1.2.ks.scn | 438 | 0 |  | 📦 packed |
+| 309・ムラサメちゃんルート０９ver1.3.ks.scn | 410 | 0 |  | 📦 packed |
+| 310・ムラサメちゃんルート１０ver1.2.ks.scn | 1320 | 0 |  | ✅ verified |
+| 311・ムラサメちゃんルート１１ver1.2.ks.scn | 603 | 0 |  | ✅ verified |
+| 312・ムラサメちゃんルート１２ver1.2.ks.scn | 576 | 0 |  | ✅ verified |
+| 313・ムラサメちゃんルート１３ver1.2.ks.scn | 615 | 0 |  | ✅ verified |
+| 314・ムラサメちゃんルート１４ver1.3.ks.scn | 357 | 0 |  | ✅ verified |
+| 315・ムラサメちゃんルート１５ver1.3.ks.scn | 263 | 0 |  | ✅ verified |
+| 316・ムラサメちゃんルート１６ver1.2.ks.scn | 140 | 0 |  | ✅ verified |
 
 ## Mako  (11/11 packed)
 
