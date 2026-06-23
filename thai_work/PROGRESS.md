@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**40/86 packed · 24 verified**
+**40/86 packed · 31 verified**
 
 
 ## Common  (13/13 packed)
@@ -54,13 +54,13 @@
 | 307・ムラサメちゃんルート０７ver1.2.ks.scn | 417 | 0 |  | 📦 packed |
 | 308・ムラサメちゃんルート０８ver1.2.ks.scn | 438 | 0 |  | 📦 packed |
 | 309・ムラサメちゃんルート０９ver1.3.ks.scn | 410 | 0 |  | 📦 packed |
-| 310・ムラサメちゃんルート１０ver1.2.ks.scn | 1320 | 0 |  | 📦 packed |
-| 311・ムラサメちゃんルート１１ver1.2.ks.scn | 603 | 0 |  | 📦 packed |
-| 312・ムラサメちゃんルート１２ver1.2.ks.scn | 576 | 0 |  | 📦 packed |
-| 313・ムラサメちゃんルート１３ver1.2.ks.scn | 615 | 0 |  | 📦 packed |
-| 314・ムラサメちゃんルート１４ver1.3.ks.scn | 357 | 0 |  | 📦 packed |
-| 315・ムラサメちゃんルート１５ver1.3.ks.scn | 263 | 0 |  | 📦 packed |
-| 316・ムラサメちゃんルート１６ver1.2.ks.scn | 140 | 0 |  | 📦 packed |
+| 310・ムラサメちゃんルート１０ver1.2.ks.scn | 1320 | 0 |  | ✅ verified |
+| 311・ムラサメちゃんルート１１ver1.2.ks.scn | 603 | 0 |  | ✅ verified |
+| 312・ムラサメちゃんルート１２ver1.2.ks.scn | 576 | 0 |  | ✅ verified |
+| 313・ムラサメちゃんルート１３ver1.2.ks.scn | 615 | 0 |  | ✅ verified |
+| 314・ムラサメちゃんルート１４ver1.3.ks.scn | 357 | 0 |  | ✅ verified |
+| 315・ムラサメちゃんルート１５ver1.3.ks.scn | 263 | 0 |  | ✅ verified |
+| 316・ムラサメちゃんルート１６ver1.2.ks.scn | 140 | 0 |  | ✅ verified |
 
 ## Mako  (11/11 packed)
 
