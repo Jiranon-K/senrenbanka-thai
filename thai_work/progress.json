@@ -42,7 +42,7 @@
   "tr_total": 629
  },
  "007・レナ転入ver1.03.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
