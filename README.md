@@ -83,12 +83,12 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 <!-- snapshot — สร้างใหม่ด้วย: python tools/track.py report  (ดูไฟล์เต็ม thai_work/PROGRESS.md) -->
 
-**54/86 packed · 52 verified**
+**55/86 packed · 52 verified**
 
 | Route | Packed | ไฟล์ |
 |---|--:|--:|
 | Common | 13 | 13 |
-| Yoshino | 14 | 15 |
+| Yoshino | 15 | 15 |
 | Murasame | 16 | 16 |
 | Mako | 11 | 11 |
 | Lena | 0 | 17 |

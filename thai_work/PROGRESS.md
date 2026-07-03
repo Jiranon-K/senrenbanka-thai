@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**54/86 packed · 52 verified**
+**55/86 packed · 52 verified**
 
 
 ## Common  (13/13 packed)
@@ -21,7 +21,7 @@
 | 014・合体編ver1.03.ks.scn | 651 | 2 |  | ✅ verified |
 | 015・ノーマルendver1.01.ks.scn | 298 | 0 |  | ✅ verified |
 
-## Yoshino  (14/15 packed)
+## Yoshino  (15/15 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -37,7 +37,7 @@
 | 109・芳乃－平穏ver1.01.ks.scn | 318 | 0 |  | ✅ verified |
 | 110・芳乃－初体験ver1.01.ks.scn | 561 | 0 | 🔞 | 📦 packed |
 | 111・芳乃－その後ver1.01.ks.scn | 549 | 0 | 🔞 | 📦 packed |
-| 112・芳乃－２回目ver1.01.ks.scn | 178 | 0 | 🔞 | 🔧 decompiled |
+| 112・芳乃－２回目ver1.01.ks.scn | 178 | 0 | 🔞 | 📦 packed |
 | 113・芳乃－母上様ver1.01.ks.scn | 446 | 0 |  | ✅ verified |
 | 114・芳乃－ＥＰver1.01.ks.scn | 116 | 0 |  | ✅ verified |
 
