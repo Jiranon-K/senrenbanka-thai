@@ -81,6 +81,28 @@ python tools/rebuild_fonts.py     # แทน SourceHanSansSC-{Reg,Bold,Heavy} �
 - ตรวจ render ยาวๆ (สระซ้อน/วรรณยุกต์) — ทดสอบจริงต่อ
 - ภาษา tw ยังไม่ทำ font (ถ้าจะใช้ ทำ SourceHanSansTC แบบเดียวกับ build_thai_font.py)
 
+## ตัวติดตั้งสำหรับผู้เล่นทั่วไป (xdelta patch)
+
+ไม่แจก `patch.xp3`/`data.xp3` ตรงๆ (มีข้อมูลเกมลิขสิทธิ์เต็ม) — แจกเป็น **binary diff** แทน (มาตรฐาน fan-patch/ROM hack) ใช้ได้เฉพาะคนมีเกมแท้ + `.orig` เดิม
+
+**เครื่องมือ**: `tools/xdelta/xdelta3.exe` (ไม่ commit เข้า repo — โหลดแยกจาก [jmacd/xdelta releases](https://github.com/jmacd/xdelta/releases), official Windows binary)
+
+**สร้าง diff ใหม่** (ทำทุกครั้งที่แปลเพิ่ม/เกมอัปเดตเวอร์ชัน — ต้องมี `.orig` ที่ตรงกับเวอร์ชันเกมปัจจุบัน):
+```powershell
+tools/xdelta/xdelta3.exe -e -f -9 -B 1073741824 -s patch.xp3.orig patch.xp3 thai_work/dist/thai-patch.xdelta
+tools/xdelta/xdelta3.exe -e -f -9 -B 1073741824 -s data.xp3.orig  data.xp3  thai_work/dist/thai-data.xdelta
+```
+`-B 1GB` = source window เต็มไฟล์ (จำเป็น เพราะ rebuild ทำให้ offset ข้อมูลเดิมเลื่อน) `-s` = source ฐาน (`.orig`). ตรวจผลด้วยการ decode กลับมาเทียบ byte-ต่อ-byte ก่อนแจกทุกครั้ง (`xdelta3.exe -d -s <.orig> <.xdelta> <out>` แล้ว `cmp`).
+
+**แพ็กเป็น zip แจก**: `install.bat` + `uninstall.bat` + `xdelta3.exe` + `thai-patch.xdelta` + `thai-data.xdelta` + `README.txt` (source อยู่ใน `thai_work/dist/` ระหว่างสร้าง — ไม่ commit โฟลเดอร์นี้ อัปโหลดเป็น GitHub Release asset แทน)
+
+**ทดสอบก่อนแจกทุกครั้ง**: จำลอง fresh install (copy `.orig` ทั้งคู่ตั้งเป็น `patch.xp3`/`data.xp3` ใน folder ทดสอบ, ใส่ `SenrenBanka.exe` เปล่าไว้ด้วยเพื่อผ่านเช็ค) → รัน `install.bat` → เทียบ SHA256 กับไฟล์แปลไทยจริง → รัน `uninstall.bat` → เทียบ SHA256 กับ `.orig` เดิม
+
+⚠️ ข้อควรระวังตอนเขียน `.bat`:
+- **ต้องเซฟเป็น CRLF + UTF-8 BOM** (ไม่ใช่ LF) — cmd.exe parse ผิดเพี้ยนกับ LF-only โดยเฉพาะไฟล์ที่มี `chcp 65001` + ข้อความไทย (token แตกกลางบรรทัด)
+- **ห้ามเรียกโปรแกรมด้วยชื่อเปล่า** (เช่น `xdelta3.exe`) — ต้องใช้ `"%~dp0xdelta3.exe"` เสมอ เพราะเครื่องที่ปิด `NoDefaultCurrentDirectoryInExePath` (ค่าตั้งความปลอดภัยที่พบได้จริง โดยเฉพาะเครื่ององค์กร/hardened) จะหา exe ใน current directory ไม่เจอ แม้ `cd` เข้าไปถูกโฟลเดอร์แล้วก็ตาม — ใช้ full path จาก `%~dp0` ปลอดภัยเสมอไม่ว่า policy จะเป็นแบบไหน
+- ใส่ `cd /d "%~dp0"` ต้นสคริปต์เสมอ กัน user รันจาก shortcut/cwd ผิดที่
+
 ## ❌ ทิ้งได้
 `extract_text.py`/`senren_banka_translation*.csv` (strings บน PSB = garbage).
 `patch_thai.xp3`/`KrkrPatch*`/`KrkrExtract*` (ทางที่ลองแล้วไม่ใช้ — KrkrPatch ติด SteamStub DRM).
