@@ -441,7 +441,7 @@
   "tr_total": 636
  },
  "420レナ・お泊まり会.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
