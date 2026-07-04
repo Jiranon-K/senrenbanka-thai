@@ -11,9 +11,10 @@
 !/README.md
 !/LICENSE
 
-# 3) tools/  — our pipeline scripts + guide (NOT the 3rd-party FreeMote binaries)
+# 3) tools/  — our pipeline scripts + guide (NOT 3rd-party binaries)
 !/tools/
 /tools/FreeMote/
+/tools/xdelta/
 
 # 4) thai_work/ — keep only our translation data + dashboards
 !/thai_work/
