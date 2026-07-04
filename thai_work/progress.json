@@ -490,7 +490,7 @@
   "tr_total": 327
  },
  "427レナ・古の祝詞.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
