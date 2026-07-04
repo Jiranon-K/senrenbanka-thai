@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**57/86 packed · 52 verified**
+**58/86 packed · 52 verified**
 
 
 ## Common  (13/13 packed)
@@ -78,13 +78,13 @@
 | 209・茉子－暴走改編ver1.01.ks.scn | 996 | 0 |  | ✅ verified |
 | 210・茉子－エピローグver1.00.ks.scn | 201 | 0 |  | ✅ verified |
 
-## Lena  (2/17 packed)
+## Lena  (3/17 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
 | 006・レナ登場ver1.03.ks.scn | 627 | 2 |  | 📦 packed |
 | 007・レナ転入ver1.03.ks.scn | 585 | 0 |  | 📦 packed |
-| 414レナ・イザナウ.ks.scn | 724 | 0 |  | 🔧 decompiled |
+| 414レナ・イザナウ.ks.scn | 724 | 0 |  | 📦 packed |
 | 415レナ・欠片吸収.ks.scn | 451 | 0 |  | 🔧 decompiled |
 | 416レナ・クレイジーファイト.ks.scn | 633 | 0 |  | 🔧 decompiled |
 | 417レナ・エニシ.ks.scn | 818 | 0 |  | 🔧 decompiled |
