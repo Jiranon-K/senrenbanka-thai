@@ -469,7 +469,7 @@
   "tr_total": 819
  },
  "424レナ・トモダチ.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
