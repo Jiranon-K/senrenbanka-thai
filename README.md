@@ -83,7 +83,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 <!-- snapshot — สร้างใหม่ด้วย: python tools/track.py report  (ดูไฟล์เต็ม thai_work/PROGRESS.md) -->
 
-**72/86 packed · 72 verified**
+**86/86 packed · 86 verified** 🎉 ครบทั้งเกม
 
 | Route | Packed | ไฟล์ |
 |---|--:|--:|
@@ -92,7 +92,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 | Murasame | 16 | 16 |
 | Mako | 11 | 11 |
 | Lena | 17 | 17 |
-| Sub | 0 | 14 |
+| Sub | 14 | 14 |
 
 ### Common (13/13 verified ✅)
 

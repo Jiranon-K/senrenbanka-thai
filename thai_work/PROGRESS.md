@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**72/86 packed · 72 verified**
+**86/86 packed · 86 verified**
 
 
 ## Common  (13/13 packed)
@@ -100,21 +100,21 @@
 | 427レナ・古の祝詞.ks.scn | 627 | 0 |  | ✅ verified |
 | 428レナ・未来への祭祀.ks.scn | 163 | 0 |  | ✅ verified |
 
-## Sub  (0/14 packed)
+## Sub  (14/14 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
-| 501・サブ－新たな日々ver1.00.ks.scn | 398 | 0 |  | 🔧 decompiled |
-| 502・サブ－アルバイトver1.00.ks.scn | 397 | 0 |  | 🔧 decompiled |
-| 503・サブ－小春の目覚めver1.00.ks.scn | 455 | 0 |  | 🔧 decompiled |
-| 504・サブ－芦花の目覚めver1.00.ks.scn | 490 | 0 |  | 🔧 decompiled |
-| 505・サブ－ピンとくる２人ver1.00.ks.scn | 290 | 0 |  | 🔧 decompiled |
-| 506・サブ－恋愛協定ver1.00.ks.scn | 336 | 0 |  | 🔧 decompiled |
-| 507・サブ－選択肢ver1.00.ks.scn | 483 | 2 |  | 🔧 decompiled |
-| 508a・サブ－こはるんver1.00.ks.scn | 171 | 0 |  | 🔧 decompiled |
-| 508b・サブ－芦花姉ver1.00.ks.scn | 260 | 0 |  | 🔧 decompiled |
-| 509・サブ－分岐ver1.00.ks.scn | 213 | 0 |  | 🔧 decompiled |
-| 511・サブ－小春（初体験）ver1.00.ks.scn | 379 | 0 | 🔞 | 🔧 decompiled |
-| 512・サブ－小春（その後）ver1.00.ks.scn | 326 | 0 | 🔞 | 🔧 decompiled |
-| 521・サブ－芦花（初体験）ver1.00.ks.scn | 588 | 0 | 🔞 | 🔧 decompiled |
-| 522・サブ－芦花（その後）ver1.00.ks.scn | 268 | 0 | 🔞 | 🔧 decompiled |
+| 501・サブ－新たな日々ver1.00.ks.scn | 398 | 0 |  | ✅ verified |
+| 502・サブ－アルバイトver1.00.ks.scn | 397 | 0 |  | ✅ verified |
+| 503・サブ－小春の目覚めver1.00.ks.scn | 455 | 0 |  | ✅ verified |
+| 504・サブ－芦花の目覚めver1.00.ks.scn | 490 | 0 |  | ✅ verified |
+| 505・サブ－ピンとくる２人ver1.00.ks.scn | 290 | 0 |  | ✅ verified |
+| 506・サブ－恋愛協定ver1.00.ks.scn | 336 | 0 |  | ✅ verified |
+| 507・サブ－選択肢ver1.00.ks.scn | 483 | 2 |  | ✅ verified |
+| 508a・サブ－こはるんver1.00.ks.scn | 171 | 0 |  | ✅ verified |
+| 508b・サブ－芦花姉ver1.00.ks.scn | 260 | 0 |  | ✅ verified |
+| 509・サブ－分岐ver1.00.ks.scn | 213 | 0 |  | ✅ verified |
+| 511・サブ－小春（初体験）ver1.00.ks.scn | 379 | 0 | 🔞 | ✅ verified |
+| 512・サブ－小春（その後）ver1.00.ks.scn | 326 | 0 | 🔞 | ✅ verified |
+| 521・サブ－芦花（初体験）ver1.00.ks.scn | 588 | 0 | 🔞 | ✅ verified |
+| 522・サブ－芦花（その後）ver1.00.ks.scn | 268 | 0 | 🔞 | ✅ verified |
