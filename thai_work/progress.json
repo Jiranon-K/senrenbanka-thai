@@ -406,7 +406,7 @@
   "tr_total": 724
  },
  "415レナ・欠片吸収.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
