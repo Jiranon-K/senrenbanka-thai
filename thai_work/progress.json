@@ -476,7 +476,7 @@
   "tr_total": 488
  },
  "425レナ・呪いの真実.ks.scn": {
-  "packed": false,
+  "packed": true,
   "verified": false,
   "decompiled": true,
   "tr_filled": 0,
