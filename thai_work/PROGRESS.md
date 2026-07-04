@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**64/86 packed · 52 verified**
+**65/86 packed · 52 verified**
 
 
 ## Common  (13/13 packed)
@@ -78,7 +78,7 @@
 | 209・茉子－暴走改編ver1.01.ks.scn | 996 | 0 |  | ✅ verified |
 | 210・茉子－エピローグver1.00.ks.scn | 201 | 0 |  | ✅ verified |
 
-## Lena  (9/17 packed)
+## Lena  (10/17 packed)
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
@@ -91,7 +91,7 @@
 | 418レナ・馴染む.ks.scn | 700 | 0 |  | 📦 packed |
 | 419レナ・ラップランドの味覚.ks.scn | 636 | 0 |  | 📦 packed |
 | 420レナ・お泊まり会.ks.scn | 618 | 0 |  | 📦 packed |
-| 421レナ・玉石の女神.ks.scn | 465 | 0 |  | 🔧 decompiled |
+| 421レナ・玉石の女神.ks.scn | 465 | 0 |  | 📦 packed |
 | 422レナ・日常デート.ks.scn | 476 | 0 |  | 🔧 decompiled |
 | 423レナ・叢雲より生じたる.ks.scn | 819 | 0 |  | 🔧 decompiled |
 | 424レナ・トモダチ.ks.scn | 488 | 0 |  | 🔧 decompiled |
