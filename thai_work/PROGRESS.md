@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**72/86 packed · 52 verified**
+**72/86 packed · 72 verified**
 
 
 ## Common  (13/13 packed)
@@ -35,9 +35,9 @@
 | 107・芳乃－獣耳ver1.02.ks.scn | 810 | 0 |  | ✅ verified |
 | 108・芳乃－解呪ver1.01.ks.scn | 648 | 0 |  | ✅ verified |
 | 109・芳乃－平穏ver1.01.ks.scn | 318 | 0 |  | ✅ verified |
-| 110・芳乃－初体験ver1.01.ks.scn | 561 | 0 | 🔞 | 📦 packed |
-| 111・芳乃－その後ver1.01.ks.scn | 549 | 0 | 🔞 | 📦 packed |
-| 112・芳乃－２回目ver1.01.ks.scn | 178 | 0 | 🔞 | 📦 packed |
+| 110・芳乃－初体験ver1.01.ks.scn | 561 | 0 | 🔞 | ✅ verified |
+| 111・芳乃－その後ver1.01.ks.scn | 549 | 0 | 🔞 | ✅ verified |
+| 112・芳乃－２回目ver1.01.ks.scn | 178 | 0 | 🔞 | ✅ verified |
 | 113・芳乃－母上様ver1.01.ks.scn | 446 | 0 |  | ✅ verified |
 | 114・芳乃－ＥＰver1.01.ks.scn | 116 | 0 |  | ✅ verified |
 
@@ -82,23 +82,23 @@
 
 | file | lines | choices | H | status |
 |---|--:|--:|:-:|---|
-| 006・レナ登場ver1.03.ks.scn | 627 | 2 |  | 📦 packed |
-| 007・レナ転入ver1.03.ks.scn | 585 | 0 |  | 📦 packed |
-| 414レナ・イザナウ.ks.scn | 724 | 0 |  | 📦 packed |
-| 415レナ・欠片吸収.ks.scn | 451 | 0 |  | 📦 packed |
-| 416レナ・クレイジーファイト.ks.scn | 633 | 0 |  | 📦 packed |
-| 417レナ・エニシ.ks.scn | 818 | 0 |  | 📦 packed |
-| 418レナ・馴染む.ks.scn | 700 | 0 |  | 📦 packed |
-| 419レナ・ラップランドの味覚.ks.scn | 636 | 0 |  | 📦 packed |
-| 420レナ・お泊まり会.ks.scn | 618 | 0 |  | 📦 packed |
-| 421レナ・玉石の女神.ks.scn | 465 | 0 |  | 📦 packed |
-| 422レナ・日常デート.ks.scn | 476 | 0 |  | 📦 packed |
-| 423レナ・叢雲より生じたる.ks.scn | 819 | 0 |  | 📦 packed |
-| 424レナ・トモダチ.ks.scn | 488 | 0 |  | 📦 packed |
-| 425レナ・呪いの真実.ks.scn | 297 | 0 |  | 📦 packed |
-| 426レナ・前夜.ks.scn | 327 | 0 |  | 📦 packed |
-| 427レナ・古の祝詞.ks.scn | 627 | 0 |  | 📦 packed |
-| 428レナ・未来への祭祀.ks.scn | 163 | 0 |  | 📦 packed |
+| 006・レナ登場ver1.03.ks.scn | 627 | 2 |  | ✅ verified |
+| 007・レナ転入ver1.03.ks.scn | 585 | 0 |  | ✅ verified |
+| 414レナ・イザナウ.ks.scn | 724 | 0 |  | ✅ verified |
+| 415レナ・欠片吸収.ks.scn | 451 | 0 |  | ✅ verified |
+| 416レナ・クレイジーファイト.ks.scn | 633 | 0 |  | ✅ verified |
+| 417レナ・エニシ.ks.scn | 818 | 0 |  | ✅ verified |
+| 418レナ・馴染む.ks.scn | 700 | 0 |  | ✅ verified |
+| 419レナ・ラップランドの味覚.ks.scn | 636 | 0 |  | ✅ verified |
+| 420レナ・お泊まり会.ks.scn | 618 | 0 |  | ✅ verified |
+| 421レナ・玉石の女神.ks.scn | 465 | 0 |  | ✅ verified |
+| 422レナ・日常デート.ks.scn | 476 | 0 |  | ✅ verified |
+| 423レナ・叢雲より生じたる.ks.scn | 819 | 0 |  | ✅ verified |
+| 424レナ・トモダチ.ks.scn | 488 | 0 |  | ✅ verified |
+| 425レナ・呪いの真実.ks.scn | 297 | 0 |  | ✅ verified |
+| 426レナ・前夜.ks.scn | 327 | 0 |  | ✅ verified |
+| 427レナ・古の祝詞.ks.scn | 627 | 0 |  | ✅ verified |
+| 428レナ・未来への祭祀.ks.scn | 163 | 0 |  | ✅ verified |
 
 ## Sub  (0/14 packed)
 

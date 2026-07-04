@@ -83,7 +83,7 @@ python tools/rebuild_fonts.py      # แทนฟอนต์ใน data.xp3
 
 <!-- snapshot — สร้างใหม่ด้วย: python tools/track.py report  (ดูไฟล์เต็ม thai_work/PROGRESS.md) -->
 
-**72/86 packed · 52 verified**
+**72/86 packed · 72 verified**
 
 | Route | Packed | ไฟล์ |
 |---|--:|--:|
