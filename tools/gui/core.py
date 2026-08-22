@@ -189,6 +189,7 @@ class Plan:
     """สถานะของโฟลเดอร์เกมหนึ่งโฟลเดอร์ + สิ่งที่จะทำกับมัน"""
 
     # ไฟล์ที่แพตช์ R18 เอามาวาง — ปิดได้ด้วยการเปลี่ยนชื่อ (ไม่ลบ)
+    # ใช้เมื่อ manifest ไม่ได้บอกไว้ (ชุดติดตั้งที่ build ก่อน tools/targets.py)
     R18_FILES = ("adult.xp3", "adult2.xp3")
     OFF = ".off"
 
@@ -197,6 +198,10 @@ class Plan:
         self.res = res or resource_dir()
         self.manifest = load_manifest(self.res)
         self.targets = [Target(self.game_dir, s) for s in self.manifest["targets"]]
+        # ตารางเดียวกับที่ build_release.py ใช้เขียน install.bat (tools/targets.py)
+        # เดิม hardcode ไว้ในไฟล์นี้ ไม่มีใครยืนยันได้ว่าตรงกับฝั่ง .bat ไหม
+        self.r18_files = tuple(self.manifest.get("disable_on_all_ages")
+                               or self.R18_FILES)
         self.include_r18 = include_r18
         self.verified = False
 
@@ -218,7 +223,7 @@ class Plan:
         """
         ts = [t for t in self.targets if t.present]
         if not self.include_r18:
-            ts = [t for t in ts if t.name not in self.R18_FILES]
+            ts = [t for t in ts if t.name not in self.r18_files]
         return ts
 
     @property
@@ -235,13 +240,13 @@ class Plan:
         """
         if self.include_r18 or not self.r18_available:
             return []
-        return [f for f in self.R18_FILES
+        return [f for f in self.r18_files
                 if os.path.isfile(os.path.join(self.game_dir, f))]
 
     @property
     def disabled_now(self) -> list[str]:
         """ไฟล์ R18 ที่ถูกปิดไว้อยู่ตอนนี้"""
-        return [f for f in self.R18_FILES
+        return [f for f in self.r18_files
                 if os.path.isfile(os.path.join(self.game_dir, f + self.OFF))]
 
     @property

@@ -61,13 +61,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import paths as P                                             # noqa: E402
-
-# (ชื่อ diff, ไฟล์ต้นฉบับ, ไฟล์ที่แปะไทยแล้ว, จำเป็นไหม, ป้ายไทย)
-TARGETS = [
-    ("thai-patch.xdelta", "patch.xp3.bak",  "patch.xp3",  True,  "บทพูด (all-ages)"),
-    ("thai-data.xdelta",  "data.xp3.bak",   "data.xp3",   True,  "ฟอนต์ Sarabun"),
-    ("thai-adult.xdelta", "adult.xp3.orig", "adult.xp3",  False, "บทพูดฝั่ง R18"),
-]
+import targets as T                                           # noqa: E402
 
 
 def sha256(path):
@@ -116,7 +110,7 @@ if not exist "SenrenBanka.exe" (
     echo วิธีหาโฟลเดอร์เกม: Steam ^> คลิกขวาที่เกม ^> Manage ^> Browse local files
     goto :fail
 )
-for %%F in (xdelta3.exe thai-patch.xdelta thai-data.xdelta thai-adult.xdelta) do (
+for %%F in (__DELTAS__) do (
     if not exist "%%F" (
         echo [ERROR] ไม่พบไฟล์ %%F - แตกซิปไม่ครบ
         echo แตกไฟล์ zip ให้ครบทุกไฟล์ก่อน อย่าลากมาแค่ install.bat
@@ -236,9 +230,7 @@ goto :fail
 :rollback
 echo.
 echo [ERROR] แปะแพตช์ไม่สำเร็จ - กำลังคืนไฟล์ต้นฉบับ...
-if exist "patch.xp3.bak" (del /q "patch.xp3" 2>nul & move /y "patch.xp3.bak" "patch.xp3" >nul)
-if exist "data.xp3.bak"  (del /q "data.xp3"  2>nul & move /y "data.xp3.bak"  "data.xp3"  >nul)
-if exist "adult.xp3.bak" (del /q "adult.xp3" 2>nul & move /y "adult.xp3.bak" "adult.xp3" >nul)
+__ROLLBACK__
 echo คืนไฟล์ต้นฉบับเรียบร้อย เกมยังเล่นได้ปกติ
 echo.
 echo สาเหตุที่เป็นไปได้: พื้นที่ดิสก์ไม่พอ ^(ต้องว่างอย่างน้อย 3 GB^) หรือไฟล์แพตช์เสีย
@@ -270,9 +262,7 @@ echo ============================================
 echo.
 
 set "FOUND=0"
-if exist "patch.xp3.bak" set "FOUND=1"
-if exist "data.xp3.bak"  set "FOUND=1"
-if exist "adult.xp3.bak" set "FOUND=1"
+__UNINSTALL_FOUND__
 
 if "%FOUND%"=="0" (
     echo [SKIP] ไม่พบไฟล์สำรอง .bak - ยังไม่เคยติดตั้ง หรือถอดไปแล้ว
@@ -280,9 +270,7 @@ if "%FOUND%"=="0" (
 )
 
 echo กำลังคืนไฟล์ต้นฉบับ...
-if exist "patch.xp3.bak" (del /q "patch.xp3" 2>nul & move /y "patch.xp3.bak" "patch.xp3" >nul & echo       - patch.xp3  คืนแล้ว)
-if exist "data.xp3.bak"  (del /q "data.xp3"  2>nul & move /y "data.xp3.bak"  "data.xp3"  >nul & echo       - data.xp3   คืนแล้ว)
-if exist "adult.xp3.bak" (del /q "adult.xp3" 2>nul & move /y "adult.xp3.bak" "adult.xp3" >nul & echo       - adult.xp3  คืนแล้ว ^(ฉาก R18 ยังอยู่ครบ แค่กลับเป็นภาษาเดิม^))
+__UNINSTALL_RESTORE__
 
 echo.
 echo ============================================
@@ -415,17 +403,17 @@ def main():
     print("output   : %s\n" % out)
 
     hashes, present = {}, []
-    for name, orig, thai, required, label in TARGETS:
-        po, pt = os.path.join(game, orig), os.path.join(game, thai)
+    for t in T.TARGETS:
+        po, pt = os.path.join(game, t.orig), os.path.join(game, t.file)
         if not (os.path.isfile(po) and os.path.isfile(pt)):
-            if required:
-                sys.exit("ไม่พบ %s หรือ %s ในโฟลเดอร์เกม" % (orig, thai))
-            print("[skip]   %-20s ไม่มี %s -> ข้าม" % (name, orig))
+            if t.required:
+                sys.exit("ไม่พบ %s หรือ %s ในโฟลเดอร์เกม" % (t.orig, t.file))
+            print("[skip]   %-20s ไม่มี %s -> ข้าม" % (t.delta, t.orig))
             continue
 
-        delta = os.path.join(out, name)
+        delta = os.path.join(out, t.delta)
         if not (a.reuse and os.path.isfile(delta)):
-            print("[encode] %-20s %s" % (name, label))
+            print("[encode] %-20s %s" % (t.delta, t.label))
             run(xd, "-e", "-f", "-9", "-B", "1073741824", "-s", po, pt, delta)
 
         # ตรวจย้อนกลับ: decode แล้วต้องได้ไฟล์เดิมเป๊ะ ไม่ผ่าน = ไม่ปล่อย
@@ -434,53 +422,60 @@ def main():
         h_orig, h_thai, h_rt = sha256(po), sha256(pt), sha256(tmp)
         os.remove(tmp)
         if h_rt != h_thai:
-            sys.exit("ตรวจย้อนกลับไม่ผ่าน: %s (decode แล้วได้ไฟล์ไม่ตรง)" % name)
+            sys.exit("ตรวจย้อนกลับไม่ผ่าน: %s (decode แล้วได้ไฟล์ไม่ตรง)" % t.delta)
         print("         %-20s %8.1f MB  roundtrip ตรง"
-              % (name, os.path.getsize(delta) / 2 ** 20))
+              % (t.delta, os.path.getsize(delta) / 2 ** 20))
 
-        hashes[thai] = (h_orig, h_thai)
-        present.append((name, orig, thai, label, required))
+        hashes[t.file] = (h_orig, h_thai)
+        present.append(t)
 
     shutil.copy2(xd, os.path.join(out, "xdelta3.exe"))
 
-    # manifest.json — source of truth เดียวกับที่ install.bat ฝัง hash ไว้
-    # ตัว GUI (tools/gui/) อ่านไฟล์นี้ จะได้ไม่มีทางหลุด sync กับ .bat
+    # manifest.json — ตาราง target + แฮชจริง ที่ตัวติดตั้ง GUI อ่าน
+    # ทั้งไฟล์นี้และ .bat งอกจาก tools/targets.py ตัวเดียวกัน
     manifest = {
         "version": a.version,
         "product": "Senren Banka — แพตช์แปลไทย",
         "repo": "https://github.com/Jiranon-K/senrenbanka-thai",
         "coverage": a.coverage,
+        # ไฟล์ R18 ที่ต้อง "ปิด" เมื่อผู้เล่นเลือก all-ages — เดิม core.py
+        # hardcode ไว้เอง ทำให้ไม่มีใครยืนยันได้ว่าตรงกับตารางนี้ไหม
+        "disable_on_all_ages": T.DISABLE_ON_ALL_AGES,
         "targets": [
             {
-                "file": thai,
-                "delta": name,
-                "label": label,
-                "required": req,
-                "sha_orig": hashes[thai][0],
-                "sha_thai": hashes[thai][1],
-                "delta_size": os.path.getsize(os.path.join(out, name)),
+                "file": t.file,
+                "delta": t.delta,
+                "label": t.label,
+                "required": t.required,
+                "r18": t.r18,
+                "sha_orig": hashes[t.file][0],
+                "sha_thai": hashes[t.file][1],
+                "delta_size": os.path.getsize(os.path.join(out, t.delta)),
             }
-            for name, _o, thai, label, req in present
+            for t in present
         ],
     }
     with open(os.path.join(out, "manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
 
-    def h(f, i):
-        return hashes[f][i] if f in hashes else "0" * 64
+    # เพิ่ม target แล้วลืมแก้ .bat = build ไม่ผ่าน ดีกว่าปล่อยแพตช์ครึ่งเดียว
+    T.check_bat_mentions_every_target(INSTALL_BODY, "install.bat")
+    T.check_bat_mentions_every_target(UNINSTALL_BODY, "uninstall.bat")
 
-    sets = "\n".join([
-        'set "ORIG_PATCH=%s"' % h("patch.xp3", 0), 'set "THAI_PATCH=%s"' % h("patch.xp3", 1),
-        'set "ORIG_DATA=%s"'  % h("data.xp3", 0),  'set "THAI_DATA=%s"'  % h("data.xp3", 1),
-        'set "ORIG_ADULT=%s"' % h("adult.xp3", 0), 'set "THAI_ADULT=%s"' % h("adult.xp3", 1),
-    ])
+    def fill(body):
+        return (body.replace("__VER__", a.version)
+                    .replace("__DELTAS__", T.bat_required_files())
+                    .replace("__ROLLBACK__", T.bat_rollback())
+                    .replace("__UNINSTALL_FOUND__", T.bat_uninstall_found())
+                    .replace("__UNINSTALL_RESTORE__", T.bat_uninstall_restore()))
+
     # bom=False สำคัญมาก — ดู "หมายเหตุเรื่อง encoding ของ .bat" ด้านบน
     write_text(os.path.join(out, "install.bat"),
-               (BAT_HEAD % ("Installer", a.version)) + "\n" + sets + "\n"
-               + INSTALL_BODY.replace("__VER__", a.version), bom=False)
+               (BAT_HEAD % ("Installer", a.version)) + "\n"
+               + T.bat_hash_vars(hashes) + "\n" + fill(INSTALL_BODY), bom=False)
     write_text(os.path.join(out, "uninstall.bat"),
-               (BAT_HEAD % ("Uninstaller", a.version))
-               + UNINSTALL_BODY.replace("__VER__", a.version), bom=False)
+               (BAT_HEAD % ("Uninstaller", a.version)) + fill(UNINSTALL_BODY),
+               bom=False)
     write_text(os.path.join(out, "README.txt"),
                README.replace("__VER__", a.version).replace("__COVERAGE__", a.coverage))
 
@@ -492,11 +487,11 @@ def main():
 
     lines = ["Senren Banka Thai patch v%s - SHA256" % a.version, "",
              "ไฟล์เกมที่รองรับ (ก่อนแปะแพตช์):"]
-    for _, _orig, thai, _lbl, _req in present:
-        lines.append("  %-14s %s" % (thai, hashes[thai][0]))
+    for t in present:
+        lines.append("  %-14s %s" % (t.file, hashes[t.file][0]))
     lines += ["", "ไฟล์เกมหลังแปะแพตช์:"]
-    for _, _orig, thai, _lbl, _req in present:
-        lines.append("  %-14s %s" % (thai, hashes[thai][1]))
+    for t in present:
+        lines.append("  %-14s %s" % (t.file, hashes[t.file][1]))
     lines += ["", "ไฟล์ในชุดติดตั้ง:"]
     for f in sorted(os.listdir(out)):
         p = os.path.join(out, f)
