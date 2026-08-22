@@ -604,12 +604,19 @@ def test_flow(inst):
     inst.show("working")
     inst.progress(0, "เตรียมการ", jump=True)
     chk("เริ่มงานใหม่ เปอร์เซ็นต์กลับไป 0 ทันที", inst.w_pct.cget("text"), "0%")
-    inst.progress(64, inst.stage_text("stage.apply:patch.xp3"))
+    inst.progress(64, inst.step_text(core.Step(core.Step.APPLY, "patch.xp3")))
     settle(inst)
     chk("เปอร์เซ็นต์ขึ้นถูก", inst.w_pct.cget("text"), "64%")
     chk("แถบกับตัวเลขเป็นค่าเดียวกันเสมอ", round(inst.w_bar.value), 64)
     chk_true("ข้อความขั้นตอนแปลเป็นไทย",
              inst.w_stage.cget("text").startswith("แปะแพตช์ patch.xp3"))
+    # ทุก kind ต้องมีคำแปล ไม่มีตัวไหนหลุดออกมาเป็นโค้ดดิบให้ผู้ใช้เห็น
+    kinds = [core.Step.HASH, core.Step.BACKUP, core.Step.APPLY,
+             core.Step.DISABLE, core.Step.RESTORE, core.Step.DONE]
+    chk("core.Step ทุกแบบมีข้อความไทย",
+        [k for k in kinds if inst.step_text(core.Step(k, "x.xp3")) in (k, "")], [])
+    chk("ไม่เหลือ %s ค้างในข้อความ",
+        [k for k in kinds if "%s" in inst.step_text(core.Step(k, "x.xp3"))], [])
     inst.job = None
 
     inst.goto_done(True, "ติดตั้งสำเร็จ", "…")

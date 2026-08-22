@@ -84,15 +84,20 @@ def full_cycle(name, mode):
     chk("verify", p.verify(), "ready")
     print("          (verify %.1fs)" % (time.time() - t0))
 
-    stages = []
+    steps = []
     t0 = time.time()
-    p.install(progress=lambda f, s: stages.append(s))
+    p.install(progress=lambda f, s: steps.append(s))
     print("          (install %.1fs)" % (time.time() - t0))
     chk("หลังติดตั้ง = ไฟล์ไทย", hashes(p), expect(p, "thai"))
     chk("มี .bak ครบ", all(os.path.isfile(t.bak) for t in p.active), True)
-    chk("รายงาน stage ครบทุกไฟล์",
-        sorted({s.split(":", 1)[1] for s in stages if s.startswith("stage.apply:")}),
+    chk("รายงาน step ครบทุกไฟล์",
+        sorted({s.file for s in steps if s.kind == core.Step.APPLY}),
         sorted(t.name for t in p.active))
+    # ลำดับต้องเป็น backup ก่อนเสมอ แล้วปิดท้ายด้วย done — ไม่งั้นแปลว่า
+    # มีไฟล์ถูกแตะก่อนสำรอง ซึ่งคือกรณีที่กู้คืนไม่ได้
+    kinds = [s.kind for s in steps]
+    chk("เริ่มด้วย backup", kinds[0], core.Step.BACKUP)
+    chk("จบด้วย done", kinds[-1], core.Step.DONE)
 
     p2 = core.Plan(d)
     chk("ตรวจซ้ำ -> installed", p2.verify(), "installed")

@@ -61,6 +61,17 @@ FOOTER = {
 # บอกให้ครบว่า "ใครทำ" กับ "ไม่ใช่ของใคร" ในบรรทัดเดียว โดยไม่ใส่ชื่อคนแปล
 CREDIT = "งานแปลโดยแฟนเกม · ไม่ใช่ฉบับทางการ"
 
+# core.Step -> ข้อความในแถบสถานะ ("%s" = ชื่อไฟล์)
+# core ไม่รู้จักภาษาไทยสักคำ คำที่ผู้ใช้อ่านอยู่ที่นี่ที่เดียว
+STEP_TEXT = {
+    core.Step.HASH:    "ตรวจ %s",
+    core.Step.BACKUP:  "สำรองไฟล์ต้นฉบับ",
+    core.Step.APPLY:   "แปะแพตช์ %s",
+    core.Step.DISABLE: "ปิด %s (เปลี่ยนชื่อเป็น .off)",
+    core.Step.RESTORE: "คืนไฟล์ต้นฉบับ %s",
+    core.Step.DONE:    "เสร็จสิ้น",
+}
+
 
 def mb(n: int) -> str:
     if not n:
@@ -538,20 +549,22 @@ class Installer:
         if stage is not None:
             self.w_stage.config(text=stage)
 
-    def stage_text(self, s: str) -> str:
-        if s == "stage.backup":
-            return "สำรองไฟล์ต้นฉบับ"
-        if s == "stage.done":
-            return "เสร็จสิ้น"
-        if s.startswith("stage.apply:"):
-            f = s[12:]
-            t = next((t for t in (self.plan.targets if self.plan else []) if t.name == f), None)
-            return "แปะแพตช์ %s%s" % (f, " — " + t.label if t else "")
-        if s.startswith("stage.disable:"):
-            return "ปิด " + s[14:] + " (เปลี่ยนชื่อเป็น .off)"
-        if s.startswith("stage.restore:"):
-            return "คืนไฟล์ต้นฉบับ " + s[14:]
-        return s
+    def step_text(self, step: core.Step) -> str:
+        """core.Step -> ข้อความไทยที่ผู้ใช้เห็น
+
+        ข้อความทุกบรรทัดที่โผล่ในแถบสถานะอยู่ในตาราง STEP_TEXT ตัวเดียว
+        แก้คำหรือเพิ่มภาษาได้โดยไม่ต้องแตะ core.py เลย
+        """
+        text = STEP_TEXT.get(step.kind, step.kind)
+        if "%s" not in text:
+            return text
+        name = step.file
+        if step.kind == core.Step.APPLY:
+            t = next((t for t in (self.plan.targets if self.plan else [])
+                      if t.name == name), None)
+            if t:
+                name += " — " + t.label      # "patch.xp3 — บทพูด (all-ages)"
+        return text % name
 
     def fail(self, title, sub, detail=""):
         self.busy = False
@@ -662,8 +675,8 @@ class Installer:
 
         def job():
             status = p.verify(
-                progress=lambda f, name: self.post(
-                    lambda: self.progress(round(f * 100), "ตรวจ " + name)),
+                progress=lambda f, s: self.post(
+                    lambda: self.progress(round(f * 100), self.step_text(s))),
                 cancel=self.cancel.is_set)
             self.post(lambda: self.on_verified(status))
         self.work(job)
@@ -792,7 +805,7 @@ class Installer:
         def job():
             p.install(
                 progress=lambda f, s: self.post(
-                    lambda: self.progress(round(f * 100), self.stage_text(s))),
+                    lambda: self.progress(round(f * 100), self.step_text(s))),
                 cancel=self.cancel.is_set)
             r18 = p.r18_available and p.include_r18
             self.post(lambda: self.goto_done(
@@ -812,8 +825,8 @@ class Installer:
 
         def job():
             restored = p.uninstall(
-                progress=lambda f, name: self.post(
-                    lambda: self.progress(round(f * 100), "คืนไฟล์ต้นฉบับ " + name)))
+                progress=lambda f, s: self.post(
+                    lambda: self.progress(round(f * 100), self.step_text(s))))
             self.post(lambda: self.goto_done(
                 False, "ถอดแพตช์แล้ว", "คืนไฟล์ต้นฉบับเรียบร้อย: " + ", ".join(restored)))
         self.work(job)

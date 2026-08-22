@@ -30,6 +30,7 @@ import subprocess
 import sys
 import threading
 import time
+from dataclasses import dataclass
 
 CHUNK = 1 << 22  # 4 MiB
 
@@ -142,6 +143,31 @@ class Aborted(Exception):
     """ผู้ใช้กดยกเลิก"""
 
 
+@dataclass(frozen=True)
+class Step:
+    """เหตุการณ์หนึ่งก้าวระหว่าง verify / install / uninstall
+
+    ทั้งสามเมธอดรายงานความคืบหน้าด้วย `progress(สัดส่วน, Step)` เหมือนกันหมด
+
+    เดิมทั้งสามส่งคนละแบบ: verify กับ uninstall ส่งชื่อไฟล์เปล่าๆ ส่วน install
+    ส่งโทเคน "stage.apply:patch.xp3" ที่ฝั่ง UI ต้องเอาไป parse ด้วย s[12:]
+    (นับความยาว prefix เอาเอง) ผลคือมีสาขา "stage.restore:" ค้างอยู่ใน UI
+    ที่ไม่มีวันถูกเรียก เพราะ uninstall ไม่เคยส่งโทเคนนั้นออกมาเลย
+
+    core ไม่รู้จักภาษาไทยสักคำ — ข้อความที่ผู้ใช้เห็นอยู่ในตารางเดียวใน app.py
+    """
+
+    HASH = "hash"           # กำลังคำนวณ SHA256 ของไฟล์
+    BACKUP = "backup"       # กำลังเปลี่ยนชื่อไฟล์ต้นฉบับเป็น .bak
+    APPLY = "apply"         # กำลังแปะ diff ลงไฟล์
+    DISABLE = "disable"     # กำลังปิดไฟล์ R18 (เปลี่ยนชื่อเป็น .off)
+    RESTORE = "restore"     # กำลังคืนไฟล์ต้นฉบับ
+    DONE = "done"
+
+    kind: str
+    file: str = ""
+
+
 class Target:
     """ไฟล์เกมหนึ่งไฟล์ที่แพตช์แตะ"""
 
@@ -245,6 +271,7 @@ class Plan:
         """คำนวณ SHA256 ทุกไฟล์ที่เกี่ยวข้อง แล้วสรุปสถานะรวม
 
         คืน: "ready" | "installed" | "unsupported"
+        progress(สัดส่วน, Step)
         """
         total = sum(t.size for t in self.active) or 1
         done = 0
@@ -256,7 +283,7 @@ class Plan:
                     raise Aborted()
                 done += n
                 if progress:
-                    progress(done / total, _t.name)
+                    progress(done / total, Step(Step.HASH, _t.name))
 
             h = sha256(t.path, bump)
             if h == t.thai:
@@ -281,7 +308,7 @@ class Plan:
     def install(self, progress=None, cancel=None):
         """rename -> xdelta -> ล้มเมื่อไหร่คืนทุกอย่าง
 
-        progress(fraction, stage_text)
+        progress(สัดส่วน, Step)
         """
         assert self.verified, "ต้อง verify() ก่อน install()"
         targets = self.active
@@ -308,7 +335,7 @@ class Plan:
 
         try:
             if progress:
-                progress(0.0, "stage.backup")
+                progress(0.0, Step(Step.BACKUP))
             for t in targets:
                 if cancel and cancel():
                     raise Aborted()
@@ -319,22 +346,22 @@ class Plan:
                 if cancel and cancel():
                     raise Aborted()
                 base = done
+                step = Step(Step.APPLY, t.name)
                 if progress:
-                    progress(base / total, "stage.apply:" + t.name)
-                self._decode(t, lambda n: progress and progress(min(1.0, (base + n) / total),
-                                                               "stage.apply:" + t.name),
-                             cancel)
+                    progress(base / total, step)
+                self._decode(t, lambda n: progress and progress(
+                    min(1.0, (base + n) / total), step), cancel)
                 done += t.size
 
             for f in self.disable_list:
                 if progress:
-                    progress(1.0, "stage.disable:" + f)
+                    progress(1.0, Step(Step.DISABLE, f))
                 os.replace(os.path.join(self.game_dir, f),
                            os.path.join(self.game_dir, f + self.OFF))
                 turned_off.append(f)
 
             if progress:
-                progress(1.0, "stage.done")
+                progress(1.0, Step(Step.DONE))
         except BaseException:
             rollback()
             raise
@@ -377,6 +404,7 @@ class Plan:
 
     # ---- ถอน ----
     def uninstall(self, progress=None):
+        """คืนไฟล์ต้นฉบับทั้งหมด — progress(สัดส่วน, Step)"""
         restored = []
         items = [t.name for t in self.targets if os.path.isfile(t.bak)]
         items += self.disabled_now
@@ -392,7 +420,7 @@ class Plan:
                            os.path.join(self.game_dir, name))
             restored.append(name)
             if progress:
-                progress((i + 1) / len(items), name)
+                progress((i + 1) / len(items), Step(Step.RESTORE, name))
         return restored
 
 
