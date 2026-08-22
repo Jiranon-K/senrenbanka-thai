@@ -65,8 +65,12 @@ class Installer:
         self.root.title("Senren Banka — แพตช์แปลไทย")
         self.root.configure(bg=T.BG)
         self.root.resizable(False, False)
-        self._center(T.S(WIN_W), T.S(WIN_H))
         self._set_icon()
+        # ต้องถอดแถบหัวออก **ก่อน** ตั้ง geometry: Tk คิดขนาดหน้าต่างจาก
+        # "พื้นที่ใน + ขนาดกรอบ" ถ้าตั้งตอนยังมีกรอบแล้วค่อยถอด หน้าต่างจะ
+        # ใหญ่เกินไป 16x39 px (ขนาดกรอบเดิม)
+        T.strip_caption(self.root)
+        self._center(T.S(WIN_W), T.S(WIN_H))
 
         self.q: queue.Queue = queue.Queue()
         self.cancel = threading.Event()
@@ -76,9 +80,12 @@ class Installer:
         self.job: str | None = None
         self.busy = False
         self.installed = False
+        self.r18_locked = False    # adult.xp3 เป็น build ที่ไม่รองรับ -> ลงได้แค่ all-ages
+        self.w_r18_row = None
         self._debounce = None
 
         self._build()
+        self._fix_size()
         self.root.after(40, self._pump)
         self.root.after(0, self.boot)
 
@@ -86,6 +93,20 @@ class Installer:
     def _center(self, w, h):
         sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
         self.root.geometry("%dx%d+%d+%d" % (w, h, (sw - w) // 2, (sh - h) // 3))
+
+    def _fix_size(self):
+        """บังคับให้หน้าต่างเท่าขนาดในดีไซน์เป๊ะ
+
+        Tk จำ "ขนาดกรอบ" ไว้ตั้งแต่ตอน map หน้าต่างครั้งแรก การถอด WS_CAPTION/
+        WS_THICKFRAME ทีหลังไม่ล้างค่าที่จำไว้ หน้าต่างเลยกว้างเกินมา 16 px
+        วัดแล้วหักออกครั้งเดียวจบ ไม่ต้องเดาว่ากรอบของ Windows รุ่นไหนกว้างเท่าไร
+        """
+        self.root.update_idletasks()
+        dw = self.root.winfo_width() - T.S(WIN_W)
+        dh = self.root.winfo_height() - T.S(WIN_H)
+        if dw or dh:
+            self.root.geometry("%dx%d" % (T.S(WIN_W) - dw, T.S(WIN_H) - dh))
+            self.root.update_idletasks()
 
     def _set_icon(self):
         import tempfile
@@ -132,23 +153,38 @@ class Installer:
 
     # ------------------------------------------------------------ โครงจอ
     def _build(self):
-        r = self.root
+        # กรอบ 1px รอบหน้าต่าง — ในดีไซน์คือ border: 1px solid rgba(43,33,27,.35)
+        # จำเป็นเมื่อไม่มีแถบหัวของระบบ ไม่งั้นหน้าต่างจะกลืนกับพื้นหลังสีขาว
+        r = tk.Frame(self.root, bg=T.BG, highlightthickness=1,
+                     highlightbackground=T.BORDER, highlightcolor=T.BORDER)
+        r.pack(fill="both", expand=True)
+        self.shell = r
         r.grid_rowconfigure(1, weight=1)
         r.grid_columnconfigure(0, weight=1)
 
-        # ── แถบหัว: เครื่องหมาย + ชื่อ + เวอร์ชัน
+        # ── แถบหัวที่วาดเอง: เครื่องหมาย + ชื่อ + เวอร์ชัน + ย่อ/ปิด
         head = tk.Frame(r, bg=T.BG, height=T.S(44))
         head.grid(row=0, column=0, sticky="ew")
         head.grid_propagate(False)
-        tk.Frame(head, bg=T.ACCENT, width=T.S(18), height=T.S(18)).place(
-            x=T.S(14), y=T.S(13))
-        W.label(head, "Senren Banka — แพตช์แปลไทย", 13, bold=True).place(
-            x=T.S(42), y=T.S(12))
+        mark = tk.Frame(head, bg=T.ACCENT, width=T.S(18), height=T.S(18))
+        mark.place(x=T.S(14), y=T.S(13))
+        title = W.label(head, "Senren Banka — แพตช์แปลไทย", 13, bold=True)
+        title.place(x=T.S(42), y=T.S(12))
         self.w_version = W.label(head, "", 12, fg=T.TEXT_55)
-        self.w_version.place(x=T.S(42), y=T.S(12))     # ย้ายจริงหลังรู้ความกว้างชื่อ
         head.update_idletasks()
-        self.w_version.place(x=T.S(42) + head.winfo_children()[1].winfo_reqwidth() + T.S(8),
-                             y=T.S(13))
+        self.w_version.place(x=T.S(42) + title.winfo_reqwidth() + T.S(8), y=T.S(13))
+
+        wb = tk.Frame(head, bg=T.BG)
+        wb.place(relx=1.0, x=0, y=0, anchor="ne", relheight=1.0)
+        self.b_min = W.WindowButton(wb, "minimize", self.root.iconify)
+        self.b_close = W.WindowButton(wb, "close", self.on_cancel, danger=True)
+        self.b_min.pack(side="left")
+        self.b_close.pack(side="left")
+
+        # ลากหน้าต่างจากแถบหัว (เว้นปุ่ม) เหมือนแถบหัวของระบบ
+        for w in (head, mark, title, self.w_version):
+            w.bind("<ButtonPress-1>", self._drag_start)
+            w.bind("<B1-Motion>", self._drag_move)
 
         body = tk.Frame(r, bg=T.BG)
         body.grid(row=1, column=0, sticky="nsew")
@@ -168,8 +204,8 @@ class Installer:
             lab = W.label(row, name, 13, fg=T.TEXT_42)
             lab.pack(side="left", padx=(T.S(12), 0))
             self.w_steps.append((rule, lab))
-        W.label(rail, "แปลไทยโดย Jiranon-K\nงานแปลแฟน ไม่เป็นทางการ",
-                11, fg=T.TEXT_45).place(x=T.S(26), y=T.S(WIN_H - 44 - 74 - 46))
+        W.label(rail, "งานแปลไม่เป็นทางการ",
+                11, fg=T.TEXT_45).place(x=T.S(26), y=T.S(WIN_H - 44 - 74 - 32))
 
         main = tk.Frame(body, bg=T.BG)
         main.grid(row=0, column=1, sticky="nsew")
@@ -210,6 +246,16 @@ class Installer:
         self.b_primary.pack(side="left")
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_cancel)
+        self.root.bind("<Escape>", lambda _e: self.on_cancel())
+
+    # ------------------------------------------------- ลากหน้าต่างจากแถบหัว
+    def _drag_start(self, e):
+        self._drag = (e.x_root - self.root.winfo_x(), e.y_root - self.root.winfo_y())
+
+    def _drag_move(self, e):
+        if not getattr(self, "_drag", None):
+            return
+        self.root.geometry("+%d+%d" % (e.x_root - self._drag[0], e.y_root - self._drag[1]))
 
     # ------------------------------------------------------------- แต่ละหน้า
     def _screen_locate(self, parent):
@@ -336,6 +382,8 @@ class Installer:
             f = s[12:]
             t = next((t for t in (self.plan.targets if self.plan else []) if t.name == f), None)
             return "แปะแพตช์ %s%s" % (f, " — " + t.label if t else "")
+        if s.startswith("stage.disable:"):
+            return "ปิด " + s[14:] + " (เปลี่ยนชื่อเป็น .off)"
         if s.startswith("stage.restore:"):
             return "คืนไฟล์ต้นฉบับ " + s[14:]
         return s
@@ -460,12 +508,18 @@ class Installer:
         p = self.plan
         if status == "unsupported":
             bad = p.unsupported_files()
+            if bad == ["adult.xp3"]:
+                # เฉพาะ adult.xp3 ที่ build ไม่ตรง — patch.xp3/data.xp3 ยังแปะได้
+                # จึงยังลงเวอร์ชัน all-ages ได้ ดีกว่าบอกว่า "ลงไม่ได้" แล้วจบ
+                p.include_r18 = False
+                self.r18_locked = True
+                self.render_components()
+                self.show("components")
+                return
             self.fail(
                 "เวอร์ชันเกมไม่ตรงกับแพตช์นี้",
-                "ไฟล์ที่ไม่ตรง: %s — %s ไฟล์เกมยังไม่ถูกแก้ไข ปลอดภัย"
-                % (", ".join(bad),
-                   "แปลว่าใช้แพตช์ R18 คนละ build กัน" if "adult.xp3" in bad
-                   else "สาเหตุที่พบบ่อยคือ Steam อัปเดตเกมมาใหม่"))
+                "ไฟล์ที่ไม่ตรง: %s — สาเหตุที่พบบ่อยคือ Steam อัปเดตเกมมาใหม่ "
+                "ไฟล์เกมยังไม่ถูกแก้ไข ปลอดภัย" % ", ".join(bad))
         elif status == "installed":
             self.goto_done(
                 p.has_backups, "ติดตั้งแพตช์ไทยไว้แล้ว",
@@ -478,21 +532,76 @@ class Installer:
             self.show("components")
 
     def render_components(self):
+        """แถวรายการ + ตัวเลือกเดียวที่เลือกได้จริง: จะเอาฉาก R18 ด้วยไหม
+
+        ไฟล์บทพูดกับฟอนต์ล็อกไว้ ติ๊กออกไม่ได้ — ไม่ใช่ตัวเลือก แต่เป็นของที่ต้องมี
+        """
         for w in self.w_comps.winfo_children():
             w.destroy()
-        rows = [t for t in self.plan.targets if t.present]
-        for t in rows:
-            row = tk.Frame(self.w_comps, bg=T.BG, width=T.S(CONTENT_W), height=T.S(33))
-            row.pack(anchor="w")
-            row.pack_propagate(False)
+        p = self.plan
+
+        def row_frame():
+            f = tk.Frame(self.w_comps, bg=T.BG, width=T.S(CONTENT_W), height=T.S(33))
+            f.pack(anchor="w")
+            f.pack_propagate(False)
+            return f
+
+        for t in p.targets:
+            if not t.present or t.name == "adult.xp3":
+                continue
+            row = row_frame()
             W.CheckMark(row, on=True).pack(side="left")
             W.label(row, "%s — %s" % (t.label, t.name), 13.5).pack(
                 side="left", padx=(T.S(12), 0))
             W.label(row, mb(t.size), 12, fg=T.TEXT_50).pack(side="right")
-        skipped = [t.name for t in self.plan.targets if not t.present]
-        self.w_comps_foot.config(
-            text=("ข้าม %s (ไม่มีในเครื่องนี้)" % ", ".join(skipped)) if skipped else
-            "ทุกไฟล์ต้องแปะพร้อมกัน — แปะไม่ครบเกมจะกลับไปขึ้นภาษาจีนโดยไม่แจ้งเตือน")
+
+        self.w_r18_row = None
+        if p.r18_available:
+            adult = next(t for t in p.targets if t.name == "adult.xp3")
+            row = row_frame()
+            box = W.CheckMark(row, on=p.include_r18, command=self.toggle_r18)
+            box.pack(side="left")
+            lab = W.label(row, "ฉาก R18 — adult.xp3", 13.5)
+            lab.pack(side="left", padx=(T.S(12), 0))
+            size = W.label(row, mb(adult.size), 12, fg=T.TEXT_50)
+            size.pack(side="right")
+            for w in (lab, row):
+                w.bind("<Button-1>", lambda _e: self.toggle_r18())
+            self.w_r18_row = (box, lab, size)
+        self._render_r18_state()
+
+    def _render_r18_state(self):
+        p = self.plan
+        if self.w_r18_row:
+            box, lab, size = self.w_r18_row
+            box.set(p.include_r18)
+            fg = T.TEXT if p.include_r18 else T.TEXT_42
+            lab.config(fg=fg)
+            size.config(fg=T.TEXT_50 if p.include_r18 else T.TEXT_42)
+
+        if not p.r18_available:
+            self.w_comps_foot.config(
+                text="เครื่องนี้ไม่ได้ลงแพตช์ R18 — ติดตั้งเป็นเวอร์ชัน all-ages")
+        elif self.r18_locked:
+            self.w_comps_foot.config(
+                text="adult.xp3 ในเครื่องนี้เป็นแพตช์ R18 คนละ build จึงแปะไทยให้ไม่ได้ "
+                     "— ลงเวอร์ชัน all-ages ได้ตามปกติ (จะปิด adult.xp3 ไว้)")
+        elif p.include_r18:
+            self.w_comps_foot.config(
+                text="เวอร์ชัน R18 — ฉาก R18 จะเป็นภาษาไทยด้วย")
+        else:
+            self.w_comps_foot.config(
+                text="เวอร์ชัน all-ages — จะปิด %s ไว้ด้วยการเปลี่ยนชื่อเป็น .off "
+                     "(ไม่ลบ กด “ถอดแพตช์” แล้วได้คืนครบ)"
+                     % " และ ".join(p.disable_list or ["adult.xp3"]))
+
+    def toggle_r18(self):
+        p = self.plan
+        if not p or not p.r18_available or self.r18_locked:
+            return
+        p.include_r18 = not p.include_r18
+        p.verified = True          # โหมด all-ages ไม่ต้องแฮช adult.xp3
+        self._render_r18_state()
 
     def begin_install(self):
         self.job = "install"
@@ -507,11 +616,12 @@ class Installer:
                 progress=lambda f, s: self.post(
                     lambda: self.progress(round(f * 100), self.stage_text(s))),
                 cancel=self.cancel.is_set)
+            r18 = p.r18_available and p.include_r18
             self.post(lambda: self.goto_done(
-                True, "ติดตั้งสำเร็จ",
+                True, "ติดตั้งสำเร็จ (เวอร์ชัน %s)" % ("R18" if r18 else "all-ages"),
                 "เปิดเกมแล้วตั้ง Language เป็น “Chinese (Simplified)” เพื่อดูภาษาไทย"
                 + (" — และอย่ารันตัวติดตั้งแพตช์ R18 ซ้ำอีก มันจะเขียนทับ adult.xp3"
-                   if p.mode == "R18" else "")))
+                   if r18 else "")))
         self.work(job)
         self._render_footer()
 
@@ -542,6 +652,9 @@ class Installer:
         if self.screen == "done" and self.installed:
             self.begin_uninstall()
         else:
+            self.r18_locked = False
+            if self.plan:
+                self.plan.include_r18 = True
             self.show("locate")
 
     def on_primary(self):

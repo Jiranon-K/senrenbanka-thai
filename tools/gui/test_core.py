@@ -104,6 +104,44 @@ def full_cycle(name, mode):
     chk("ไม่มี .bak เหลือ", any(os.path.isfile(t.bak) for t in p.active), False)
 
 
+def case_allages_on_r18():
+    """เครื่องที่ลง R18 ไว้ แต่ผู้เล่นเลือกเวอร์ชัน all-ages
+
+    adult.xp3 ต้องถูก "ปิด" ด้วยการเปลี่ยนชื่อ ไม่ใช่ลบ — 2.3 GB ที่โหลดมา
+    ต้องได้คืนตอนถอดแพตช์
+    """
+    print("=" * 70)
+    print("เคส: ลง all-ages บนเครื่องที่มี R18 (ปิด adult.xp3 ไว้)")
+    d = setup("allages_on_r18", "r18")
+    # adult2.xp3 ตัวจริง 1.5 GB — ในเทสใช้ไฟล์เปล่าพอ เพราะ core แค่เปลี่ยนชื่อมัน
+    open(os.path.join(d, "adult2.xp3"), "wb").close()
+
+    p = core.Plan(d, include_r18=False)
+    chk("มองเห็นว่าเครื่องนี้มี R18", p.r18_available, True)
+    chk("ไม่แปะ adult.xp3", [t.name for t in p.active], ["patch.xp3", "data.xp3"])
+    chk("สั่งปิดทั้งสองไฟล์", p.disable_list, ["adult.xp3", "adult2.xp3"])
+    chk("verify ข้าม adult.xp3 ไปเลย", p.verify(), "ready")
+
+    p.install()
+    chk("patch/data = ไฟล์ไทย", hashes(p), expect(p, "thai"))
+    chk("adult.xp3 ถูกปิด ไม่ใช่ลบ",
+        (os.path.isfile(os.path.join(d, "adult.xp3")),
+         os.path.isfile(os.path.join(d, "adult.xp3.off"))), (False, True))
+    chk("adult2.xp3 ถูกปิดด้วย", os.path.isfile(os.path.join(d, "adult2.xp3.off")), True)
+
+    p2 = core.Plan(d, include_r18=False)
+    chk("ตรวจซ้ำรู้ว่าติดตั้งแล้ว", p2.has_backups, True)
+    chk("โหมดกลายเป็น all-ages", p2.mode, "all-ages")
+
+    restored = sorted(core.Plan(d, include_r18=False).uninstall())
+    chk("ถอดคืนครบทั้งไฟล์แปะและไฟล์ที่ปิดไว้", restored,
+        ["adult.xp3", "adult2.xp3", "data.xp3", "patch.xp3"])
+    chk("adult.xp3 กลับมา", os.path.isfile(os.path.join(d, "adult.xp3")), True)
+    chk("ไม่มี .off เหลือ",
+        [f for f in os.listdir(d) if f.endswith(".off")], [])
+    chk("patch/data กลับเป็นต้นฉบับ", hashes(p), expect(p, "orig"))
+
+
 def case_bad_adult():
     print("=" * 70)
     print("เคส: adult.xp3 คนละ build (ต้องไม่แตะอะไรเลย)")
@@ -186,6 +224,7 @@ if __name__ == "__main__":
     try:
         full_cycle("r18", "r18")
         full_cycle("allages", "allages")
+        case_allages_on_r18()
         case_bad_adult()
         case_missing_delta()
         case_not_a_game()

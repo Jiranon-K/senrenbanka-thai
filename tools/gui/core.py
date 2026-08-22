@@ -162,11 +162,16 @@ class Target:
 class Plan:
     """สถานะของโฟลเดอร์เกมหนึ่งโฟลเดอร์ + สิ่งที่จะทำกับมัน"""
 
-    def __init__(self, game: str, res: str | None = None):
+    # ไฟล์ที่แพตช์ R18 เอามาวาง — ปิดได้ด้วยการเปลี่ยนชื่อ (ไม่ลบ)
+    R18_FILES = ("adult.xp3", "adult2.xp3")
+    OFF = ".off"
+
+    def __init__(self, game: str, res: str | None = None, include_r18: bool = True):
         self.game = os.path.abspath(game)
         self.res = res or resource_dir()
         self.mf = load_manifest(self.res)
         self.targets = [Target(self.game, s) for s in self.mf["targets"]]
+        self.include_r18 = include_r18
         self.verified = False
 
     # ---- ไฟล์ประกอบ ----
@@ -180,16 +185,47 @@ class Plan:
     # ---- สถานะ ----
     @property
     def active(self) -> list[Target]:
-        """ไฟล์ที่จะแตะจริง — ตัวที่ไม่บังคับและไม่มีอยู่ ถือว่าไม่เกี่ยว"""
-        return [t for t in self.targets if t.present]
+        """ไฟล์ที่จะแปะจริง — ตัวที่ไม่บังคับและไม่มีอยู่ ถือว่าไม่เกี่ยว
+
+        โหมด all-ages บนเครื่องที่ลง R18 ไว้: ไม่แปะ adult.xp3 แต่ไป "ปิด" มันแทน
+        (ดู disable_list) จึงไม่ต้องแฮชและไม่ต้องมี diff ที่ตรง build ด้วยซ้ำ
+        """
+        ts = [t for t in self.targets if t.present]
+        if not self.include_r18:
+            ts = [t for t in ts if t.name not in self.R18_FILES]
+        return ts
+
+    @property
+    def r18_available(self) -> bool:
+        """เครื่องนี้ลงแพตช์ R18 ไว้ไหม (มี adult.xp3 อยู่จริง)"""
+        return os.path.isfile(os.path.join(self.game, "adult.xp3"))
+
+    @property
+    def disable_list(self) -> list[str]:
+        """ไฟล์ R18 ที่จะถูกปิดไว้เมื่อเลือกโหมด all-ages
+
+        เปลี่ยนชื่อเป็น <ชื่อ>.off เท่านั้น ไม่ลบ — 2.3 GB ที่ผู้เล่นโหลดมา
+        ต้องเอากลับมาได้ด้วยการกดถอดแพตช์
+        """
+        if self.include_r18 or not self.r18_available:
+            return []
+        return [f for f in self.R18_FILES
+                if os.path.isfile(os.path.join(self.game, f))]
+
+    @property
+    def disabled_now(self) -> list[str]:
+        """ไฟล์ R18 ที่ถูกปิดไว้อยู่ตอนนี้"""
+        return [f for f in self.R18_FILES
+                if os.path.isfile(os.path.join(self.game, f + self.OFF))]
 
     @property
     def mode(self) -> str:
-        return "R18" if any(t.name == "adult.xp3" and t.present for t in self.targets) else "all-ages"
+        return "R18" if self.r18_available else "all-ages"
 
     @property
     def has_backups(self) -> bool:
-        return any(os.path.isfile(t.bak) for t in self.targets)
+        return (any(os.path.isfile(t.bak) for t in self.targets)
+                or bool(self.disabled_now))
 
     def missing_pieces(self) -> list[str]:
         """ไฟล์ในชุดติดตั้งที่หายไป"""
@@ -252,8 +288,15 @@ class Plan:
         total = sum(t.size for t in targets) or 1
         done = 0
         renamed: list[Target] = []
+        turned_off: list[str] = []
 
         def rollback():
+            for f in turned_off:
+                try:
+                    os.replace(os.path.join(self.game, f + self.OFF),
+                               os.path.join(self.game, f))
+                except OSError:
+                    pass
             for t in renamed:
                 try:
                     if os.path.isfile(t.path):
@@ -282,6 +325,13 @@ class Plan:
                                                                "stage.apply:" + t.name),
                              cancel)
                 done += t.size
+
+            for f in self.disable_list:
+                if progress:
+                    progress(1.0, "stage.disable:" + f)
+                os.replace(os.path.join(self.game, f),
+                           os.path.join(self.game, f + self.OFF))
+                turned_off.append(f)
 
             if progress:
                 progress(1.0, "stage.done")
@@ -328,14 +378,21 @@ class Plan:
     # ---- ถอน ----
     def uninstall(self, progress=None):
         restored = []
-        items = [t for t in self.targets if os.path.isfile(t.bak)]
-        for i, t in enumerate(items):
-            if os.path.isfile(t.path):
-                os.remove(t.path)
-            os.replace(t.bak, t.path)
-            restored.append(t.name)
+        items = [t.name for t in self.targets if os.path.isfile(t.bak)]
+        items += self.disabled_now
+        by_name = {t.name: t for t in self.targets}
+        for i, name in enumerate(items):
+            if name in by_name and os.path.isfile(by_name[name].bak):
+                t = by_name[name]
+                if os.path.isfile(t.path):
+                    os.remove(t.path)
+                os.replace(t.bak, t.path)
+            else:                                   # ไฟล์ R18 ที่ถูกปิดไว้
+                os.replace(os.path.join(self.game, name + self.OFF),
+                           os.path.join(self.game, name))
+            restored.append(name)
             if progress:
-                progress((i + 1) / len(items), t.name)
+                progress((i + 1) / len(items), name)
         return restored
 
 

@@ -12,6 +12,8 @@ test_app.py — เทสหน้าจอ (tkinter) โดยไม่ต้�
     (ถ้าวันหนึ่ง Tk เปลี่ยน text engine แล้วไทยแตก เทสนี้จะจับได้ทันที)
   * โปรแกรมต้อง **ไม่เปิดพอร์ต TCP** — เวอร์ชันก่อนหน้าใช้ pywebview
     ซึ่งแอบตั้ง HTTP server ที่ 127.0.0.1 แล้วโหลดหน้าเว็บผ่านมัน
+  * แถบหัวของ Windows ต้องถูกถอดออกจริง แต่หน้าต่างยังเป็น top-level ปกติ
+  * ตัวเลือก all-ages / R18 ต้องเปลี่ยนสิ่งที่จะทำกับไฟล์จริงๆ
   * สถานะปุ่ม/ขั้นตอน/หน้าจอ เดินถูกตามตาราง
 """
 import os
@@ -39,6 +41,19 @@ def chk(label, got, want):
 
 def chk_true(label, got):
     chk(label, bool(got), True)
+
+
+def _all_text(w, out=None):
+    out = [] if out is None else out
+    try:
+        t = w.cget("text")
+        if t:
+            out.append(str(t))
+    except Exception:
+        pass
+    for c in w.winfo_children():
+        _all_text(c, out)
+    return out
 
 
 def listening_ports(pid: int):
@@ -73,6 +88,20 @@ def main():
              or inst.root.winfo_toplevel() is inst.root)
 
     print("=" * 70)
+    print("แถบหัวที่วาดเอง")
+    chk("ถอดแถบหัวของ Windows แล้ว", T.has_caption(inst.root), False)
+    chk("ไม่ได้ใช้ overrideredirect (ไม่งั้น taskbar/Alt-Tab หาย)",
+        bool(inst.root.overrideredirect()), False)
+    chk_true("มีปุ่มย่อ/ปิดของตัวเอง", inst.b_min and inst.b_close)
+    chk_true("แถบหัวลากได้", callable(getattr(inst, "_drag_start", None)))
+    chk("ขนาดหน้าต่างตรงดีไซน์",
+        (inst.root.winfo_width(), inst.root.winfo_height()), (T.S(880), T.S(600)))
+    credits = [t for t in _all_text(inst.shell) if "ไม่เป็นทางการ" in t]
+    chk("เครดิตเหลือบรรทัดเดียว", credits, ["งานแปลไม่เป็นทางการ"])
+    chk("ไม่มีชื่อผู้แปลบนหน้าจอ",
+        [t for t in _all_text(inst.shell) if "Jiranon" in t], [])
+
+    print("=" * 70)
     print("สถานะตอนเปิดโปรแกรม")
     chk("เริ่มที่หน้าเลือกโฟลเดอร์", inst.screen, "locate")
     chk("แสดงเวอร์ชันจาก manifest", inst.w_version.cget("text"),
@@ -97,6 +126,29 @@ def main():
     rows = [w for w in inst.w_comps.winfo_children()]
     chk("หน้ารายการแสดงครบทุกไฟล์ที่มี", len(rows), len(inst.plan.active))
     chk("ปุ่มหลักเขียนว่า 'ติดตั้ง'", inst.b_primary.cget("text"), "ติดตั้ง")
+
+    if inst.plan.r18_available:
+        chk_true("มีตัวเลือก R18 ให้ติ๊ก", inst.w_r18_row is not None)
+        chk("ค่าเริ่มต้น = เอาฉาก R18", inst.plan.include_r18, True)
+        chk("R18 อยู่ในรายการที่จะแปะ",
+            "adult.xp3" in [t.name for t in inst.plan.active], True)
+        chk("ยังไม่ต้องปิดไฟล์อะไร", inst.plan.disable_list, [])
+
+        inst.toggle_r18()
+        inst.root.update()
+        chk("ติ๊กออกแล้วไม่แปะ adult.xp3",
+            "adult.xp3" in [t.name for t in inst.plan.active], False)
+        chk("ติ๊กออกแล้วสั่งปิดไฟล์ R18",
+            inst.plan.disable_list, ["adult.xp3", "adult2.xp3"])
+        chk_true("บอกผู้ใช้ว่าปิดแบบเปลี่ยนชื่อ ไม่ลบ",
+                 "ไม่ลบ" in inst.w_comps_foot.cget("text"))
+        inst.toggle_r18()
+        chk("ติ๊กกลับได้", inst.plan.include_r18, True)
+
+        inst.r18_locked = True
+        inst.toggle_r18()
+        chk("ล็อกแล้วติ๊กไม่ได้ (adult.xp3 คนละ build)", inst.plan.include_r18, True)
+        inst.r18_locked = False
     chk("ปุ่มย้อนกลับโผล่", inst.b_back.winfo_manager(), "pack")
     chk("ขั้นที่ 1 กลายเป็น 'ผ่านแล้ว'", inst.w_steps[0][0].cget("bg"), T.ACCENT_300)
 

@@ -78,6 +78,54 @@ def _blend(fg: str, bg: str, alpha: float) -> str:
     return "#%02x%02x%02x" % tuple(round(f[i] * alpha + b[i] * (1 - alpha)) for i in range(3))
 
 
+class WindowButton(tk.Canvas):
+    """ปุ่มย่อ/ปิดบนแถบหัวที่วาดเอง — 46x44 วาดเส้นเอง ไม่ใช้ฟอนต์สัญลักษณ์
+
+    ดีไซน์กำหนด hover ของปุ่มปิดเป็นพื้น accent + เส้นสีกระดาษ
+    (ฟอนต์สัญลักษณ์ของ Windows ไม่มีบนทุกเครื่อง จึงวาดด้วย Canvas แทน)
+    """
+
+    def __init__(self, master, kind="close", command=None, danger=False, **kw):
+        w, h = T.S(46), T.S(44)
+        super().__init__(master, width=w, height=h, bg=T.BG,
+                         highlightthickness=0, bd=0, **kw)
+        self._command = command
+        self._danger = danger
+        self._kind = kind
+        self._w2, self._h2 = w, h
+        self._draw(T.TEXT)
+        self.bind("<Enter>", self._on_enter)
+        self.bind("<Leave>", self._on_leave)
+        self.bind("<ButtonRelease-1>", self._on_click)
+
+    def _draw(self, fg):
+        self.delete("glyph")
+        w, h = self._w2, self._h2
+        cx, cy, r = w / 2, h / 2, T.S(6)
+        t = max(1, T.S(1.4))
+        if self._kind == "minimize":
+            self.create_line(cx - r, cy, cx + r, cy, fill=fg, width=t, tags="glyph")
+        else:
+            self.create_line(cx - r, cy - r, cx + r, cy + r, fill=fg, width=t, tags="glyph")
+            self.create_line(cx + r, cy - r, cx - r, cy + r, fill=fg, width=t, tags="glyph")
+
+    def _on_enter(self, _):
+        if self._danger:
+            self.config(bg=T.ACCENT)
+            self._draw(T.BG)
+        else:
+            self.config(bg=T.HOVER_SOFT)
+            self._draw(T.TEXT)
+
+    def _on_leave(self, _):
+        self.config(bg=T.BG)
+        self._draw(T.TEXT)
+
+    def _on_click(self, e):
+        if 0 <= e.x < self._w2 and 0 <= e.y < self._h2 and self._command:
+            self._command()
+
+
 class Tag(tk.Label):
     """.tag — accent | neutral | danger"""
 
@@ -136,16 +184,28 @@ class CheckMark(tk.Canvas):
     (ในดีไซน์คือ background:accent + box-shadow: inset 0 0 0 3px var(--color-bg))
     """
 
-    def __init__(self, master, on=True, **kw):
+    def __init__(self, master, on=True, command=None, **kw):
         s = T.S(15)
         super().__init__(master, width=s, height=s, bg=T.BG,
                          highlightthickness=0, bd=0, **kw)
         b = T.S(1.5)
         self._box = self.create_rectangle(b / 2, b / 2, s - b / 2, s - b / 2,
-                                          outline=T.ACCENT if on else T.DIVIDER,
-                                          width=b, fill=T.BG)
+                                          outline=T.DIVIDER, width=b, fill=T.BG)
         self._dot = self.create_rectangle(T.S(3), T.S(3), s - T.S(3), s - T.S(3),
-                                          fill=T.ACCENT if on else T.BG, width=0)
+                                          fill=T.BG, width=0)
+        self._on = on
+        self.set(on)
+        if command:
+            self.bind("<Button-1>", lambda _e: command())
+
+    def set(self, on: bool):
+        self._on = on
+        self.itemconfig(self._box, outline=T.ACCENT if on else T.DIVIDER)
+        self.itemconfig(self._dot, fill=T.ACCENT if on else T.BG)
+
+    @property
+    def checked(self) -> bool:
+        return self._on
 
 
 class Badge(tk.Canvas):

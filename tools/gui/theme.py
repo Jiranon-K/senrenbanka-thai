@@ -47,6 +47,8 @@ HOVER_PRESS = "#e2e0e0"      # btn-secondary:active (text 14%)
 HOVER_GHOST = "#fef2ea"      # btn-ghost:hover      (accent 10%)
 TAG_NEUTRAL = "#eeeded"      # tag-neutral bg       (text 8%)
 
+BORDER      = "#b5b1af"      # border ของ panel: rgba(43,33,27,.35) บนขาว
+
 DANGER      = "#b3261e"
 DANGER_100  = "#fdecea"
 DANGER_800  = "#6d1712"
@@ -85,6 +87,44 @@ def dpi_aware():
             ctypes.windll.user32.SetProcessDPIAware()
         except Exception:
             pass
+
+
+# ── ถอดแถบหัวของ Windows ออก แต่ยังเป็นหน้าต่างปกติทุกอย่าง ────────────
+GWL_STYLE      = -16
+WS_CAPTION     = 0x00C00000      # แถบหัว + ขอบ
+WS_THICKFRAME  = 0x00040000      # ขอบลากปรับขนาด
+SWP_FLAGS      = 0x0002 | 0x0001 | 0x0004 | 0x0020   # NOMOVE|NOSIZE|NOZORDER|FRAMECHANGED
+
+
+def strip_caption(root):
+    """เอาแถบหัวของระบบออกโดย **ไม่** ใช้ overrideredirect
+
+    overrideredirect(True) ทำให้หน้าต่างหลุดจากการจัดการของ window manager:
+    ปุ่มบน taskbar หาย Alt-Tab หาย iconify() เพี้ยน
+    การถอดเฉพาะบิต WS_CAPTION/WS_THICKFRAME ทิ้งไว้แค่หน้าตา — ตัวหน้าต่าง
+    ยังเป็น top-level ปกติ (taskbar / Alt-Tab / ย่อ-ขยาย ใช้ได้ครบ)
+    """
+    root.update_idletasks()
+    try:
+        hwnd = int(root.wm_frame(), 16)
+        gwl = ctypes.windll.user32.GetWindowLongPtrW if ctypes.sizeof(ctypes.c_void_p) == 8             else ctypes.windll.user32.GetWindowLongW
+        swl = ctypes.windll.user32.SetWindowLongPtrW if ctypes.sizeof(ctypes.c_void_p) == 8             else ctypes.windll.user32.SetWindowLongW
+        style = gwl(hwnd, GWL_STYLE)
+        swl(hwnd, GWL_STYLE, style & ~WS_CAPTION & ~WS_THICKFRAME)
+        ctypes.windll.user32.SetWindowPos(hwnd, 0, 0, 0, 0, 0, SWP_FLAGS)
+        return True
+    except Exception:
+        return False
+
+
+def has_caption(root) -> bool:
+    """ไว้ให้เทสยืนยันว่าแถบหัวถูกถอดจริง"""
+    try:
+        hwnd = int(root.wm_frame(), 16)
+        gwl = ctypes.windll.user32.GetWindowLongPtrW if ctypes.sizeof(ctypes.c_void_p) == 8             else ctypes.windll.user32.GetWindowLongW
+        return bool(gwl(hwnd, GWL_STYLE) & WS_CAPTION)
+    except Exception:
+        return True
 
 
 def taskbar_identity(app_id="Jiranon-K.SenrenBanka.ThaiPatch"):
