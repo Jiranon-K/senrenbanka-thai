@@ -8,6 +8,7 @@
 
 # 2) un-ignore safe top-level files
 !/.gitignore
+!/.gitattributes
 !/README.md
 !/LICENSE
 
