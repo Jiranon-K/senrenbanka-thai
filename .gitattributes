@@ -1,0 +1,7 @@
+# core.autocrlf=true is set globally on the author's machine, so without this
+# a fresh clone would check .sh out with CRLF and bash would choke on the \r.
+* text=auto
+*.sh   text eol=lf
+*.py   text eol=lf
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
