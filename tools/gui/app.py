@@ -95,7 +95,8 @@ class Installer:
         self.q: queue.Queue = queue.Queue()
         self.cancel = threading.Event()
         self.plan: core.Plan | None = None
-        self.info: dict | None = None
+        self.manifest: dict | None = None      # manifest.json ของชุดติดตั้ง
+        self.game_dirs: list[str] = []         # โฟลเดอร์เกมที่หาเจอ
         self.screen = None         # ยังไม่มีหน้าไหนถูกแสดง -> หน้าแรกได้อนิเมชันด้วย
         self.job: str | None = None
         self.busy = False
@@ -586,13 +587,14 @@ class Installer:
     # ------------------------------------------------------------- ขั้นที่ 1
     def boot(self):
         try:
-            self.info = {"mf": core.load_manifest(), "dirs": core.find_game_dirs()}
+            self.manifest = core.load_manifest()
+            self.game_dirs = core.find_game_dirs()
         except FileNotFoundError:
             return self.fail("ไม่พบ manifest.json",
                              "ตัวติดตั้งต้องอยู่โฟลเดอร์เดียวกับ manifest.json, "
                              "xdelta3.exe และไฟล์ .xdelta — แตกไฟล์ zip ให้ครบทุกไฟล์")
-        self.w_version.config(text="v" + self.info["mf"]["version"])
-        dirs = self.info["dirs"]
+        self.w_version.config(text="v" + self.manifest["version"])
+        dirs = self.game_dirs
         if dirs:
             self.var_path.set(dirs[0])
             self.w_path.xview_moveto(1.0)      # path ยาวกว่าช่อง — โชว์หางไว้
@@ -639,7 +641,7 @@ class Installer:
                            "accent" if r18 else "neutral")
             self.w_note_detail.config(
                 text="ติดตั้งแพตช์ไทยไว้แล้ว" if p.has_backups
-                else "พื้นที่ว่าง %.1f GB" % (core.free_space(p.game) / 2 ** 30))
+                else "พื้นที่ว่าง %.1f GB" % (core.free_space(p.game_dir) / 2 ** 30))
 
     def on_browse(self):
         d = filedialog.askdirectory(title="เลือกโฟลเดอร์เกม Senren Banka",
@@ -855,7 +857,7 @@ class Installer:
         elif self.screen == "components":
             self.begin_install()
         elif self.screen == "done":
-            if core.launch_game(self.plan.game):
+            if core.launch_game(self.plan.game_dir):
                 self._bye()
             else:
                 self.fail("เปิดเกมไม่สำเร็จ", "ไม่พบ SenrenBanka.exe ในโฟลเดอร์ที่เลือก")

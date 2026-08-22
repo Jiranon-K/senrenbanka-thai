@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+r"""
 Senren Banka Thai PRODUCTION pipeline (CN-slot strategy, keystream packing).
 
 Strategy (proven working on the real game):
@@ -28,13 +28,8 @@ Preserves the Yuzu 'sen:' pre-index blob so the archive stays loadable.
 """
 import os, sys, csv, json, glob, struct, zlib, shutil, subprocess
 sys.stdout.reconfigure(encoding="utf-8")
-GAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORK = os.path.join(GAME, "thai_work")
-JSOND = os.path.join(WORK, "json_cn")
-PSBD  = os.path.join(WORK, "psb_cn")
-CSVF  = os.path.join(WORK, "strings_cn.csv")
-PSBDEC = os.path.join(GAME, "tools", "FreeMote", "PsbDecompile.exe")
-PSBLD  = os.path.join(GAME, "tools", "FreeMote", "PsBuild.exe")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
 CN = 2   # CN language slot index
 
 def is_block(x):
@@ -66,27 +61,27 @@ def walk_choices(node, cb):
 
 def cmd_decompile():
     srcdir = sys.argv[2]
-    os.makedirs(JSOND, exist_ok=True)
+    os.makedirs(P.JSON_CN, exist_ok=True)
     files = sorted(glob.glob(os.path.join(srcdir, "*.ks.scn")))
     print(f"decompiling {len(files)} from {srcdir}")
     for fp in files:
-        subprocess.run([PSBDEC, os.path.abspath(fp)], capture_output=True)   # FreeMote writes next to source
+        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(fp)], capture_output=True)   # FreeMote writes next to source
         base = os.path.basename(fp)[:-4]
         for ext in (".json", ".resx.json"):
             s = os.path.join(srcdir, base + ext)
-            if os.path.exists(s): shutil.move(s, os.path.join(JSOND, base + ext))
-    print("done ->", JSOND)
+            if os.path.exists(s): shutil.move(s, os.path.join(P.JSON_CN, base + ext))
+    print("done ->", P.JSON_CN)
 
 def cmd_export():
     # translation memory: preserve any th already filled in the master CSV
     prev = {}
-    if os.path.exists(CSVF):
-        with open(CSVF, encoding="utf-8-sig") as f:
+    if os.path.exists(P.CSV_CN):
+        with open(P.CSV_CN, encoding="utf-8-sig") as f:
             for r in csv.DictReader(f):
                 if r.get("th", "").strip():
                     prev[(r["file"], str(r["idx"]))] = r["th"]
     rows = []
-    for jf in sorted(glob.glob(os.path.join(JSOND, "*.ks.json"))):
+    for jf in sorted(glob.glob(os.path.join(P.JSON_CN, "*.ks.json"))):
         if jf.endswith(".resx.json"): continue
         d = json.load(open(jf, encoding="utf-8")); name = os.path.basename(jf); idx = [0]
         def cb(b):
@@ -105,21 +100,21 @@ def cmd_export():
             rows.append([name, "ch%d" % ch[0], "(choice)", cn, en, th])
             ch[0] += 1
         walk_choices(d, cbc)
-    with open(CSVF, "w", encoding="utf-8-sig", newline="") as f:
+    with open(P.CSV_CN, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f); w.writerow(["file","idx","speaker_en","jp","en","th"]); w.writerows(rows)
-    print(f"exported {len(rows)} lines -> {CSVF}")
+    print(f"exported {len(rows)} lines -> {P.CSV_CN}")
 
 def cmd_import():
     sub = sys.argv[2] if len(sys.argv) > 2 else None   # optional: import only files matching substring
     blk = {}; cho = {}                                   # per file: {int idx: row} and {choice n: row}
-    with open(CSVF, encoding="utf-8-sig") as f:
+    with open(P.CSV_CN, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             r["th"] = r["th"].replace("～", "〜")   # FF5E fullwidth tilde -> 301C wave dash (in-font)
             i = r["idx"]
             if i.startswith("ch"): cho.setdefault(r["file"], {})[int(i[2:])] = r
             else: blk.setdefault(r["file"], {})[int(i)] = r
     tot = 0; ctot = 0
-    for jf in sorted(glob.glob(os.path.join(JSOND, "*.ks.json"))):
+    for jf in sorted(glob.glob(os.path.join(P.JSON_CN, "*.ks.json"))):
         if jf.endswith(".resx.json"): continue
         name = os.path.basename(jf)
         if sub and sub not in name: continue
@@ -151,17 +146,17 @@ def cmd_import():
     print(f"imported {tot} Thai lines + {ctot} choice options into CN slot")
 
 def cmd_recompile():
-    os.makedirs(PSBD, exist_ok=True)
+    os.makedirs(P.PSB_CN, exist_ok=True)
     sub = sys.argv[2] if len(sys.argv) > 2 else None   # optional: recompile only files matching substring
-    for jf in sorted(glob.glob(os.path.join(JSOND, "*.ks.json"))):
+    for jf in sorted(glob.glob(os.path.join(P.JSON_CN, "*.ks.json"))):
         if jf.endswith(".resx.json"): continue
         if sub and sub not in os.path.basename(jf): continue
-        subprocess.run([PSBLD, os.path.abspath(jf)], cwd=PSBD, capture_output=True)   # PsBuild writes to CWD
+        subprocess.run([P.PSB_BUILD, os.path.abspath(jf)], cwd=P.PSB_CN, capture_output=True)   # PsBuild writes to CWD
         base = os.path.basename(jf)[:-5]               # *.ks
         for cand in (base + ".pure.scn", base + ".psb"):
-            pc = os.path.join(PSBD, cand)
-            if os.path.exists(pc): shutil.move(pc, os.path.join(PSBD, base + ".scn")); break
-    print("recompiled ->", PSBD)
+            pc = os.path.join(P.PSB_CN, cand)
+            if os.path.exists(pc): shutil.move(pc, os.path.join(P.PSB_CN, base + ".scn")); break
+    print("recompiled ->", P.PSB_CN)
 
 def parse_index(d):
     ofs = struct.unpack("<Q", d[11:19])[0]
@@ -170,7 +165,7 @@ def parse_index(d):
     return zlib.decompress(d[real+17:real+17+comp])
 
 def cmd_pack():
-    archive = os.path.join(GAME, sys.argv[2]); extract = sys.argv[3]
+    archive = P.game_file(sys.argv[2]); extract = sys.argv[3]
     orig = archive + ".orig"
     if not os.path.exists(orig): shutil.copy(archive, orig)
     d = open(orig, "rb").read()
@@ -182,7 +177,7 @@ def cmd_pack():
     plain_by_size = {}
     for p in glob.glob(os.path.join(extract, "*.ks.scn")):
         plain_by_size.setdefault(os.path.getsize(p), []).append(p)
-    psb_by_name = {os.path.basename(p): p for p in glob.glob(os.path.join(PSBD, "*.ks.scn"))}
+    psb_by_name = {os.path.basename(p): p for p in glob.glob(os.path.join(P.PSB_CN, "*.ks.scn"))}
     # parse entries
     p = first; ents = []
     while p < len(idx) and idx[p:p+4] == b"File":

@@ -64,7 +64,7 @@ R18      (adult.xp3) : [JP, EN, CN, TW, KO]      <-- เกาหลีถูก
 |---|---|
 | GARbro ถอด `patch.xp3` → `patch_extract/` | 86 สคริปต์ |
 | GARbro ถอด `adult.xp3` → `adult_extract/` | 92 สคริปต์ |
-| `pipeline_cn.py decompile/export` + `_merge.py` ทุก prefix | 45,182 บรรทัดไทยเข้า `strings_cn.csv` ครบ 100% |
+| `pipeline_cn.py decompile/export` + `tsv.py merge` ทุก prefix | 45,182 บรรทัดไทยเข้า `strings_cn.csv` ครบ 100% |
 | `port_r18.py decompile` (92 ไฟล์) | 87 วินาที |
 | `port_r18.py align` (จับคู่ด้วยข้อความ JP + `difflib`) | **45,139 / 55,846 บรรทัด (80.8%)** |
 | `port_r18.py import` | 45,120 บรรทัด + 19 ตัวเลือก เข้า CN slot |
@@ -145,7 +145,7 @@ python tools/port_r18.py pack "<game>\adult.xp3" "<game>\adult_extract"
 แต่ `th/001.tsv` มี 789 (idx 787–813 ว่าง) ไฟล์ที่หลุดเยอะสุด:
 `109` (93) · `203` (85) · `522` (83) · `415` (70) · `310` (63) · `521` (59) · `101` (56)
 
-แปลเพิ่มใน `th/*.tsv` แล้วรัน `_merge.py` → `port_r18.py align/import/recompile/pack`
+แปลเพิ่มใน `th/*.tsv` แล้วรัน `tsv.py merge` → `port_r18.py align/import/recompile/pack`
 จะได้ทั้งฝั่ง R18 ไปพร้อมกัน
 
 ---

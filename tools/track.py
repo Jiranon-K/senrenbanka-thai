@@ -2,21 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 Progress tracker for the Senren Banka Thai translation.
-  track.py scan            -> build/update manifest.json + progress.json (auto-detect)
+  track.py scan            -> build/update scenarios.json + progress.json (auto-detect)
   track.py report          -> render PROGRESS.md dashboard
   track.py set <stem> packed|verified [0|1]
 Auto-detect: decompiled (json_cn), translated% (strings_cn.csv). packed/verified = persisted flags.
 """
-import os, sys, csv, json, glob, struct, zlib
+import os, sys, csv, json, glob
 sys.stdout.reconfigure(encoding="utf-8")
-GAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORK = os.path.join(GAME, "thai_work")
-SCN  = os.path.join(GAME, "scnxp3")
-JSOND = os.path.join(WORK, "json_cn")
-CSVF  = os.path.join(WORK, "strings_cn.csv")
-MAN   = os.path.join(WORK, "manifest.json")
-PROG  = os.path.join(WORK, "progress.json")
-MD    = os.path.join(WORK, "PROGRESS.md")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
 H_KEYWORDS = ["初体験", "オナニー", "２回目", "いちゃラヴ", "その後"]
 
 def route_of(name):
@@ -29,7 +23,7 @@ def is_h(name):
 
 def counts(stem):
     """blocks + choices from decompiled json (None if not decompiled)."""
-    jf = os.path.join(JSOND, stem + ".json")
+    jf = os.path.join(P.JSON_CN, stem + ".json")
     if not os.path.exists(jf): return None, None
     d = json.load(open(jf, encoding="utf-8"))
     def isb(x): return isinstance(x,list) and len(x)==4 and all(isinstance(e,list) and len(e)>=2 and isinstance(e[1],str) for e in x)
@@ -47,30 +41,30 @@ def counts(stem):
 def translated_counts():
     """per json-file: (filled, total) th from strings_cn.csv"""
     res={}
-    if not os.path.exists(CSVF): return res
-    for r in csv.DictReader(open(CSVF, encoding="utf-8-sig")):
+    if not os.path.exists(P.CSV_CN): return res
+    for r in csv.DictReader(open(P.CSV_CN, encoding="utf-8-sig")):
         f=r["file"]; t=res.setdefault(f,[0,0]); t[1]+=1
         if r["th"].strip(): t[0]+=1
     return res
 
 def cmd_scan():
-    prog = json.load(open(PROG, encoding="utf-8")) if os.path.exists(PROG) else {}
+    prog = json.load(open(P.PROGRESS, encoding="utf-8")) if os.path.exists(P.PROGRESS) else {}
     tc = translated_counts()
-    manifest=[]
-    for fp in sorted(glob.glob(os.path.join(SCN, "*.ks.scn"))):
+    scenarios=[]
+    for fp in sorted(glob.glob(os.path.join(P.EXTRACT_SCN, "*.ks.scn"))):
         scn = os.path.basename(fp); stem = scn[:-4]              # *.ks
         jname = stem + ".json"
         nb, nc = counts(stem)
         filled, total = tc.get(jname, [0, 0])
-        man = {"file": scn, "route": route_of(scn), "is_h": is_h(scn),
+        entry = {"file": scn, "route": route_of(scn), "is_h": is_h(scn),
                "blocks": nb, "choices": nc}
-        manifest.append(man)
+        scenarios.append(entry)
         p = prog.setdefault(scn, {"packed": False, "verified": False})
         p["decompiled"] = nb is not None
         p["tr_filled"] = filled; p["tr_total"] = total or (nb or 0)
-    json.dump(manifest, open(MAN, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    json.dump(prog, open(PROG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print(f"scanned {len(manifest)} files -> manifest.json + progress.json")
+    json.dump(scenarios, open(P.SCENARIOS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    json.dump(prog, open(P.PROGRESS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print(f"scanned {len(scenarios)} files -> scenarios.json + progress.json")
 
 def stage(p):
     if p.get("verified"): return "✅ verified"
@@ -82,15 +76,15 @@ def stage(p):
     return "⬜ pending"
 
 def cmd_report():
-    manifest = json.load(open(MAN, encoding="utf-8"))
-    prog = json.load(open(PROG, encoding="utf-8"))
+    scenarios = json.load(open(P.SCENARIOS, encoding="utf-8"))
+    prog = json.load(open(P.PROGRESS, encoding="utf-8"))
     order = ["Common","Yoshino","Murasame","Mako","Lena","Sub"]
     by={}
-    for m in manifest: by.setdefault(m["route"],[]).append(m)
-    done = sum(1 for m in manifest if prog.get(m["file"],{}).get("verified"))
-    packed = sum(1 for m in manifest if prog.get(m["file"],{}).get("packed"))
+    for m in scenarios: by.setdefault(m["route"],[]).append(m)
+    done = sum(1 for m in scenarios if prog.get(m["file"],{}).get("verified"))
+    packed = sum(1 for m in scenarios if prog.get(m["file"],{}).get("packed"))
     lines=[f"# Senren Banka — Thai Translation Progress\n",
-           f"**{packed}/{len(manifest)} packed · {done} verified**\n"]
+           f"**{packed}/{len(scenarios)} packed · {done} verified**\n"]
     for r in order:
         ms = by.get(r,[])
         if not ms: continue
@@ -102,20 +96,20 @@ def cmd_report():
             p = prog.get(m["file"],{})
             lines.append(f"| {m['file'][:34]} | {m['blocks'] if m['blocks'] is not None else '-'} | "
                          f"{m['choices'] if m['choices'] is not None else '-'} | {'🔞' if m['is_h'] else ''} | {stage(p)} |")
-    open(MD,"w",encoding="utf-8").write("\n".join(lines)+"\n")
-    print(f"report -> {MD}  ({packed}/{len(manifest)} packed, {done} verified)")
+    open(P.PROGRESS_MD,"w",encoding="utf-8").write("\n".join(lines)+"\n")
+    print(f"report -> {P.PROGRESS_MD}  ({packed}/{len(scenarios)} packed, {done} verified)")
 
 def cmd_set():
     scn, field = sys.argv[2], sys.argv[3]
     val = (sys.argv[4] != "0") if len(sys.argv) > 4 else True
-    prog = json.load(open(PROG, encoding="utf-8"))
+    prog = json.load(open(P.PROGRESS, encoding="utf-8"))
     hits = [k for k in prog if scn in k]
     if len(hits) == 1:
         scn = hits[0]                      # substring match (e.g. "005" -> full stem)
     elif len(hits) > 1:
         sys.exit(f"ambiguous '{scn}': {hits}")
     prog.setdefault(scn, {})[field] = val
-    json.dump(prog, open(PROG,"w",encoding="utf-8"), ensure_ascii=False, indent=1)
+    json.dump(prog, open(P.PROGRESS,"w",encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"set {scn}.{field} = {val}")
 
 if __name__ == "__main__":

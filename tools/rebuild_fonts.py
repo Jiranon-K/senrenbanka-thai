@@ -8,9 +8,10 @@ keep native adlr. Preserves the Yuzu 'sen:' pre-index blob. v2 header + zlib ind
 """
 import os, sys, struct, zlib, shutil
 sys.stdout.reconfigure(encoding="utf-8")
-GAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VAR  = os.path.join(GAME, "thai_work", "fonts", "variants")
-SHS  = os.path.join(GAME, "dataxp3", "font")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
+VAR = P.FONT_VARIANTS
+SHS = os.path.join(P.EXTRACT_DATA, "font")
 # hash -> (variant path, original plaintext path) for the 3 cn message fonts
 EDITS = {
     "5fe64cd667860a8436ceae6bbaf1f5ce": ("SourceHanSansSC-Regular.ttf", "SourceHanSansSC-Regular.otf"),
@@ -19,7 +20,7 @@ EDITS = {
 }
 
 def main():
-    src = os.path.join(GAME, "data.xp3"); orig = src + ".orig"
+    src = P.game_file("data.xp3"); orig = src + ".orig"
     assert os.path.exists(orig), "data.xp3.orig missing"
     d = open(orig, "rb").read()
     hp = struct.unpack("<Q", d[11:19])[0]; assert d[hp] == 0x80

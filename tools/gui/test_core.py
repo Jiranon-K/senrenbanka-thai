@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+r"""
 test_core.py — เทส core.py ด้วยเคสชุดเดียวกับ tools/test_installer.sh
 
     set SBTP_RES=...\thai_work\dist\senrenbanka-thai-patch-v1.1
@@ -19,18 +19,17 @@ import subprocess
 import sys
 import time
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.dirname(HERE))                     # tools/ — เอา paths.py
 sys.stdout.reconfigure(encoding="utf-8")
 import core                                                   # noqa: E402
+import paths                                                  # noqa: E402
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-GAME = REPO
-while not os.path.isfile(os.path.join(GAME, "SenrenBanka.exe")):
-    parent = os.path.dirname(GAME)
-    if parent == GAME:
-        sys.exit("หาโฟลเดอร์เกมไม่เจอ")
-    GAME = parent
-SANDBOX = os.path.join(GAME, "_gui_test")
+# ตัวแอปเองไม่ import paths (มันไปอยู่บนเครื่องผู้เล่นที่ไม่มี repo) แต่เทส
+# รันในที่ทำงานเสมอ จึงใช้ตัวหาโฟลเดอร์เกมตัวเดียวกับสคริปต์อื่นได้เลย
+GAME_DIR = paths.game_dir()
+SANDBOX = os.path.join(GAME_DIR, "_gui_test")
 
 PRISTINE = {"patch.xp3": "patch.xp3.bak", "data.xp3": "data.xp3.bak",
             "adult.xp3": "adult.xp3.orig"}
@@ -58,7 +57,7 @@ def setup(name, mode):
     open(os.path.join(d, "SenrenBanka.exe"), "wb").close()
     files = ["patch.xp3", "data.xp3"] + (["adult.xp3"] if mode == "r18" else [])
     for f in files:
-        hardlink(os.path.join(d, f), os.path.join(GAME, PRISTINE[f]))
+        hardlink(os.path.join(d, f), os.path.join(GAME_DIR, PRISTINE[f]))
     return d
 
 
@@ -207,10 +206,10 @@ def case_rollback():
 def case_originals_intact():
     print("=" * 70)
     print("เคส: ไฟล์ต้นฉบับจริงต้องไม่ถูกแตะ")
-    p = core.Plan(GAME)
+    p = core.Plan(GAME_DIR)
     by = {t.name: t for t in p.targets}
     for name, pristine in PRISTINE.items():
-        path = os.path.join(GAME, pristine)
+        path = os.path.join(GAME_DIR, pristine)
         if os.path.isfile(path):
             chk(pristine, core.sha256(path), by[name].orig)
 
@@ -220,7 +219,7 @@ if __name__ == "__main__":
             os.path.join(core.resource_dir(), "manifest.json")):
         sys.exit("ตั้ง SBTP_RES ให้ชี้ไปที่โฟลเดอร์ชุดติดตั้งที่ build_release.py สร้างก่อน")
     print("resource_dir: %s" % core.resource_dir())
-    print("game        : %s\n" % GAME)
+    print("game        : %s\n" % GAME_DIR)
     try:
         full_cycle("r18", "r18")
         full_cycle("allages", "allages")

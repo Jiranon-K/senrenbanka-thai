@@ -13,13 +13,9 @@ Exit 1 if any untranslated or missing-glyph (hard errors).
 """
 import os, sys, csv, json, glob, re
 sys.stdout.reconfigure(encoding="utf-8")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fontTools.ttLib import TTFont
-GAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORK = os.path.join(GAME, "thai_work")
-JSOND = os.path.join(WORK, "json_cn")
-CSVF  = os.path.join(WORK, "strings_cn.csv")
-FONT  = os.path.join(WORK, "fonts", "Sarabun-merged.ttf")
-GLOSS = os.path.join(WORK, "glossary.csv")
+import paths as P
 
 def han_kana(s): return [c for c in s if 0x4E00<=ord(c)<=0x9FFF or 0x3040<=ord(c)<=0x30FF]
 def codes(s):
@@ -28,9 +24,9 @@ def codes(s):
 
 def main():
     sub = sys.argv[1] if len(sys.argv) > 1 else "all"
-    cmap = set(TTFont(FONT).getBestCmap().keys())
-    gloss = [(r["en"].strip(), r["th"].strip()) for r in csv.DictReader(open(GLOSS, encoding="utf-8-sig")) if r["en"].strip()]
-    jfiles = [f for f in glob.glob(os.path.join(JSOND, "*.ks.json"))
+    cmap = set(TTFont(P.FONT_MERGED).getBestCmap().keys())
+    gloss = [(r["en"].strip(), r["th"].strip()) for r in csv.DictReader(open(P.GLOSSARY, encoding="utf-8-sig")) if r["en"].strip()]
+    jfiles = [f for f in glob.glob(os.path.join(P.JSON_CN, "*.ks.json"))
               if not f.endswith(".resx.json") and (sub == "all" or sub in os.path.basename(f))]
     hard = 0
     for jf in jfiles:
@@ -58,8 +54,8 @@ def main():
         if miss: print(f"  [2] MISSING GLYPH: {[(c,hex(ord(c)),n) for c,n in miss.items()]}"); hard+=1
         else: print("  [2] missing glyph: 0 ✓")
     # CSV-based checks (tag/overflow/glossary)
-    if os.path.exists(CSVF):
-        rows=[r for r in csv.DictReader(open(CSVF,encoding="utf-8-sig"))
+    if os.path.exists(P.CSV_CN):
+        rows=[r for r in csv.DictReader(open(P.CSV_CN,encoding="utf-8-sig"))
               if (sub=="all" or sub in r["file"]) and r["th"].strip()]
         tagbad=[]; over=[]; glo=[]
         for r in rows:
