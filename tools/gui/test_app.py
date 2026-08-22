@@ -74,6 +74,10 @@ def skip(label, why):
     print("    SKIP  %s — %s" % (label, why))
 
 
+# เหตุผลเดียวที่ใช้ซ้ำในหลายเคส: ไฟล์หน้าตาเป็นภาพของเกม ต้องสร้างเองที่เครื่อง
+NO_ART = "ยังไม่ได้สร้างด้วย tools/gui/build/make_logo.py หรือ make_bg.py"
+
+
 def _all_text(w, out=None):
     out = [] if out is None else out
     try:
@@ -248,9 +252,15 @@ def ico_frames(path):
 def test_logo(inst):
     print("=" * 70)
     print("โลโก้และไอคอน")
+    # โลโก้/ไอคอน/ภาพพื้นหลังตัดมาจากภาพของเกม จึงไม่ได้อยู่ใน repo (ดู .gitignore)
+    # เครื่องที่ยังไม่ได้รัน make_logo.py / make_bg.py ต้อง "ข้าม" เคสพวกนี้ ไม่ใช่ล้ม
     img = inst.win._logo_img
-    chk_true("โหลดโลโก้ได้", img is not None)
-    if img is not None:
+    have = assets.logo_file(gui.LOGO_PX) is not None
+    if not have:
+        skip("โลโก้ที่ bundle มา", NO_ART)
+    if have:
+        chk_true("โหลดโลโก้ได้", img is not None)
+    if have and img is not None:
         chk("ขนาดโลโก้ตรงกับที่ขอ (ไม่ได้ให้ Tk ย่อเอง)",
             (img.width(), img.height()), (T.S(gui.LOGO_PX),) * 2)
         chk("เครื่องหมายเป็นภาพ ไม่ใช่สี่เหลี่ยมสีเดียว",
@@ -259,19 +269,23 @@ def test_logo(inst):
         chk("วางกึ่งกลางแถบหัวพอดี", top * 2 + img.height(), T.S(44))
 
     # เตรียมไว้หลายขนาดเพราะ Tk ย่อภาพได้แค่หารจำนวนเต็มแบบ nearest
-    for want, px in ((20, 21), (25, 24), (30, 31), (40, 55)):
-        f = assets.logo_file(px)
-        chk("ขอ %2d px -> ได้ logo@%d" % (px, want),
-            os.path.basename(f or ""), "logo@%d.png" % want)
+    if have:
+        for want, px in ((20, 21), (25, 24), (30, 31), (40, 55)):
+            f = assets.logo_file(px)
+            chk("ขอ %2d px -> ได้ logo@%d" % (px, want),
+                os.path.basename(f or ""), "logo@%d.png" % want)
 
     ico = assets.icon_file()
-    chk("ใช้ไอคอนที่ bundle มา ไม่ใช่ตัวสำรอง",
-        os.path.basename(os.path.dirname(ico)), "ui")
-    frames = ico_frames(ico)
-    chk("ไอคอนมีครบทุกขนาดที่ Windows ใช้",
-        [s for s, _ in frames], [16, 20, 24, 32, 48, 64, 128, 256])
-    chk("ทุกขนาดเก็บเป็น PNG (มีช่อง alpha)",
-        all(png for _, png in frames), True)
+    if ico is None:
+        skip("ไอคอนที่ bundle มา", NO_ART)
+    else:
+        chk("ใช้ไอคอนที่ bundle มา ไม่ใช่ตัวสำรอง",
+            os.path.basename(os.path.dirname(ico)), "ui")
+        frames = ico_frames(ico)
+        chk("ไอคอนมีครบทุกขนาดที่ Windows ใช้",
+            [s for s, _ in frames], [16, 20, 24, 32, 48, 64, 128, 256])
+        chk("ทุกขนาดเก็บเป็น PNG (มีช่อง alpha)",
+            all(png for _, png in frames), True)
 
     # ถ้าไม่มีไฟล์โลโก้ ต้องถอยไปใช้สี่เหลี่ยมตามดีไซน์ ไม่ใช่ล้ม
     real = assets.logo_file
@@ -310,6 +324,13 @@ def test_backdrop(inst):
     print("=" * 70)
     print("แผงภาพพื้นหลัง")
     cv, img = inst.win.bg, inst.win._bg_img
+    if assets.backdrop_file() is None:
+        # ไม่มีภาพก็ยังต้องไม่ล้ม — เคสนั้นอยู่ท้ายฟังก์ชัน ยังต้องรัน
+        skip("แผงภาพที่ bundle มา", NO_ART)
+        chk("ไม่มีภาพก็ยังทำงานได้", inst.win.bg, None)
+        inst.win.slide_backdrop(T.S(20), 0.2)
+        A.flush()
+        return
     chk_true("โหลด bg.png ได้", cv is not None and img is not None)
     if not cv:
         return
@@ -659,10 +680,13 @@ def test_modules():
     ml = importlib.import_module("make_logo")
     chk("ขนาดโลโก้: ฝั่ง build ใช้ชุดเดียวกับตัวแอป",
         ml.LOGO_SIZES, assets.LOGO_SIZES)
-    chk("ไฟล์โลโก้ที่ bundle มา ตรงกับรายการขนาด",
-        sorted(s for s in assets.LOGO_SIZES
-               if os.path.isfile(os.path.join(assets.ui_dir(), "logo@%d.png" % s))),
-        sorted(assets.LOGO_SIZES))
+    # ถ้าสร้างไว้แล้วต้องครบทุกขนาด — ครบครึ่งเดียวคือจอ DPI บางค่าจะได้ภาพแตก
+    made = sorted(s for s in assets.LOGO_SIZES
+                  if os.path.isfile(os.path.join(assets.ui_dir(), "logo@%d.png" % s)))
+    if made:
+        chk("ไฟล์โลโก้ที่ bundle มา ตรงกับรายการขนาด", made, sorted(assets.LOGO_SIZES))
+    else:
+        skip("ไฟล์โลโก้ที่ bundle มา ตรงกับรายการขนาด", NO_ART)
 
     # เครื่องมือตอน build ต้องไม่ถูก import จากตัวแอป
     app_side = ("app.py", "core.py", "theme.py", "widgets.py", "anim.py",

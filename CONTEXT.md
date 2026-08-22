@@ -114,3 +114,5 @@ newEnc    = myPsb(pad ให้เท่าเดิม) XOR keystream
 | ใส่ `wm geometry` ในลูปลากหน้าต่าง | 30 ms/ครั้ง = เพดาน 33 fps เห็นเป็นเงาแล้วกระโดด — ใช้ `winui.move_window` |
 | ให้ `core.py` รู้จักภาษาไทย | ข้อความที่ผู้ใช้เห็นอยู่ใน `app.STEP_TEXT` ตารางเดียว |
 | `import` อะไรจาก `tools/gui/build/` ในตัวแอป | มันคือเครื่องมือตอน build — `build_gui.py` จะ assert แล้ว build ไม่ผ่าน |
+| commit `tools/gui/ui/bg.png` · `logo@*.png` · `icon.ico` | เป็นภาพของ Yuzusoft ที่ตัดมา ไม่ใช่ของเรา — `.gitignore` ปิดไว้แล้ว สร้างเองที่เครื่องด้วย `make_bg.py` / `make_logo.py` |
+| เขียนเทสหน้าตาโดยถือว่าไฟล์ใน `ui/` มีอยู่แน่ | clone ใหม่ไม่มีไฟล์พวกนั้น เคสที่ต้องใช้ภาพต้อง `skip()` ไม่ใช่ล้ม |
