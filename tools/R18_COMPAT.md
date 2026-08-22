@@ -188,6 +188,7 @@ binary diff ใช้ได้เฉพาะคนที่มีไฟล์�
 | `port_r18.py` | decompile / align / report / import / recompile / pack ฝั่ง R18 |
 | `build_release.py` | สร้าง diff + ตรวจย้อนกลับ + เขียน installer + zip (คำสั่งเดียวจบ) |
 | `test_installer.sh` | จำลอง fresh install 6 เคส เทียบ SHA256 ทุกไฟล์ (ใช้ hard link ไม่แตะไฟล์เกมจริง) |
+| `gui/` | ตัวติดตั้งแบบหน้าต่าง (tkinter, native) — หาโฟลเดอร์เกมเอง อ่าน `manifest.json` ชุดเดียวกับ `install.bat` ([README](gui/README.md)) |
 | `garbro_extract.ps1` | ขับ `GameRes.dll` ของ GARbro ตรงๆ — แตก/ถอดรหัส XP3 โดยไม่ต้องเปิด GUI |
 | `check_shadowing.ps1` | บอกว่า archive ไหนชนะลำดับโหลด (อ่านชื่อไฟล์จริงจาก `sen:`→`hnfn`) |
 | `verify_thai.py` | นับสตริงไทยใน PSB (อ่าน string table ตรงๆ ไม่ต้อง decompile) |
