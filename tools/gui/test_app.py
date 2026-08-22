@@ -227,7 +227,7 @@ def test_chrome(inst):
     chk("ขนาดหน้าต่างตรงดีไซน์",
         (inst.root.winfo_width(), inst.root.winfo_height()), (T.S(880), T.S(600)))
     chk("ไม่มีชื่อผู้แปลบนหน้าจอ",
-        [t for t in _all_text(inst.shell) if "Jiranon" in t], [])
+        [t for t in _all_text(inst.border) if "Jiranon" in t], [])
 
 
 PNG_MAGIC = bytes([137, 80, 78, 71, 13, 10, 26, 10])
@@ -248,7 +248,7 @@ def ico_frames(path):
 def test_logo(inst):
     print("=" * 70)
     print("โลโก้และไอคอน")
-    img = inst._logo_img
+    img = inst.win._logo_img
     chk_true("โหลดโลโก้ได้", img is not None)
     if img is not None:
         chk("ขนาดโลโก้ตรงกับที่ขอ (ไม่ได้ให้ Tk ย่อเอง)",
@@ -277,13 +277,13 @@ def test_logo(inst):
     real = assets.logo_file
     assets.logo_file = lambda _px: None
     try:
-        w, side = inst._make_mark(inst.shell)
+        w, side = inst.win.mark(inst.border)
         chk("ไม่มีโลโก้ -> ถอยไปใช้สี่เหลี่ยมตามดีไซน์",
             (w.winfo_class(), side), ("Frame", 18))
         w.destroy()
     finally:
         assets.logo_file = real
-        inst._logo_img = img
+        inst.win._logo_img = img
 
 
 def test_credit(inst):
@@ -291,7 +291,7 @@ def test_credit(inst):
     print("เครดิตท้ายหน้าต่าง")
     c = inst.w_credit
     body = c.master
-    chk("มีบรรทัดเดียว", [t for t in _all_text(inst.shell) if "แฟนเกม" in t],
+    chk("มีบรรทัดเดียว", [t for t in _all_text(inst.border) if "แฟนเกม" in t],
         [gui.CREDIT])
     chk_true("บอกว่าใครทำ", "แฟนเกม" in gui.CREDIT)
     chk_true("บอกว่าไม่ใช่ของทางการ", "ไม่ใช่ฉบับทางการ" in gui.CREDIT)
@@ -309,7 +309,7 @@ def test_credit(inst):
 def test_backdrop(inst):
     print("=" * 70)
     print("แผงภาพพื้นหลัง")
-    cv, img = inst.bg, inst._bg_img
+    cv, img = inst.win.bg, inst.win._bg_img
     chk_true("โหลด bg.png ได้", cv is not None and img is not None)
     if not cv:
         return
@@ -332,19 +332,19 @@ def test_backdrop(inst):
 
     A.flush()
     home = T.S(gui.BG_W)
-    chk("เลื่อนเข้าที่แล้วชิดขอบขวาพอดี", round(cv.coords(inst._bg_item)[0]), home)
-    inst.slide_backdrop(T.S(40), 0.5)
-    chk_true("สั่งเลื่อนแล้วขยับจริง", cv.coords(inst._bg_item)[0] > home)
+    chk("เลื่อนเข้าที่แล้วชิดขอบขวาพอดี", round(cv.coords(inst.win._bg_item)[0]), home)
+    inst.win.slide_backdrop(T.S(40), 0.5)
+    chk_true("สั่งเลื่อนแล้วขยับจริง", cv.coords(inst.win._bg_item)[0] > home)
     A.flush()
     chk("เลื่อนจบแล้วกลับเข้าที่เดิม",
-        round(cv.coords(inst._bg_item)[0]), home)
+        round(cv.coords(inst.win._bg_item)[0]), home)
 
-    saved = inst.bg
-    inst.bg = None
-    inst.slide_backdrop(T.S(20), 0.2)      # เครื่องที่ไม่มี bg.png ต้องไม่ล้ม
+    saved = inst.win.bg
+    inst.win.bg = None
+    inst.win.slide_backdrop(T.S(20), 0.2)      # เครื่องที่ไม่มี bg.png ต้องไม่ล้ม
     A.flush()
-    chk("ไม่มีภาพก็ยังทำงานได้", inst.bg, None)
-    inst.bg = saved
+    chk("ไม่มีภาพก็ยังทำงานได้", inst.win.bg, None)
+    inst.win.bg = saved
 
 
 def test_drag(inst, allow_input=True):
@@ -354,27 +354,27 @@ def test_drag(inst, allow_input=True):
     x0, y0, w0, h0 = winui.window_rect(root)
 
     # ── สูตรคำนวณตำแหน่ง
-    inst._drag_start(FakeEvent(x0 + 300, y0 + 20))
-    chk("จำระยะจากมุมหน้าต่างถึงเมาส์ได้", inst._drag, (300, 20))
-    inst._drag_move(FakeEvent(x0 + 300 + 137, y0 + 20 + 61))
+    inst.win._drag_start(FakeEvent(x0 + 300, y0 + 20))
+    chk("จำระยะจากมุมหน้าต่างถึงเมาส์ได้", inst.win._drag, (300, 20))
+    inst.win._drag_move(FakeEvent(x0 + 300 + 137, y0 + 20 + 61))
     x1, y1, w1, h1 = winui.window_rect(root)
     chk("เมาส์ขยับเท่าไร หน้าต่างขยับเท่านั้นเป๊ะ", (x1 - x0, y1 - y0), (137, 61))
     chk("ขนาดไม่เปลี่ยนระหว่างลาก", (w1, h1), (w0, h0))
-    inst._drag_end(None)
-    chk("ปล่อยปุ่มแล้วเลิกลาก", inst._drag, None)
-    inst._drag_move(FakeEvent(x0 + 999, y0 + 999))
+    inst.win._drag_end(None)
+    chk("ปล่อยปุ่มแล้วเลิกลาก", inst.win._drag, None)
+    inst.win._drag_move(FakeEvent(x0 + 999, y0 + 999))
     chk("ปล่อยแล้วขยับเมาส์ หน้าต่างต้องอยู่นิ่ง",
         winui.window_rect(root)[:2], (x1, y1))
 
     # ── ความเร็ว: ของเดิมวัดได้ 30.6 ms/เฟรม = 33 fps ซึ่งคือต้นเหตุอาการเงา
-    inst._drag_start(FakeEvent(x1 + 300, y1 + 20))
+    inst.win._drag_start(FakeEvent(x1 + 300, y1 + 20))
     N = 60
     t = time.perf_counter()
     for i in range(N):
-        inst._drag_move(FakeEvent(x1 + 300 + (i % 30), y1 + 20))
+        inst.win._drag_move(FakeEvent(x1 + 300 + (i % 30), y1 + 20))
         root.update()
     ms = (time.perf_counter() - t) * 1000 / N
-    inst._drag_end(None)
+    inst.win._drag_end(None)
     winui.move_window(root, x0, y0)
     print("          วัดได้ %.2f ms/เฟรม (%.0f fps) — ของเดิม 30.6 ms (33 fps)"
           % (ms, 1000 / ms))
@@ -388,9 +388,9 @@ def test_drag(inst, allow_input=True):
     root.deiconify()
     root.update()
     xa, ya, _w, _h = winui.window_rect(root)
-    inst._drag_start(FakeEvent(xa + 300, ya + 20))
-    inst._drag_move(FakeEvent(xa + 300 + 90, ya + 20 + 45))
-    inst._drag_end(None)
+    inst.win._drag_start(FakeEvent(xa + 300, ya + 20))
+    inst.win._drag_move(FakeEvent(xa + 300 + 90, ya + 20 + 45))
+    inst.win._drag_end(None)
     root.update()
     xb, yb, _w, _h = winui.window_rect(root)
     chk("Tk รู้ตำแหน่งใหม่ด้วย", (root.winfo_x(), root.winfo_y()), (xb, yb))
@@ -522,7 +522,7 @@ def test_window_fx(inst):
     print("เข้า-ออกของหน้าต่าง")
     root = inst.root
     root.attributes("-alpha", 0.0)
-    inst._appear()
+    inst.win.appear()
     A.flush()
     chk("เฟดเข้าจบที่ทึบเต็ม", float(root.attributes("-alpha")), 1.0)
     # Tk เปิด WS_EX_LAYERED ให้ตอนสร้าง wrapper เท่านั้น ถ้าบิตหลุดไป
@@ -535,7 +535,7 @@ def test_window_fx(inst):
     root.attributes("-alpha", 1.0)
 
     x, y, _w, _h = winui.window_rect(root)
-    inst._shake()                       # หน้าต่างถูก withdraw อยู่ -> ต้องไม่ทำอะไร
+    inst.win.shake()                       # หน้าต่างถูก withdraw อยู่ -> ต้องไม่ทำอะไร
     A.flush()
     chk("ไม่สั่นตอนหน้าต่างยังไม่โผล่", winui.window_rect(root)[:2], (x, y))
 

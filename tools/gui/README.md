@@ -44,7 +44,9 @@ winui.py      ปลั๊ก Win32 — DPI / ถอดแถบหัว / ย�
 assets.py     หาไฟล์ใน ui/ — โลโก้ตาม DPI, ไอคอน, ภาพพื้นหลัง, ฟอนต์
 anim.py       ทวีน/easing/ตัวจับเวลากลาง — อนิเมชันทุกตัวในแอปเดินผ่านไฟล์นี้
 widgets.py    .btn / .tag / .input / progress / checkbox / badge เป็น Tk widget
-app.py        หน้าต่าง + 5 หน้าจอ + เดินสถานะ + ดักคราช
+window.py     เปลือกหน้าต่าง — สร้าง Tk / จัดกลาง / เข้า-ออก / ลาก / สั่น /
+              โลโก้ / แผงภาพ  (ไม่รู้เรื่องการติดตั้งเลย)
+app.py        5 หน้าจอ + เดินสถานะ + เธรด + ดักคราช
 ui/fonts/     Sarabun 400/600/800 + OFL.txt
 ```
 
@@ -72,7 +74,7 @@ ui/icon.ico   ไอคอนหน้าต่าง / taskbar / ตัว .exe
 
 ```
 test_core.py  เทสตรรกะ 6 เคสเดียวกับ tools/test_installer.sh + เคส rollback
-test_app.py   เทสหน้าจอ 143 เคส (หน้าต่างถูก withdraw ไม่เด้งมากวน)
+test_app.py   เทสหน้าจอ 148 เคส (หน้าต่างถูก withdraw ไม่เด้งมากวน)
 ```
 
 ## รัน / build
