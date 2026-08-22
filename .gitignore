@@ -15,6 +15,8 @@
 !/tools/
 /tools/FreeMote/
 /tools/xdelta/
+/tools/GARbro/
+/tools/_dl/
 
 # 4) thai_work/ — keep only our translation data + dashboards
 !/thai_work/
@@ -22,6 +24,7 @@
 !/thai_work/th/
 !/thai_work/glossary.csv
 !/thai_work/PROGRESS.md
+!/thai_work/PROGRESS_R18.md
 !/thai_work/manifest.json
 !/thai_work/progress.json
 
