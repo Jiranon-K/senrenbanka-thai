@@ -24,9 +24,18 @@
    `[40B v2 header][file data][sen: blob verbatim][zlib index]`. update sen: field0 = blob offset ใหม่.
 
 ## Scenario coverage
-- **87/90 บทอยู่ใน patch.xp3** (priority สูงสุด, ชนะ scn+patch_extra) → แก้ patch.xp3
+- **87/90 บทอยู่ใน patch.xp3** (ชนะ scn+patch_extra) → แก้ patch.xp3
 - **3 บทอยู่ scn.xp3 อย่างเดียว** → แก้ scn.xp3
 - patch_extra.xp3 = ไม่ต้องแตะ (patch.xp3 ชนะ)
+
+⚠️ **patch.xp3 ไม่ใช่ priority สูงสุดเสมอไป** — ถ้าผู้เล่นลงแพตช์ R18 จะมี `adult.xp3`
+(append pack ของ `sysscn/append_init.tjs`) เข้ามาอยู่ *เหนือ* patch.xp3 และในนั้นมี
+`*.ks.scn` ครบ 92 บท → ไทยใน patch.xp3 ถูกทับหมด
+
+ลำดับจริง: `scn.xp3 < patch_extra.xp3 < patch.xp3 < adult.xp3`
+
+รายละเอียด + วิธีพอร์ตไทยไปฝั่ง R18: [`R18_COMPAT.md`](R18_COMPAT.md) · เครื่องมือ:
+`port_r18.py`, `check_thai.ps1`
 
 ## Toolchain (`tools/`)
 - **FreeMote** v4.5 — decompile/recompile PSB
@@ -87,19 +96,40 @@ python tools/rebuild_fonts.py     # แทน SourceHanSansSC-{Reg,Bold,Heavy} �
 
 **เครื่องมือ**: `tools/xdelta/xdelta3.exe` (ไม่ commit เข้า repo — โหลดแยกจาก [jmacd/xdelta releases](https://github.com/jmacd/xdelta/releases), official Windows binary)
 
-**สร้าง diff ใหม่** (ทำทุกครั้งที่แปลเพิ่ม/เกมอัปเดตเวอร์ชัน — ต้องมี `.orig` ที่ตรงกับเวอร์ชันเกมปัจจุบัน):
+**สร้างชุดติดตั้งทั้งชุด = คำสั่งเดียว** (`tools/build_release.py`):
 ```powershell
-tools/xdelta/xdelta3.exe -e -f -9 -B 1073741824 -s patch.xp3.orig patch.xp3 thai_work/dist/thai-patch.xdelta
-tools/xdelta/xdelta3.exe -e -f -9 -B 1073741824 -s data.xp3.orig  data.xp3  thai_work/dist/thai-data.xdelta
+python tools/build_release.py --version 1.1
 ```
-`-B 1GB` = source window เต็มไฟล์ (จำเป็น เพราะ rebuild ทำให้ offset ข้อมูลเดิมเลื่อน) `-s` = source ฐาน (`.orig`). ตรวจผลด้วยการ decode กลับมาเทียบ byte-ต่อ-byte ก่อนแจกทุกครั้ง (`xdelta3.exe -d -s <.orig> <.xdelta> <out>` แล้ว `cmp`).
+ทำให้ครบตั้งแต่ต้นจนจบ: หาโฟลเดอร์เกม → encode diff ทั้ง 3 ตัว → **decode กลับมาเทียบ SHA256 ทุกไฟล์** (ไม่ตรง = หยุด ไม่ปล่อย) → เขียน `install.bat`/`uninstall.bat`/`README.txt`/`checksums.txt` โดยฝัง SHA256 จริงลงไป → zip
+ผลลัพธ์อยู่ใน `thai_work/dist/` (gitignore ไว้ — อัปโหลดเป็น GitHub Release asset แทน)
 
-**แพ็กเป็น zip แจก**: `install.bat` + `uninstall.bat` + `xdelta3.exe` + `thai-patch.xdelta` + `thai-data.xdelta` + `README.txt` (source อยู่ใน `thai_work/dist/` ระหว่างสร้าง — ไม่ commit โฟลเดอร์นี้ อัปโหลดเป็น GitHub Release asset แทน)
+| diff | source | target | หมายเหตุ |
+|---|---|---|---|
+| `thai-patch.xdelta` | `patch.xp3.bak` | `patch.xp3` | บทพูด all-ages |
+| `thai-data.xdelta` | `data.xp3.bak` | `data.xp3` | ฟอนต์ Sarabun |
+| `thai-adult.xdelta` | `adult.xp3.orig` | `adult.xp3` | บทพูดฝั่ง R18 (ข้ามอัตโนมัติถ้าไม่มี `.orig`) |
 
-**ทดสอบก่อนแจกทุกครั้ง**: จำลอง fresh install (copy `.orig` ทั้งคู่ตั้งเป็น `patch.xp3`/`data.xp3` ใน folder ทดสอบ, ใส่ `SenrenBanka.exe` เปล่าไว้ด้วยเพื่อผ่านเช็ค) → รัน `install.bat` → เทียบ SHA256 กับไฟล์แปลไทยจริง → รัน `uninstall.bat` → เทียบ SHA256 กับ `.orig` เดิม
+`-B 1GB` = source window เต็มไฟล์ (จำเป็นตอน **encode** เพราะ rebuild ทำให้ offset ข้อมูลเดิมเลื่อน; ตอน decode ไม่ต้องใส่ — ทดสอบแล้วกับ adult.xp3 855 MB ใช้เวลา 2.2 วิ)
+
+**สิ่งที่ installer ทำต่างจาก v1.0 และทำไม**
+- **ซิปเดียวรองรับทั้ง all-ages และ R18** — เห็น `adult.xp3` = แปะ `thai-adult.xdelta` ด้วย. แยกสองซิปเสี่ยงคนโหลดผิดตัวแล้วได้ไทยครึ่งๆ
+- **สำรองด้วย `move` ไม่ใช่ `copy`** — v1.0 ก็อปปี้ 1.3 GB ก่อนแปะ, v1.1 มี `adult.xp3` อีก 855 MB. rename บน volume เดียวกันเป็น O(1) → ใช้พื้นที่แค่เท่าไฟล์ผลลัพธ์
+- **เช็ค SHA256 ก่อนแตะไฟล์** — `certutil -hashfile` แยกได้ว่า "ลงไปแล้ว" / "Steam อัปเดตเกม" / "แพตช์ R18 คนละ build" แทนที่จะปล่อยให้ xdelta error ตอนท้ายด้วยข้อความที่ผู้เล่นอ่านไม่รู้เรื่อง
+- **ถ้าแปะ `adult.xp3` ไม่ได้ = ล้มทั้งชุด** ไม่ยอมแปะครึ่งเดียว เพราะ `adult.xp3` ทับ `patch.xp3` อยู่ → แปะครึ่งเดียวเกมขึ้นภาษาจีนเงียบๆ (คือบั๊กที่ v1.1 เกิดมาเพื่อแก้)
+- **`:rollback`** คืนไฟล์ทุกตัวที่ rename ไปแล้วถ้าล้มกลางคัน
+
+**ทดสอบก่อนแจกทุกครั้ง** — อัตโนมัติแล้ว:
+```bash
+bash tools/test_installer.sh thai_work/dist/senrenbanka-thai-patch-v1.1
+```
+จำลอง fresh install 6 เคส: R18 / all-ages / adult.xp3 คนละ build / แตกซิปไม่ครบ / รันผิดโฟลเดอร์ / ต้นฉบับต้องไม่ถูกแตะ — เทียบ SHA256 ทุกไฟล์ทั้งหลัง `install.bat` และหลัง `uninstall.bat`
+
+ไฟล์ต้นทางในโฟลเดอร์ทดสอบเป็น **hard link** ไปยัง archive จริง → ไม่ต้องก็อป 2 GB และ `move` ใน installer แค่เปลี่ยนชื่อ link (เทสเคสที่ 6 ยืนยันซ้ำว่าต้นฉบับไม่เปลี่ยน) ค่า SHA256 ที่คาดหวังอ่านจาก `install.bat` ที่ build มา ไม่ต้อง sync มือ
 
 ⚠️ ข้อควรระวังตอนเขียน `.bat`:
-- **ต้องเซฟเป็น CRLF + UTF-8 BOM** (ไม่ใช่ LF) — cmd.exe parse ผิดเพี้ยนกับ LF-only โดยเฉพาะไฟล์ที่มี `chcp 65001` + ข้อความไทย (token แตกกลางบรรทัด)
+- **CRLF เสมอ** (ไม่ใช่ LF) — cmd.exe parse ผิดเพี้ยนกับ LF-only โดยเฉพาะไฟล์ที่มี `chcp 65001` + ข้อความไทย (token แตกกลางบรรทัด)
+- **ห้ามใส่ UTF-8 BOM ใน `.bat`** (แก้จากที่เคยเขียนไว้ — v1.0 ใส่ BOM แล้วพลาด) BOM ทำให้บรรทัดแรกเป็น `<BOM>@echo off` ซึ่ง cmd อ่านไม่ออก → ขึ้น `'@echo' is not recognized` และ echo ไม่ถูกปิด ผู้เล่นเห็นทุกคำสั่งวิ่งผ่านจอ. ไม่ต้องพึ่ง BOM เพราะ cmd decode ทีละบรรทัดด้วย codepage ปัจจุบัน — `chcp 65001` บรรทัดที่ 3 ทำให้บรรทัดถัดไปอ่านเป็น UTF-8 เอง. วัดจริงทั้ง CP 437 / 874 / 1252 / 65001 (ไม่มี BOM ผ่านหมด, มี BOM พังทุกตัวยกเว้น 65001) — ตารางอยู่ใน `build_release.py`
+- `README.txt` ยังคง BOM ไว้ (เปิดด้วย Notepad)
 - **ห้ามเรียกโปรแกรมด้วยชื่อเปล่า** (เช่น `xdelta3.exe`) — ต้องใช้ `"%~dp0xdelta3.exe"` เสมอ เพราะเครื่องที่ปิด `NoDefaultCurrentDirectoryInExePath` (ค่าตั้งความปลอดภัยที่พบได้จริง โดยเฉพาะเครื่ององค์กร/hardened) จะหา exe ใน current directory ไม่เจอ แม้ `cd` เข้าไปถูกโฟลเดอร์แล้วก็ตาม — ใช้ full path จาก `%~dp0` ปลอดภัยเสมอไม่ว่า policy จะเป็นแบบไหน
 - ใส่ `cd /d "%~dp0"` ต้นสคริปต์เสมอ กัน user รันจาก shortcut/cwd ผิดที่
 
