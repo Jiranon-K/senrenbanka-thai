@@ -18,6 +18,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))          # tools/gui/build
 GUI = os.path.dirname(HERE)                                # tools/gui
@@ -76,8 +77,31 @@ def main():
 
     src = os.path.join(build, "dist", a.name + ".exe")
     dst = os.path.join(os.path.abspath(a.out), a.name + ".exe")
-    shutil.copy2(src, dst)
+    copy_over(src, dst)
     print("\n%s  (%.1f MB)" % (dst, os.path.getsize(dst) / 2 ** 20))
+
+
+def copy_over(src, dst, tries=6):
+    """ทับไฟล์ปลายทาง ทนต่อการที่ Windows ยังจับไฟล์ค้างอยู่ชั่วครู่
+
+    .exe ที่เพิ่งเขียนเสร็จมักถูก Defender เปิดสแกน หรือ Explorer เปิดอ่าน
+    ไอคอน อยู่พักหนึ่ง — copy ทับตอนนั้นจะได้ WinError 32 ทั้งที่ไม่มีใคร
+    "รัน" มันอยู่ รอสักครู่แล้วลองใหม่จบเรื่อง ดีกว่าให้ทั้ง build ล้ม
+    """
+    for i in range(tries):
+        try:
+            shutil.copy2(src, dst)
+            return
+        except PermissionError:
+            if i == tries - 1:
+                raise
+            # ย้ายตัวเก่าออกไปก่อน (rename ทำได้แม้ยังมีคนเปิดอ่านอยู่)
+            try:
+                os.replace(dst, dst + ".old")
+            except OSError:
+                pass
+            print("  ปลายทางถูกจับไว้ รออีกครั้ง (%d/%d)" % (i + 1, tries))
+            time.sleep(1.0)
 
 
 def check_build_only_excluded(workdir):
