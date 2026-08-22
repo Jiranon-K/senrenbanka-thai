@@ -508,6 +508,13 @@ def test_generated_bat_matches_shipped():
     for n, text in made.items():
         chk("%s ตรงกับที่ปล่อยไปแล้วทุกบรรทัด" % n,
             norm(shipped[n]), norm(text))
+        # ด่านกันลืมต้องยิงใส่ข้อความที่เติมค่าแล้ว ไม่ใช่ตัว template — ใน
+        # template มีแต่ placeholder ยิงผิดตัวคือ build ไม่ผ่านตลอดกาล
+        try:
+            T.check_bat_mentions_every_target(text, n)
+            chk("%s ที่เติมค่าแล้วผ่านด่านกันลืม" % n, "ผ่าน", "ผ่าน")
+        except SystemExit as ex:
+            chk("%s ที่เติมค่าแล้วผ่านด่านกันลืม" % n, str(ex), "ผ่าน")
 
 
 # ═════════════════════════════════════════════════════════════ main
