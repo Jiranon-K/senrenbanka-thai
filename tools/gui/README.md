@@ -35,22 +35,44 @@ Tk เรนเดอร์ไทยถูกด้วย: `test_app.py` วั�
 
 ## ไฟล์
 
+**สิ่งที่ไปอยู่ใน `.exe`** (ตัวโปรแกรม):
+
 ```
 core.py       ตรรกะล้วน ไม่มี UI — หาเกม / แฮช / rename / xdelta / rollback
-imgtool.py    เครื่องมือตอน build — ถอดรหัส/ย่อขยายภาพด้วย GDI+ (แอปไม่ได้ใช้)
-make_bg.py    เครื่องมือตอน build — ภาพต้นฉบับ -> ui/bg.png (แผงกระจกฝ้า)
-make_logo.py  เครื่องมือตอน build — ภาพต้นฉบับ -> ui/logo@*.png + ui/icon.ico
-theme.py      โทเคนดีไซน์ (สี ฟอนต์ ระยะ) + DPI + โหลดฟอนต์ + ย้ายหน้าต่าง + .ico
+theme.py      โทเคนดีไซน์ล้วน — สี ฟอนต์ ระยะ (import แล้วไม่ลาก ctypes ตามมา)
+winui.py      ปลั๊ก Win32 — DPI / ถอดแถบหัว / ย้ายหน้าต่าง / layered / ฟอนต์
+assets.py     หาไฟล์ใน ui/ — โลโก้ตาม DPI, ไอคอน, ภาพพื้นหลัง, ฟอนต์
 anim.py       ทวีน/easing/ตัวจับเวลากลาง — อนิเมชันทุกตัวในแอปเดินผ่านไฟล์นี้
 widgets.py    .btn / .tag / .input / progress / checkbox / badge เป็น Tk widget
 app.py        หน้าต่าง + 5 หน้าจอ + เดินสถานะ + ดักคราช
-build_gui.py  PyInstaller
-test_core.py  เทสตรรกะ 6 เคสเดียวกับ tools/test_installer.sh + เคส rollback
-test_app.py   เทสหน้าจอ 142 เคส (หน้าต่างถูก withdraw ไม่เด้งมากวน)
 ui/fonts/     Sarabun 400/600/800 + OFL.txt
+```
+
+**สิ่งที่ต้องไม่ไปอยู่ใน `.exe`** (เครื่องมือทำ asset — รันตอน build เท่านั้น):
+
+```
+build/imgtool.py    ถอดรหัส/ย่อขยายภาพด้วย GDI+ + เขียน PNG/ICO
+build/make_bg.py    ภาพต้นฉบับ -> ui/bg.png (แผงกระจกฝ้า)
+build/make_logo.py  ภาพต้นฉบับ -> ui/logo@*.png + ui/icon.ico
+build/build_gui.py  PyInstaller (+ assert ว่าไม่มีอะไรจาก build/ หลุดเข้าไป)
+```
+
+เดิมสองพวกนี้อยู่ปนกันในโฟลเดอร์เดียว โดยมีแค่คำเตือนใน docstring กันไว้
+ซึ่งบังคับอะไรไม่ได้ — แยกโฟลเดอร์แล้วจึง assert ได้จริงหลัง build
+
+**ไฟล์ที่ `build/` สร้างไว้ให้ (bundle ไปกับ `.exe`):**
+
+```
 ui/bg.png     แผงภาพพื้นหลัง 280x482 (RGBA ฝังการไล่จางไว้ในช่อง alpha แล้ว)
 ui/logo@*.png โลโก้มุมบนซ้าย 20/25/30/40 px (หนึ่งไฟล์ต่อหนึ่งระดับ DPI)
 ui/icon.ico   ไอคอนหน้าต่าง / taskbar / ตัว .exe (16-256 px)
+```
+
+**เทส:**
+
+```
+test_core.py  เทสตรรกะ 6 เคสเดียวกับ tools/test_installer.sh + เคส rollback
+test_app.py   เทสหน้าจอ 143 เคส (หน้าต่างถูก withdraw ไม่เด้งมากวน)
 ```
 
 ## รัน / build
@@ -63,7 +85,7 @@ python tools/gui/app.py                 # รันจาก source
 python tools/gui/test_core.py           # เทสตรรกะ
 python tools/gui/test_app.py            # เทสหน้าจอ (มีเคสที่ขยับเมาส์จริงราว 1 วิ)
 python tools/gui/test_app.py --no-input # ข้ามเคสที่ต้องฉีด input
-python tools/gui/build_gui.py --out thai_work\dist\senrenbanka-thai-patch-v1.1
+python tools/gui/build/build_gui.py --out thai_work\dist\senrenbanka-thai-patch-v1.1
 ```
 
 เคส "ลากด้วยเมาส์จริง" ฉีด input เข้าระบบจริงๆ เพื่อเทสทั้งเส้น (Windows →
@@ -74,14 +96,14 @@ Tk → handler → หน้าต่างขยับ) มันจะเช�
 สร้าง `ui/bg.png` ใหม่ (ทำเมื่อเปลี่ยนภาพเท่านั้น ไม่ได้อยู่ในขั้นตอน build ปกติ):
 
 ```powershell
-python tools/gui/make_bg.py "...\ภาพ.jpg" --focus 0.20,0.02 --zoom 1.35 `
+python tools/gui/build/make_bg.py "...\ภาพ.jpg" --focus 0.20,0.02 --zoom 1.35 `
        --peak 0.88 --clear 0.30 --wash 0.09 --desat 0.16 --blur 2.7
 ```
 
 สร้างโลโก้ + ไอคอนใหม่:
 
 ```powershell
-python tools/gui/make_logo.py "...\ภาพ.jpg" --focus 0.513,0.01 --zoom 1.45
+python tools/gui/build/make_logo.py "...\ภาพ.jpg" --focus 0.513,0.01 --zoom 1.45
 ```
 
 หรือทำทั้งชุดรวด: `python tools/build_release.py --version 1.1 --gui`
@@ -148,7 +170,7 @@ python tools/gui/make_logo.py "...\ภาพ.jpg" --focus 0.513,0.01 --zoom 1.45
 ## โลโก้กับไอคอน
 
 เครื่องหมายมุมบนซ้ายและไอคอนหน้าต่าง/taskbar มาจากภาพเดียวกัน ครอปเป็น
-จัตุรัสรอบใบหน้าแล้วย่อด้วย bicubic ของ GDI+ ตอน build (`make_logo.py`)
+จัตุรัสรอบใบหน้าแล้วย่อด้วย bicubic ของ GDI+ ตอน build (`build/make_logo.py`)
 
 **ทำไมต้องเตรียมโลโก้ไว้หลายขนาด** — Tk ย่อภาพได้แค่หารด้วยจำนวนเต็มแบบ
 nearest-neighbour (`subsample`) ซึ่งขอบแตกทันทีที่ย่อ และย่อเป็นทศนิยมไม่ได้เลย
@@ -187,7 +209,7 @@ y = 44 (ใต้แถบหัว) → 526 (เหนือแถวปุ่�
 `ui/bg.png` กว้าง 280 แต่ 30% ทางซ้ายใสสนิท — เผื่อไว้ให้ canvas ตัดทิ้ง
 ขอบซ้ายที่ผู้ใช้เห็นจึงเป็นศูนย์พอดีเสมอ
 
-### ทำไมต้องแปลงภาพตอน build (`make_bg.py`)
+### ทำไมต้องแปลงภาพตอน build (`build/make_bg.py`)
 
 * Tk อ่านได้แค่ PNG / GIF / PPM — **ไม่มี JPEG**
 * ห้ามลาก Pillow เข้ามาเพื่องานนี้งานเดียว (`.exe` โตขึ้นหลาย MB)
@@ -204,7 +226,7 @@ Tk 8.6 ผสม alpha ให้ตรงเป๊ะ (วัดแล้ว: �
 
 ### ลิขสิทธิ์
 
-ภาพจากเกมเป็นของผู้พัฒนา `make_bg.py` กับ `make_logo.py` จึงรับ path จาก
+ภาพจากเกมเป็นของผู้พัฒนา `build/make_bg.py` กับ `build/make_logo.py` จึงรับ path จาก
 ภายนอกและไม่เก็บไฟล์ต้นฉบับไว้ในที่เก็บโค้ด — ส่วนไฟล์ใน `ui/` ที่ถูก commit ไว้
 เป็นภาพที่ผ่านการครอป/ย่อ/เบลอ/ไล่จางแล้ว
 

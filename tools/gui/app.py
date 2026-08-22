@@ -4,14 +4,14 @@
 app.py — หน้าต่างติดตั้งแพตช์แปลไทย (Windows native, tkinter)
 
     python tools/gui/app.py
-    python tools/gui/build_gui.py --out <โฟลเดอร์ชุดติดตั้ง>
+    python tools/gui/build/build_gui.py --out <โฟลเดอร์ชุดติดตั้ง>
 
 เป็นโปรแกรมหน้าต่างจริงๆ: widget ของ Windows ล้วน มีปุ่มบน taskbar
 ไม่มีเบราว์เซอร์ ไม่มี HTTP server ไม่เปิดพอร์ต ไม่ต้องพึ่ง WebView2
 
 หน้าตายกมาจาก Claude Design — โปรเจกต์ "Fan-translation mod installer",
 ไฟล์ `Mod Installer.dc.html`, ระบบดีไซน์ **Modernist**
-(โทเคนอยู่ใน theme.py, คอมโพเนนต์อยู่ใน widgets.py)
+(โทเคนอยู่ใน theme.py, คอมโพเนนต์อยู่ใน widgets.py, ปลั๊ก Win32 อยู่ใน winui.py)
 
 ตรรกะทั้งหมดอยู่ใน core.py — ไฟล์นี้เป็นแค่หน้าจอกับการเดินสถานะ
 """
@@ -31,7 +31,9 @@ from tkinter import filedialog                                # noqa: E402
 
 import anim as A                                              # noqa: E402
 import core                                                   # noqa: E402
+import assets                                                 # noqa: E402
 import theme as T                                             # noqa: E402
+import winui                                                  # noqa: E402
 import widgets as W                                           # noqa: E402
 
 WIN_W, WIN_H = 880, 600
@@ -82,9 +84,9 @@ def mb(n: int) -> str:
 
 class Installer:
     def __init__(self):
-        T.dpi_aware()
-        T.taskbar_identity()
-        T.load_fonts()
+        winui.dpi_aware()
+        winui.taskbar_identity()
+        winui.load_fonts(assets.font_files())
 
         self.root = tk.Tk()
         T.init(self.root, (WIN_W, WIN_H))
@@ -100,7 +102,7 @@ class Installer:
         # ต้องถอดแถบหัวออก **ก่อน** ตั้ง geometry: Tk คิดขนาดหน้าต่างจาก
         # "พื้นที่ใน + ขนาดกรอบ" ถ้าตั้งตอนยังมีกรอบแล้วค่อยถอด หน้าต่างจะ
         # ใหญ่เกินไป 16x39 px (ขนาดกรอบเดิม)
-        T.strip_caption(self.root)
+        winui.strip_caption(self.root)
         self._center(T.S(WIN_W), T.S(WIN_H))
 
         self.q: queue.Queue = queue.Queue()
@@ -165,7 +167,7 @@ class Installer:
                 pass
         if not A.enabled():
             return kill()
-        T.make_layered(self.root)
+        winui.make_layered(self.root)
         A.tween(0.12, lambda v: self.root.attributes("-alpha", 1.0 - v),
                 ease=A.out_quad, done=kill, key="alpha")
         self.root.after(320, kill)
@@ -174,17 +176,20 @@ class Installer:
         """สั่นซ้าย-ขวาเบาๆ ตอนล้มเหลว — บอกว่า 'หยุดตรงนี้' โดยไม่ต้องมีเสียง"""
         if not A.enabled() or not self.root.winfo_viewable():
             return
-        x, y, _w, _h = T.window_rect(self.root)
+        x, y, _w, _h = winui.window_rect(self.root)
         amp = T.S(7)
 
         def step(v):
-            T.move_window(self.root, x + round(amp * (1 - v) * math.sin(v * math.pi * 6)), y)
+            winui.move_window(self.root, x + round(amp * (1 - v) * math.sin(v * math.pi * 6)), y)
         A.tween(0.42, step, ease=A.linear, key="shake",
-                done=lambda: T.move_window(self.root, x, y))
+                done=lambda: winui.move_window(self.root, x, y))
 
     def _set_icon(self):
+        ico = assets.icon_file()
+        if not ico:
+            return                    # ไม่ได้ bundle มา -> ใช้ไอคอนเริ่มต้นของ Tk
         try:
-            self.root.iconbitmap(default=T.icon_file())
+            self.root.iconbitmap(default=ico)
         except Exception:
             pass                      # ไอคอนหายไม่ใช่เหตุให้เปิดโปรแกรมไม่ได้
 
@@ -336,7 +341,7 @@ class Installer:
         แถบหัวได้ถูกทั้งสองกรณี
         """
         self._logo_img = None
-        f = T.logo_file(T.S(LOGO_PX))
+        f = assets.logo_file(T.S(LOGO_PX))
         if f:
             try:
                 self._logo_img = tk.PhotoImage(file=f)
@@ -359,8 +364,8 @@ class Installer:
         (ดู make_bg.py) ตรงนี้จึงเหลือแค่วางกับเลื่อน
         """
         self.bg = self._bg_img = self._bg_item = None
-        p = os.path.join(T.ui_dir(), "bg.png")
-        if not os.path.isfile(p):
+        p = assets.backdrop_file()
+        if not p:
             return                      # ไม่มีภาพก็ยังใช้งานได้ครบทุกอย่าง
         try:
             self._bg_img = tk.PhotoImage(file=p)
@@ -399,13 +404,13 @@ class Installer:
     # ส่วนวิธี "ยกให้ Windows ลากเอง" ใช้กับ Tk ไม่ได้ — เหตุผลอยู่ใน theme.py
 
     def _drag_start(self, e):
-        x, y, _w, _h = T.window_rect(self.root)
+        x, y, _w, _h = winui.window_rect(self.root)
         self._drag = (e.x_root - x, e.y_root - y)
 
     def _drag_move(self, e):
         if not self._drag:
             return
-        T.move_window(self.root, e.x_root - self._drag[0], e.y_root - self._drag[1])
+        winui.move_window(self.root, e.x_root - self._drag[0], e.y_root - self._drag[1])
 
     def _drag_end(self, _e):
         self._drag = None
