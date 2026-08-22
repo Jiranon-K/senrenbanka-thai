@@ -118,11 +118,26 @@ python tools/build_release.py --version 1.1
 - **ถ้าแปะ `adult.xp3` ไม่ได้ = ล้มทั้งชุด** ไม่ยอมแปะครึ่งเดียว เพราะ `adult.xp3` ทับ `patch.xp3` อยู่ → แปะครึ่งเดียวเกมขึ้นภาษาจีนเงียบๆ (คือบั๊กที่ v1.1 เกิดมาเพื่อแก้)
 - **`:rollback`** คืนไฟล์ทุกตัวที่ rename ไปแล้วถ้าล้มกลางคัน
 
-**ทดสอบก่อนแจกทุกครั้ง** — อัตโนมัติแล้ว:
+**ตัวติดตั้งแบบหน้าต่าง** (`--gui`): `python tools/build_release.py --version 1.1 --gui`
+จะ build `tools/gui/` (tkinter — Win32 window จริง, ดีไซน์จาก Claude Design) ใส่เข้าไปในซิปด้วย
+หาโฟลเดอร์เกมเองจาก `libraryfolders.vdf` ผู้เล่นจึงแตกซิปไว้ที่ไหนก็ได้
+และอ่าน `manifest.json` ตัวเดียวกับที่ฝัง hash ลง `install.bat` จึงไม่มีทางหลุด sync กัน
+
+เคยลองทำด้วย pywebview + WebView2 ก่อน แล้ววัดได้ว่ามันตั้ง **HTTP server ที่ 127.0.0.1**
+แล้วโหลดหน้าเว็บผ่านพอร์ตนั้น (เป็น web app ในกรอบหน้าต่าง ไม่ใช่โปรแกรมหน้าต่าง)
+จึงเปลี่ยนมาเป็น tkinter — ไม่มี dependency เพิ่ม ไม่เปิดพอร์ต และไม่ต้องพึ่ง WebView2 Runtime
+รายละเอียด/กับดักที่เจอมาแล้ว: [`gui/README.md`](gui/README.md)
+
+**ทดสอบก่อนแจกทุกครั้ง** — อัตโนมัติแล้ว 3 ชุด:
 ```bash
-bash tools/test_installer.sh thai_work/dist/senrenbanka-thai-patch-v1.1
+bash   tools/test_installer.sh thai_work/dist/senrenbanka-thai-patch-v1.1   # install.bat, 6 เคส
+python tools/gui/test_core.py                                              # ตรรกะ GUI, 6 เคสเดียวกัน
+python tools/gui/test_app.py                                               # หน้าจอ tkinter, 27 เคส
 ```
-จำลอง fresh install 6 เคส: R18 / all-ages / adult.xp3 คนละ build / แตกซิปไม่ครบ / รันผิดโฟลเดอร์ / ต้นฉบับต้องไม่ถูกแตะ — เทียบ SHA256 ทุกไฟล์ทั้งหลัง `install.bat` และหลัง `uninstall.bat`
+สองชุดแรกจำลอง fresh install: R18 / all-ages / adult.xp3 คนละ build / แตกซิปไม่ครบ / รันผิดโฟลเดอร์ /
+ต้นฉบับต้องไม่ถูกแตะ — เทียบ SHA256 ทุกไฟล์ทั้งหลังติดตั้งและหลังถอด
+(ฝั่ง GUI มีเคสเพิ่ม: xdelta ล้มกลางคันแล้วต้อง rollback ครบ)
+**เคสต้องตรงกันทั้งสองชุด** — ถ้าให้ผลต่างกัน แปลว่ามีตัวใดตัวหนึ่งผิด
 
 ไฟล์ต้นทางในโฟลเดอร์ทดสอบเป็น **hard link** ไปยัง archive จริง → ไม่ต้องก็อป 2 GB และ `move` ใน installer แค่เปลี่ยนชื่อ link (เทสเคสที่ 6 ยืนยันซ้ำว่าต้นฉบับไม่เปลี่ยน) ค่า SHA256 ที่คาดหวังอ่านจาก `install.bat` ที่ build มา ไม่ต้อง sync มือ
 
