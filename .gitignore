@@ -14,6 +14,9 @@
 !/CONTEXT.md
 !/LICENSE
 
+# 2b) docs/ — ภาพประกอบ README (ภาพหน้าจอตัวติดตั้งที่เราเขียนเอง)
+!/docs/
+
 # 3) tools/  — our pipeline scripts + guide (NOT 3rd-party binaries)
 !/tools/
 /tools/FreeMote/
@@ -25,6 +28,15 @@
 # The OFL explicitly permits redistribution, OFL.txt ships beside them, and the
 # GUI has to render Thai offline — a build without them falls back to whatever
 # the machine happens to have.
+#
+# The installer's logo/icon/backdrop are CROPS OF THE GAME'S OWN ARTWORK, cut by
+# tools/gui/build/make_logo.py and make_bg.py from a file you point them at. Those
+# scripts already refuse to keep the source image here; the outputs slipped in
+# anyway and are Yuzusoft's, not ours. Build them locally — assets.py returns None
+# for each missing file and the app falls back to the plain Modernist design.
+/tools/gui/ui/bg.png
+/tools/gui/ui/icon.ico
+/tools/gui/ui/logo@*.png
 
 # 4) thai_work/ — keep only our translation data + dashboards
 !/thai_work/
