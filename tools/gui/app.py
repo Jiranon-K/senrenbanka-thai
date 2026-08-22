@@ -4,20 +4,19 @@
 app.py — หน้าต่างติดตั้งแพตช์แปลไทย (Windows native, tkinter)
 
     python tools/gui/app.py
-    python tools/gui/build_gui.py --out <โฟลเดอร์ชุดติดตั้ง>
+    python tools/gui/build/build_gui.py --out <โฟลเดอร์ชุดติดตั้ง>
 
 เป็นโปรแกรมหน้าต่างจริงๆ: widget ของ Windows ล้วน มีปุ่มบน taskbar
 ไม่มีเบราว์เซอร์ ไม่มี HTTP server ไม่เปิดพอร์ต ไม่ต้องพึ่ง WebView2
 
 หน้าตายกมาจาก Claude Design — โปรเจกต์ "Fan-translation mod installer",
 ไฟล์ `Mod Installer.dc.html`, ระบบดีไซน์ **Modernist**
-(โทเคนอยู่ใน theme.py, คอมโพเนนต์อยู่ใน widgets.py)
+(โทเคนอยู่ใน theme.py, คอมโพเนนต์อยู่ใน widgets.py, เปลือกหน้าต่างอยู่ใน window.py)
 
 ตรรกะทั้งหมดอยู่ใน core.py — ไฟล์นี้เป็นแค่หน้าจอกับการเดินสถานะ
 """
 from __future__ import annotations
 
-import math
 import os
 import queue
 import sys
@@ -33,6 +32,7 @@ import anim as A                                              # noqa: E402
 import core                                                   # noqa: E402
 import theme as T                                             # noqa: E402
 import widgets as W                                           # noqa: E402
+import window                                                 # noqa: E402
 
 WIN_W, WIN_H = 880, 600
 STEPS = ["หาโฟลเดอร์เกม", "รายการติดตั้ง", "ติดตั้ง", "เสร็จสิ้น"]
@@ -61,6 +61,17 @@ FOOTER = {
 # บอกให้ครบว่า "ใครทำ" กับ "ไม่ใช่ของใคร" ในบรรทัดเดียว โดยไม่ใส่ชื่อคนแปล
 CREDIT = "งานแปลโดยแฟนเกม · ไม่ใช่ฉบับทางการ"
 
+# core.Step -> ข้อความในแถบสถานะ ("%s" = ชื่อไฟล์)
+# core ไม่รู้จักภาษาไทยสักคำ คำที่ผู้ใช้อ่านอยู่ที่นี่ที่เดียว
+STEP_TEXT = {
+    core.Step.HASH:    "ตรวจ %s",
+    core.Step.BACKUP:  "สำรองไฟล์ต้นฉบับ",
+    core.Step.APPLY:   "แปะแพตช์ %s",
+    core.Step.DISABLE: "ปิด %s (เปลี่ยนชื่อเป็น .off)",
+    core.Step.RESTORE: "คืนไฟล์ต้นฉบับ %s",
+    core.Step.DONE:    "เสร็จสิ้น",
+}
+
 
 def mb(n: int) -> str:
     if not n:
@@ -70,32 +81,22 @@ def mb(n: int) -> str:
 
 
 class Installer:
-    def __init__(self):
-        T.dpi_aware()
-        T.taskbar_identity()
-        T.load_fonts()
+    """เรื่องราวของการติดตั้ง — หาโฟลเดอร์เกม ตรวจ แปะ เสร็จ/ล้ม
 
-        self.root = tk.Tk()
-        T.init(self.root, (WIN_W, WIN_H))
-        A.setup(self.root)
-        # โปร่งใสไว้ก่อน **ตั้งแต่ยังไม่ map** เพื่อไม่ให้เห็นหน้าต่างตอนที่ยัง
-        # วางผังไม่เสร็จ แล้วขยับไปมาเอง (_center / _fix_size) — เดิมเห็นเป็น
-        # หน้าต่างเปล่ากระพริบแล้วเด้งตำแหน่ง เข้ามาค่อยไล่ความทึบขึ้นทีเดียว
-        self.root.attributes("-alpha", 0.0)
-        self.root.title("Senren Banka — แพตช์แปลไทย")
-        self.root.configure(bg=T.BG)
-        self.root.resizable(False, False)
-        self._set_icon()
-        # ต้องถอดแถบหัวออก **ก่อน** ตั้ง geometry: Tk คิดขนาดหน้าต่างจาก
-        # "พื้นที่ใน + ขนาดกรอบ" ถ้าตั้งตอนยังมีกรอบแล้วค่อยถอด หน้าต่างจะ
-        # ใหญ่เกินไป 16x39 px (ขนาดกรอบเดิม)
-        T.strip_caption(self.root)
-        self._center(T.S(WIN_W), T.S(WIN_H))
+    เปลือกหน้าต่าง (สร้าง Tk, ถอดแถบหัว, ลาก, เข้า/ออก, โลโก้, แผงภาพ)
+    อยู่ใน window.py ทั้งหมด ไฟล์นี้เรียกผ่าน self.win
+    """
+
+    def __init__(self):
+        self.win = window.Window("Senren Banka — แพตช์แปลไทย", (WIN_W, WIN_H),
+                                 logo_px=LOGO_PX)
+        self.root = self.win.root
 
         self.q: queue.Queue = queue.Queue()
         self.cancel = threading.Event()
         self.plan: core.Plan | None = None
-        self.info: dict | None = None
+        self.manifest: dict | None = None      # manifest.json ของชุดติดตั้ง
+        self.game_dirs: list[str] = []         # โฟลเดอร์เกมที่หาเจอ
         self.screen = None         # ยังไม่มีหน้าไหนถูกแสดง -> หน้าแรกได้อนิเมชันด้วย
         self.job: str | None = None
         self.busy = False
@@ -103,78 +104,12 @@ class Installer:
         self.r18_locked = False    # adult.xp3 เป็น build ที่ไม่รองรับ -> ลงได้แค่ all-ages
         self.w_r18_row = None
         self._debounce = None
-        self._drag = None
-        self._closing = False
 
         self._build()
-        self._fix_size()
+        self.win.fix_size()
         self.root.after(40, self._pump)
         self.root.after(0, self.boot)
-        self.root.after(1, self._appear)
-
-    # ------------------------------------------------------------ พื้นฐาน
-    def _center(self, w, h):
-        sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-        self.root.geometry("%dx%d+%d+%d" % (w, h, (sw - w) // 2, (sh - h) // 3))
-
-    def _fix_size(self):
-        """บังคับให้หน้าต่างเท่าขนาดในดีไซน์เป๊ะ
-
-        Tk จำ "ขนาดกรอบ" ไว้ตั้งแต่ตอน map หน้าต่างครั้งแรก การถอด WS_CAPTION/
-        WS_THICKFRAME ทีหลังไม่ล้างค่าที่จำไว้ หน้าต่างเลยกว้างเกินมา 16 px
-        วัดแล้วหักออกครั้งเดียวจบ ไม่ต้องเดาว่ากรอบของ Windows รุ่นไหนกว้างเท่าไร
-        """
-        self.root.update_idletasks()
-        dw = self.root.winfo_width() - T.S(WIN_W)
-        dh = self.root.winfo_height() - T.S(WIN_H)
-        if dw or dh:
-            self.root.geometry("%dx%d" % (T.S(WIN_W) - dw, T.S(WIN_H) - dh))
-            self.root.update_idletasks()
-
-    # ------------------------------------------------- เข้า/ออกของหน้าต่าง
-    def _appear(self):
-        """ไล่ความทึบ 0 -> 1 ครั้งเดียวตอนเปิด"""
-        A.tween(0.20, lambda v: self.root.attributes("-alpha", v),
-                ease=A.out_quad, done=self._appeared, key="alpha")
-
-    def _appeared(self):
-        self.root.attributes("-alpha", 1.0)
-
-    def _bye(self):
-        """จางออกแล้วค่อยปิด — กันปิดซ้ำและมีตัวกันเหนียวเผื่อทวีนสะดุด"""
-        if self._closing:
-            return
-        self._closing = True
-
-        def kill():
-            try:
-                self.root.destroy()
-            except Exception:
-                pass
-        if not A.enabled():
-            return kill()
-        T.make_layered(self.root)
-        A.tween(0.12, lambda v: self.root.attributes("-alpha", 1.0 - v),
-                ease=A.out_quad, done=kill, key="alpha")
-        self.root.after(320, kill)
-
-    def _shake(self):
-        """สั่นซ้าย-ขวาเบาๆ ตอนล้มเหลว — บอกว่า 'หยุดตรงนี้' โดยไม่ต้องมีเสียง"""
-        if not A.enabled() or not self.root.winfo_viewable():
-            return
-        x, y, _w, _h = T.window_rect(self.root)
-        amp = T.S(7)
-
-        def step(v):
-            T.move_window(self.root, x + round(amp * (1 - v) * math.sin(v * math.pi * 6)), y)
-        A.tween(0.42, step, ease=A.linear, key="shake",
-                done=lambda: T.move_window(self.root, x, y))
-
-    def _set_icon(self):
-        try:
-            self.root.iconbitmap(default=T.icon_file())
-        except Exception:
-            pass                      # ไอคอนหายไม่ใช่เหตุให้เปิดโปรแกรมไม่ได้
+        self.root.after(1, self.win.appear)
 
     def _pump(self):
         """งานจาก worker thread เข้ามาทาง queue — Tk แตะได้จาก thread เดียวเท่านั้น"""
@@ -216,7 +151,7 @@ class Installer:
         r = tk.Frame(self.root, bg=T.BG, highlightthickness=1,
                      highlightbackground=T.BORDER, highlightcolor=T.BORDER)
         r.pack(fill="both", expand=True)
-        self.shell = r
+        self.border = r
         r.grid_rowconfigure(1, weight=1)
         r.grid_columnconfigure(0, weight=1)
 
@@ -224,7 +159,7 @@ class Installer:
         head = tk.Frame(r, bg=T.BG, height=T.S(44))
         head.grid(row=0, column=0, sticky="ew")
         head.grid_propagate(False)
-        mark, side = self._make_mark(head)
+        mark, side = self.win.mark(head)
         self._mark = mark
         mark.place(x=T.S(14), y=T.S((44 - side) // 2))
         title = W.label(head, "Senren Banka — แพตช์แปลไทย", 13, bold=True)
@@ -241,10 +176,7 @@ class Installer:
         self.b_close.pack(side="left")
 
         # ลากหน้าต่างจากแถบหัว (เว้นปุ่ม) เหมือนแถบหัวของระบบ
-        for w in (head, mark, title, self.w_version):
-            w.bind("<ButtonPress-1>", self._drag_start)
-            w.bind("<B1-Motion>", self._drag_move)
-            w.bind("<ButtonRelease-1>", self._drag_end)
+        self.win.drag_from(head, mark, title, self.w_version)
 
         body = tk.Frame(r, bg=T.BG)
         body.grid(row=1, column=0, sticky="nsew")
@@ -312,91 +244,10 @@ class Installer:
         self.w_credit = W.label(body, CREDIT, 11, fg=T.TEXT_45)
         self.w_credit.place(x=T.S(26), rely=1.0, y=-T.S(16), anchor="sw")
 
-        self._build_backdrop(r)
+        self.win.backdrop(r, (BG_X, BG_Y, BG_W, BG_H))
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_cancel)
         self.root.bind("<Escape>", lambda _e: self.on_cancel())
-
-    def _make_mark(self, head):
-        """เครื่องหมายมุมบนซ้าย — โลโก้ที่ bundle มา ถ้าไม่มีก็สี่เหลี่ยมส้มตามดีไซน์
-
-        คืน (widget, ความสูงเป็น px ตามดีไซน์) เพื่อให้คำนวณตำแหน่งกึ่งกลาง
-        แถบหัวได้ถูกทั้งสองกรณี
-        """
-        self._logo_img = None
-        f = T.logo_file(T.S(LOGO_PX))
-        if f:
-            try:
-                self._logo_img = tk.PhotoImage(file=f)
-            except tk.TclError:
-                self._logo_img = None
-        if self._logo_img is None:
-            return tk.Frame(head, bg=T.ACCENT, width=T.S(18), height=T.S(18)), 18
-        return tk.Label(head, image=self._logo_img, bg=T.BG, bd=0,
-                        highlightthickness=0), LOGO_PX
-
-    # ------------------------------------------------------- แผงภาพด้านขวา
-    def _build_backdrop(self, parent):
-        """ภาพประกอบแบบกระจกฝ้า ไล่จางหายไปทางคอลัมน์เนื้อหา
-
-        สร้างเป็นลูกตัวสุดท้ายของ shell จึงอยู่บนสุด — มันทับเฉพาะพื้นที่ว่าง
-        ทางขวาของคอลัมน์เนื้อหา ไม่มี widget ตัวไหนอยู่ตรงนั้น
-        (Tk ไม่มีความโปร่งใสระหว่าง widget วางทับข้อความเมื่อไหร่คือบังทันที)
-
-        การไล่จางถูกฝังไว้ในช่อง alpha ของ bg.png ตั้งแต่ตอน build แล้ว
-        (ดู make_bg.py) ตรงนี้จึงเหลือแค่วางกับเลื่อน
-        """
-        self.bg = self._bg_img = self._bg_item = None
-        p = os.path.join(T.ui_dir(), "bg.png")
-        if not os.path.isfile(p):
-            return                      # ไม่มีภาพก็ยังใช้งานได้ครบทุกอย่าง
-        try:
-            self._bg_img = tk.PhotoImage(file=p)
-        except tk.TclError:
-            self._bg_img = None
-            return
-        cv = tk.Canvas(parent, bg=T.BG, highlightthickness=0, bd=0,
-                       width=T.S(BG_W), height=T.S(BG_H))
-        cv.place(x=T.S(BG_X), y=T.S(BG_Y))
-        # ชิดขวาและกึ่งกลางแนวตั้ง: จอ DPI สูงทำให้ canvas ใหญ่กว่าภาพ ช่องว่าง
-        # ที่เหลือจะอยู่ด้านซ้าย/บน/ล่าง ซึ่งเป็นด้านที่ภาพจางเป็นศูนย์อยู่แล้ว
-        self._bg_item = cv.create_image(T.S(BG_W), T.S(BG_H) // 2,
-                                        image=self._bg_img, anchor="e")
-        self.bg = cv
-        self.slide_backdrop(T.S(72), 0.95, ease=A.out_expo, delay=0.18)
-
-    def slide_backdrop(self, dx, dur, ease=A.out_cubic, delay=0.0):
-        """เลื่อนภาพเข้าที่ — ขอบไล่จางกวาดผ่านทำให้ดูเหมือนกระจกเลื่อน"""
-        if not self.bg:
-            return
-        x1, cy = T.S(BG_W), T.S(BG_H) // 2
-
-        def step(v):
-            self.bg.coords(self._bg_item, x1 + dx * (1 - v), cy)
-        A.tween(dur, step, ease=ease, delay=delay, key="bg")
-
-    # ------------------------------------------------- ลากหน้าต่างจากแถบหัว
-    #
-    # เดิมใช้ root.geometry("+x+y") ต่อหนึ่ง <B1-Motion> ซึ่งวัดได้ 30 ms ต่อครั้ง
-    # (Tk รื้อผังหน้าต่างใหม่ทุกครั้งที่สั่ง) = เพดาน 33 fps ขณะที่เมาส์ส่ง event
-    # มา 125-1000 Hz หน้าต่างจึงตามหลังเคอร์เซอร์เป็นเงา แล้วกระโดดตามทีเดียว
-    # ตอนคิวระบาย — คือ "เห็น ghost แล้วแอปวาป" พอดี
-    #
-    # ทางแก้คือขยับหน้าต่างด้วย SetWindowPos ตรงๆ ซึ่งวัดได้ 0.49 ms/เฟรม
-    # (~2000 fps) เร็วกว่าเดิม 60 เท่า และเร็วกว่าที่เมาส์จะส่ง event ทัน
-    # ส่วนวิธี "ยกให้ Windows ลากเอง" ใช้กับ Tk ไม่ได้ — เหตุผลอยู่ใน theme.py
-
-    def _drag_start(self, e):
-        x, y, _w, _h = T.window_rect(self.root)
-        self._drag = (e.x_root - x, e.y_root - y)
-
-    def _drag_move(self, e):
-        if not self._drag:
-            return
-        T.move_window(self.root, e.x_root - self._drag[0], e.y_root - self._drag[1])
-
-    def _drag_end(self, _e):
-        self._drag = None
 
     # ------------------------------------------------------------- แต่ละหน้า
     def _screen_locate(self, parent):
@@ -491,7 +342,7 @@ class Installer:
         f.place(x=0, y=0, relwidth=1.0, relheight=1.0)
         if first:
             self._enter(f)
-            self.slide_backdrop(T.S(14), 0.55)      # ขยับตามนิดหน่อย ให้รู้สึกเป็นชั้นเดียวกัน
+            self.win.slide_backdrop(T.S(14), 0.55)      # ขยับตามนิดหน่อย ให้รู้สึกเป็นชั้นเดียวกัน
 
         idx = STEP_OF[screen]
         for i, (rule, lab) in enumerate(self.w_steps):
@@ -537,20 +388,22 @@ class Installer:
         if stage is not None:
             self.w_stage.config(text=stage)
 
-    def stage_text(self, s: str) -> str:
-        if s == "stage.backup":
-            return "สำรองไฟล์ต้นฉบับ"
-        if s == "stage.done":
-            return "เสร็จสิ้น"
-        if s.startswith("stage.apply:"):
-            f = s[12:]
-            t = next((t for t in (self.plan.targets if self.plan else []) if t.name == f), None)
-            return "แปะแพตช์ %s%s" % (f, " — " + t.label if t else "")
-        if s.startswith("stage.disable:"):
-            return "ปิด " + s[14:] + " (เปลี่ยนชื่อเป็น .off)"
-        if s.startswith("stage.restore:"):
-            return "คืนไฟล์ต้นฉบับ " + s[14:]
-        return s
+    def step_text(self, step: core.Step) -> str:
+        """core.Step -> ข้อความไทยที่ผู้ใช้เห็น
+
+        ข้อความทุกบรรทัดที่โผล่ในแถบสถานะอยู่ในตาราง STEP_TEXT ตัวเดียว
+        แก้คำหรือเพิ่มภาษาได้โดยไม่ต้องแตะ core.py เลย
+        """
+        text = STEP_TEXT.get(step.kind, step.kind)
+        if "%s" not in text:
+            return text
+        name = step.file
+        if step.kind == core.Step.APPLY:
+            t = next((t for t in (self.plan.targets if self.plan else [])
+                      if t.name == name), None)
+            if t:
+                name += " — " + t.label      # "patch.xp3 — บทพูด (all-ages)"
+        return text % name
 
     def fail(self, title, sub, detail=""):
         self.busy = False
@@ -566,7 +419,7 @@ class Installer:
         else:
             self.w_err_box.pack_forget()
         self.show("error")
-        self._shake()
+        self.win.shake()
 
     def goto_done(self, installed, title, sub):
         self.busy = False
@@ -586,13 +439,14 @@ class Installer:
     # ------------------------------------------------------------- ขั้นที่ 1
     def boot(self):
         try:
-            self.info = {"mf": core.load_manifest(), "dirs": core.find_game_dirs()}
+            self.manifest = core.load_manifest()
+            self.game_dirs = core.find_game_dirs()
         except FileNotFoundError:
             return self.fail("ไม่พบ manifest.json",
                              "ตัวติดตั้งต้องอยู่โฟลเดอร์เดียวกับ manifest.json, "
                              "xdelta3.exe และไฟล์ .xdelta — แตกไฟล์ zip ให้ครบทุกไฟล์")
-        self.w_version.config(text="v" + self.info["mf"]["version"])
-        dirs = self.info["dirs"]
+        self.w_version.config(text="v" + self.manifest["version"])
+        dirs = self.game_dirs
         if dirs:
             self.var_path.set(dirs[0])
             self.w_path.xview_moveto(1.0)      # path ยาวกว่าช่อง — โชว์หางไว้
@@ -639,7 +493,7 @@ class Installer:
                            "accent" if r18 else "neutral")
             self.w_note_detail.config(
                 text="ติดตั้งแพตช์ไทยไว้แล้ว" if p.has_backups
-                else "พื้นที่ว่าง %.1f GB" % (core.free_space(p.game) / 2 ** 30))
+                else "พื้นที่ว่าง %.1f GB" % (core.free_space(p.game_dir) / 2 ** 30))
 
     def on_browse(self):
         d = filedialog.askdirectory(title="เลือกโฟลเดอร์เกม Senren Banka",
@@ -660,8 +514,8 @@ class Installer:
 
         def job():
             status = p.verify(
-                progress=lambda f, name: self.post(
-                    lambda: self.progress(round(f * 100), "ตรวจ " + name)),
+                progress=lambda f, s: self.post(
+                    lambda: self.progress(round(f * 100), self.step_text(s))),
                 cancel=self.cancel.is_set)
             self.post(lambda: self.on_verified(status))
         self.work(job)
@@ -790,7 +644,7 @@ class Installer:
         def job():
             p.install(
                 progress=lambda f, s: self.post(
-                    lambda: self.progress(round(f * 100), self.stage_text(s))),
+                    lambda: self.progress(round(f * 100), self.step_text(s))),
                 cancel=self.cancel.is_set)
             r18 = p.r18_available and p.include_r18
             self.post(lambda: self.goto_done(
@@ -810,8 +664,8 @@ class Installer:
 
         def job():
             restored = p.uninstall(
-                progress=lambda f, name: self.post(
-                    lambda: self.progress(round(f * 100), "คืนไฟล์ต้นฉบับ " + name)))
+                progress=lambda f, s: self.post(
+                    lambda: self.progress(round(f * 100), self.step_text(s))))
             self.post(lambda: self.goto_done(
                 False, "ถอดแพตช์แล้ว", "คืนไฟล์ต้นฉบับเรียบร้อย: " + ", ".join(restored)))
         self.work(job)
@@ -822,7 +676,7 @@ class Installer:
         if self.busy:
             self.cancel.set()
         else:
-            self._bye()
+            self.win.close()
 
     def on_back(self):
         if self.screen == "done" and self.installed:
@@ -855,8 +709,8 @@ class Installer:
         elif self.screen == "components":
             self.begin_install()
         elif self.screen == "done":
-            if core.launch_game(self.plan.game):
-                self._bye()
+            if core.launch_game(self.plan.game_dir):
+                self.win.close()
             else:
                 self.fail("เปิดเกมไม่สำเร็จ", "ไม่พบ SenrenBanka.exe ในโฟลเดอร์ที่เลือก")
         elif self.screen == "error":

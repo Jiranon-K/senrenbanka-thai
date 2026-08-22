@@ -60,7 +60,7 @@ python tools/pipeline_cn.py import                    # 4. th -> CN slot(2) + ch
 python tools/qc.py <ชื่อไฟล์/all>                      # 4.5 QC (gate): untranslated/glyph/tag/overflow/glossary
 python tools/pipeline_cn.py recompile                 # 5. json -> psb_cn\
 python tools/pipeline_cn.py pack patch.xp3 patch_extract   # 6a. keystream-rebuild patch.xp3
-python tools/pipeline_cn.py pack scn.xp3   scnxp3          # 6b. 3 scn-only บท
+python tools/pipeline_cn.py pack scn.xp3 thai_work/scnxp3  # 6b. 3 scn-only บท
 python tools/track.py scan && python tools/track.py report # 7. อัปเดต progress
 python tools/track.py set <ไฟล์.scn> packed                # หลัง pack
 python tools/track.py set <ไฟล์.scn> verified              # หลังเทสในเกม ok

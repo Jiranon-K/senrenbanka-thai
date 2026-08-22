@@ -191,3 +191,26 @@ def write_ico(path, images):
         blobs += data
     with open(path, "wb") as f:
         f.write(struct.pack("<HHH", 0, 1, len(images)) + entries + blobs)
+
+
+def write_placeholder_icon(path, accent="#f2802b"):
+    """ไอคอน**สำรอง**: สี่เหลี่ยมส้มบนกระดาษขาว ตามเครื่องหมายในไฟล์ดีไซน์
+
+    ใช้เมื่อยังไม่ได้รัน make_logo.py (เช่น build จาก source เปล่าๆ)
+
+    เดิมอยู่ใน theme.py ของตัวแอป พร้อมตัวเขียน PNG อีกฉบับหนึ่งของโปรเจกต์
+    ทั้งที่เป็นงานตอน build ล้วนๆ ตัวแอปไม่เคยต้องเขียนไฟล์ .ico เลย
+    """
+    r, g, b = (int(accent[i:i + 2], 16) for i in (1, 3, 5))
+    sizes = (16, 32, 48, 64, 128, 256)
+    images = []
+    for s in sizes:
+        pad = max(1, round(s * 0.22))
+        buf = bytearray(s * s * 4)
+        for y in range(s):
+            for x in range(s):
+                i = (y * s + x) * 4
+                inside = pad <= x < s - pad and pad <= y < s - pad
+                buf[i:i + 4] = bytes((r, g, b, 255) if inside else (255, 255, 255, 255))
+        images.append((s, png_rgba(s, s, buf)))
+    write_ico(path, images)
