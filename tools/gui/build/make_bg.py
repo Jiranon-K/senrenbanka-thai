@@ -3,7 +3,7 @@
 r"""
 make_bg.py — แปลงภาพต้นฉบับเป็นแผงพื้นหลังแบบกระจกฝ้าของตัวติดตั้ง
 
-    python tools/gui/make_bg.py "...\ภาพ.jpg"
+    python tools/gui/build/make_bg.py "...\ภาพ.jpg"
 
 ทำงาน **ตอน build เท่านั้น** ผลลัพธ์คือ `ui/bg.png` (RGBA) ที่ฝังการไล่จางไว้
 ในช่อง alpha เรียบร้อยแล้ว ตัวแอปจึงแค่วางภาพลง canvas ไม่ต้องคำนวณอะไรเลย
@@ -27,13 +27,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import imgtool as I                                          # noqa: E402
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.abspath(__file__))          # tools/gui/build
+GUI = os.path.dirname(HERE)                                # tools/gui
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("source", help="ไฟล์ภาพต้นฉบับ (.jpg/.png)")
-    ap.add_argument("--out", default=os.path.join(HERE, "ui", "bg.png"))
+    ap.add_argument("--out", default=os.path.join(GUI, "ui", "bg.png"))
     ap.add_argument("--size", default="280x482", help="ขนาดแผง (พิกเซลตามดีไซน์)")
     ap.add_argument("--focus", default="0.20,0.02",
                     help="จุดที่อยากให้อยู่กลางกรอบ (0-1 ตามแนวนอน,แนวตั้ง)")

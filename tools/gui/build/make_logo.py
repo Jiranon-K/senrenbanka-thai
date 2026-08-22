@@ -3,7 +3,7 @@
 r"""
 make_logo.py — ทำโลโก้มุมบนซ้าย + ไอคอนหน้าต่าง/taskbar จากภาพต้นฉบับ
 
-    python tools/gui/make_logo.py "...\ภาพ.jpg"
+    python tools/gui/build/make_logo.py "...\ภาพ.jpg"
 
 ทำงาน **ตอน build เท่านั้น** ได้ออกมาสองอย่าง:
 
@@ -30,10 +30,16 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import imgtool as I                                          # noqa: E402
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.abspath(__file__))          # tools/gui/build
+GUI = os.path.dirname(HERE)                                # tools/gui
+sys.path.insert(0, GUI)
+
+import assets                                              # noqa: E402
 
 # ขนาดโลโก้: 20 px ตามดีไซน์ คูณด้วย DPI ที่พบบ่อย (100/125/150/200%)
-LOGO_SIZES = (20, 25, 30, 40)
+# **เอามาจาก assets.py** ที่ตัวแอปใช้หาไฟล์ — เดิมประกาศไว้ทั้งสองที่พร้อม
+# คอมเมนต์ว่า "ตรงกับที่ make_logo.py สร้างไว้" คือยอมรับว่าต้อง sync ด้วยมือ
+LOGO_SIZES = assets.LOGO_SIZES
 # ชุดที่ Windows หยิบไปใช้: taskbar 32, รายการไฟล์เล็ก 16, Alt-Tab 48, ไทล์ใหญ่ 256
 ICON_SIZES = (16, 20, 24, 32, 48, 64, 128, 256)
 
@@ -41,7 +47,7 @@ ICON_SIZES = (16, 20, 24, 32, 48, 64, 128, 256)
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("source", help="ไฟล์ภาพต้นฉบับ (.jpg/.png)")
-    ap.add_argument("--out", default=os.path.join(HERE, "ui"))
+    ap.add_argument("--out", default=os.path.join(GUI, "ui"))
     ap.add_argument("--focus", default="0.52,0.06",
                     help="จุดที่อยากให้อยู่กลางกรอบสี่เหลี่ยมจัตุรัส (0-1 แนวนอน,แนวตั้ง)")
     ap.add_argument("--zoom", type=float, default=1.18,

@@ -482,7 +482,7 @@ def main():
     # GUI สร้างทีหลังสุด เพราะต้องให้ manifest.json มีอยู่ก่อน แล้วค่อยนับ checksum
     if a.gui:
         print("\n[gui] build ตัวติดตั้งแบบ GUI")
-        run(sys.executable, os.path.join(P.REPO, "tools", "gui", "build_gui.py"),
+        run(sys.executable, os.path.join(P.REPO, "tools", "gui", "build", "build_gui.py"),
             "--out", out)
 
     lines = ["Senren Banka Thai patch v%s - SHA256" % a.version, "",
