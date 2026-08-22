@@ -150,11 +150,44 @@ python tools/port_r18.py pack "<game>\adult.xp3" "<game>\adult_extract"
 
 ---
 
+## แจกให้คนอื่นใช้ — Release v1.1
+
+```powershell
+python tools/build_release.py --version 1.1
+```
+
+ได้ `thai_work/dist/senrenbanka-thai-patch-v1.1.zip` (**26.1 MB**) — ซิปเดียวรองรับ
+ทั้งเกม Steam ล้วนและเกมที่ลงแพตช์ R18 ไว้แล้ว
+
+| diff | source → target | ขนาด |
+|---|---|---|
+| `thai-patch.xdelta` | `patch.xp3.bak` → `patch.xp3` | 10.0 MB |
+| `thai-data.xdelta` | `data.xp3.bak` → `data.xp3` | 3.3 MB |
+| `thai-adult.xdelta` | `adult.xp3.orig` → `adult.xp3` | 12.7 MB |
+
+**ทำไม 855 MB ถึงยุบเหลือ diff 12.7 MB** — `port_r18.py pack` เขียน archive ใหม่
+โดยรักษาลำดับ entry และ pad ข้อมูลใหม่ให้ ≤ ขนาดเดิม ข้อมูลที่ไม่ได้แตะจึงอยู่
+offset เดิมเป๊ะ (ไฟล์โตขึ้นแค่ 308 KB) — xdelta เลยหาที่ซ้ำได้เกือบทั้งไฟล์
+
+**ไม่ต้องทำ diff ของ `patch_extra.xp3`** — มันอยู่ใต้ `patch.xp3` ในลำดับโหลด
+ไทยที่ pack ใส่ไว้จึงไม่มีวันถูกอ่าน (pack ไว้กันเหนียวเฉยๆ)
+
+**ไม่แจกเป็นไฟล์ `.ks.scn` ดิบ** ถึงจะง่ายกว่า (ดู `scenario_R18/` ด้านล่าง) —
+เพราะสคริปต์หนึ่งไฟล์มีบททั้ง JP/EN/CN/TW/KO ครบ = แจกบทเกมลิขสิทธิ์ตรงๆ
+binary diff ใช้ได้เฉพาะคนที่มีไฟล์ต้นฉบับอยู่แล้ว จึงเป็นรูปแบบเดียวที่แจกได้
+
+ตัว installer ตรวจ SHA256 ก่อนแตะไฟล์ สำรองด้วย `move` (ไม่ใช่ `copy`) และ
+**ล้มทั้งชุดถ้าแปะ `adult.xp3` ไม่ได้** — ไม่ยอมแปะครึ่งเดียว เพราะครึ่งเดียว =
+เกมขึ้นภาษาจีนเงียบๆ ซึ่งคือบั๊กที่เอกสารนี้เกิดมาเพื่อแก้
+รายละเอียดเหตุผลอยู่ใน `THAI_TRANSLATION_GUIDE.md`
+
 ## เครื่องมือใน `tools/`
 
 | ไฟล์ | หน้าที่ |
 |---|---|
 | `port_r18.py` | decompile / align / report / import / recompile / pack ฝั่ง R18 |
+| `build_release.py` | สร้าง diff + ตรวจย้อนกลับ + เขียน installer + zip (คำสั่งเดียวจบ) |
+| `test_installer.sh` | จำลอง fresh install 6 เคส เทียบ SHA256 ทุกไฟล์ (ใช้ hard link ไม่แตะไฟล์เกมจริง) |
 | `garbro_extract.ps1` | ขับ `GameRes.dll` ของ GARbro ตรงๆ — แตก/ถอดรหัส XP3 โดยไม่ต้องเปิด GUI |
 | `check_shadowing.ps1` | บอกว่า archive ไหนชนะลำดับโหลด (อ่านชื่อไฟล์จริงจาก `sen:`→`hnfn`) |
 | `verify_thai.py` | นับสตริงไทยใน PSB (อ่าน string table ตรงๆ ไม่ต้อง decompile) |
@@ -178,3 +211,31 @@ python tools/port_r18.py pack "<game>\adult.xp3" "<game>\adult_extract"
   (ช่วง header คีย์ = `0x01`, ช่วง string table = `0x98`) จึงต้องใช้ GARbro ถอด
   แล้วใช้ keystream method (`ks = origEnc XOR origPlain`) ตอน pack กลับ
 * pack ใช้ big-int XOR แทน loop ทีละไบต์ → `adult.xp3` 855 MB เสร็จใน **4 วินาที**
+
+### 🔎 `scenario_R18/` — ทางลัดสำหรับเทสระหว่างแปล (ยังไม่ได้ยืนยันในเกม)
+
+`SenrenBanka.exe` mount เองแค่ `data.xp3` (สตริง `forcedataxp3` ในไฟล์ exe)
+archive อื่นถูก mount โดย TJS ทั้งหมด — `sysscn/append_init.tjs` ใน `data.xp3`
+อ่าน `append/!appendlist.txt` แล้ว `addAutoPath` ให้ทีละ pack
+
+`append_setup_0.tjs` (อยู่ใน `adult.xp3` = append pack 0) มีบรรทัดสุดท้ายว่า:
+
+```tjs
+SystemConfig.XRated = true;
+addAutoPathRecursive(System.exePath+"scenario_R18/", false, tkdlVerbose);
+```
+
+คือ **โฟลเดอร์จริงบนดิสก์** ที่ถูกลงทะเบียนหลัง `adult.xp3` → ตามหลัก
+"เพิ่มทีหลังชนะ" ของ KiriKiri น่าจะอยู่บนสุดของลำดับโหลดทั้งหมด
+ตัวติดตั้ง R18 ไม่ได้สร้างโฟลเดอร์นี้ไว้ ต้องสร้างเองก่อนเปิดเกม
+(TVP อ่านรายชื่อไฟล์ตอน `addAutoPath` — เพิ่มไฟล์หลังเกมเปิดแล้วจะไม่เห็น)
+
+ถ้าใช้ได้จริง จะเทสบทเดียวได้โดยไม่ต้อง pack ใหม่ทั้ง 855 MB:
+
+```powershell
+mkdir "<เกม>\scenario_R18"
+copy "thai_work\psb_r18\317・ムラサメちゃんおまけルートver1.02.ks.scn" "<เกม>\scenario_R18\"
+```
+
+⚠️ **ยังไม่ได้ทดสอบ** — ต้องเปิดเกมจริงหนึ่งครั้งเพื่อยืนยัน
+และห้ามใช้เป็นวิธีแจก (= แจกไฟล์บทเกมลิขสิทธิ์ตรงๆ)
