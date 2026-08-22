@@ -140,38 +140,56 @@ def real_mouse_drag(inst, dx, dy):
 
     home = wt.POINT()
     u32.GetCursorPos(ctypes.byref(home))
+    hwnd = T.hwnd_of(root)          # เก็บไว้ให้เธรดขับใช้ (GetWindowRect เรียกข้ามเธรดได้)
     done = threading.Event()
+    got = {}
+
+    def raw_rect():
+        r = wt.RECT()
+        u32.GetWindowRect(wt.HWND(hwnd), ctypes.byref(r))
+        return r.left, r.top
 
     def driver():
+        """ขยับเมาส์จริงแล้ววัด **ตอนยังกดปุ่มค้างอยู่**
+
+        ถ้าไปวัดหลังปล่อยปุ่ม จะแข่งกับคิว input ของ Windows: SetCursorPos มีผล
+        ทันทีแต่ mouse_event เข้าคิว ลำดับจึงสลับกันได้ แล้ววัดได้ขาดไปไม่กี่ px
+        ทั้งที่ตอนลากจริงไม่มีปัญหา — วัดตอนยังลากอยู่จึงตรงกับสิ่งที่อยากรู้
+        (หน้าต่างตามเมาส์ทันไหม) และไม่มีการแข่งกันเลย
+        """
         try:
             time.sleep(0.15)
             u32.SetCursorPos(px, py)
-            time.sleep(0.05)
+            time.sleep(0.06)
             u32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
             for i in range(1, 13):
                 time.sleep(0.012)
                 u32.SetCursorPos(px + dx * i // 12, py + dy * i // 12)
-            # ย้ำจุดสุดท้ายแล้วรอให้ Tk ตามทัน ก่อนปล่อยปุ่ม — ไม่งั้นบางรอบ
-            # ButtonRelease แซง <B1-Motion> ตัวสุดท้าย แล้ววัดได้ขาดไปหนึ่งก้าว
-            time.sleep(0.10)
             u32.SetCursorPos(px + dx, py + dy)
-            time.sleep(0.12)
+            time.sleep(0.25)                    # ให้ Tk ตามให้ทันก่อนวัด
+            cur = wt.POINT()
+            u32.GetCursorPos(ctypes.byref(cur))
+            wx, wy = raw_rect()
+            got["moved"] = (wx - x, wy - y)
+            got["lag"] = (cur.x - wx - grab[0], cur.y - wy - grab[1])
         finally:
             u32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
             u32.SetCursorPos(home.x, home.y)
             done.set()
 
+    grab = (px - x, py - y)
     threading.Thread(target=driver, daemon=True).start()
     t0 = time.perf_counter()
-    while not done.is_set() and time.perf_counter() - t0 < 5.0:
+    while not done.is_set() and time.perf_counter() - t0 < 6.0:
         root.update()
-        time.sleep(0.004)
+        time.sleep(0.003)
     root.update()
-    moved = T.window_rect(root)[:2]
     T.move_window(root, x, y)
     root.withdraw()
     root.update()
-    return (moved[0] - x, moved[1] - y), None
+    if "moved" not in got:
+        return None, "เธรดขับเมาส์ทำงานไม่จบ"
+    return got, None
 
 
 # ─────────────────────────────────────────────────────────────── หัวข้อเทส
@@ -205,10 +223,69 @@ def test_chrome(inst):
     chk_true("มีปุ่มย่อ/ปิดของตัวเอง", inst.b_min and inst.b_close)
     chk("ขนาดหน้าต่างตรงดีไซน์",
         (inst.root.winfo_width(), inst.root.winfo_height()), (T.S(880), T.S(600)))
-    credits = [t for t in _all_text(inst.shell) if "ไม่เป็นทางการ" in t]
-    chk("เครดิตเหลือบรรทัดเดียว", credits, ["งานแปลไม่เป็นทางการ"])
     chk("ไม่มีชื่อผู้แปลบนหน้าจอ",
         [t for t in _all_text(inst.shell) if "Jiranon" in t], [])
+
+
+def test_credit(inst):
+    print("=" * 70)
+    print("เครดิตท้ายหน้าต่าง")
+    c = inst.w_credit
+    body = c.master
+    chk("มีบรรทัดเดียว", [t for t in _all_text(inst.shell) if "แฟนเกม" in t],
+        [gui.CREDIT])
+    chk_true("บอกว่าใครทำ", "แฟนเกม" in gui.CREDIT)
+    chk_true("บอกว่าไม่ใช่ของทางการ", "ไม่ใช่ฉบับทางการ" in gui.CREDIT)
+    chk("ไม่มีชื่อคนแปล", any(ch.isascii() and ch.isalpha() for ch in gui.CREDIT), False)
+    gap = body.winfo_height() - (c.winfo_y() + c.winfo_height())
+    print("          ห่างจากขอบล่าง %d px | กว้าง %d px" % (gap, c.winfo_reqwidth()))
+    chk("อยู่ล่างสุดของหน้าต่าง", gap <= T.S(24), True)
+    chk("อยู่ต่ำกว่าขั้นตอนทุกขั้นในแถบซ้าย",
+        c.winfo_rooty() > inst.w_steps[-1][1].winfo_rooty(), True)
+    # ถ้ายาวเกินจะไปชนข้อความในแถวปุ่ม (โผล่ตอนหน้า "กำลังติดตั้ง")
+    chk("สั้นพอที่จะไม่ชนข้อความในแถวปุ่ม",
+        T.S(26) + c.winfo_reqwidth() <= T.S(242), True)
+
+
+def test_backdrop(inst):
+    print("=" * 70)
+    print("แผงภาพพื้นหลัง")
+    cv, img = inst.bg, inst._bg_img
+    chk_true("โหลด bg.png ได้", cv is not None and img is not None)
+    if not cv:
+        return
+    chk("ขนาดตรงกับที่ make_bg.py สร้าง", (img.width(), img.height()), (280, 482))
+    # ตรวจว่าการไล่จางถูกฝังใน alpha จริง ไม่ใช่ภาพทึบทั้งใบ
+    chk_true("ขอบซ้ายใสสนิท", img.transparency_get(0, 240))
+    chk_true("ขอบขวาไม่ใส", not img.transparency_get(279, 240))
+    chk_true("ขอบบนสุดใส (ไม่ชนแถบหัว)", img.transparency_get(279, 0))
+    chk_true("ขอบล่างสุดใส (ไม่ชนแถวปุ่ม)", img.transparency_get(279, 481))
+
+    chk("แผงเริ่มตรงขอบขวาของคอลัมน์เนื้อหาพอดี",
+        gui.BG_X, 212 + 30 + gui.CONTENT_W)
+    # เทียบกับ body ไม่ใช่มุมหน้าต่าง — shell มีกรอบ 1 px ทุกอย่างจึงเลื่อนไป 1
+    body = inst.w_credit.master
+    chk("วางถูกตำแหน่ง",
+        (cv.winfo_x() - body.winfo_x(), cv.winfo_y() - body.winfo_y()),
+        (T.S(gui.BG_X), 0))
+    chk("ไม่ล้ำลงไปในแถวปุ่ม",
+        gui.BG_Y + gui.BG_H <= gui.WIN_H - 74, True)
+
+    A.flush()
+    home = T.S(gui.BG_W)
+    chk("เลื่อนเข้าที่แล้วชิดขอบขวาพอดี", round(cv.coords(inst._bg_item)[0]), home)
+    inst.slide_backdrop(T.S(40), 0.5)
+    chk_true("สั่งเลื่อนแล้วขยับจริง", cv.coords(inst._bg_item)[0] > home)
+    A.flush()
+    chk("เลื่อนจบแล้วกลับเข้าที่เดิม",
+        round(cv.coords(inst._bg_item)[0]), home)
+
+    saved = inst.bg
+    inst.bg = None
+    inst.slide_backdrop(T.S(20), 0.2)      # เครื่องที่ไม่มี bg.png ต้องไม่ล้ม
+    A.flush()
+    chk("ไม่มีภาพก็ยังทำงานได้", inst.bg, None)
+    inst.bg = saved
 
 
 def test_drag(inst, allow_input=True):
@@ -270,8 +347,10 @@ def test_drag(inst, allow_input=True):
     got, why = real_mouse_drag(inst, T.S(140), T.S(70))
     if why:
         return skip("ลากด้วยเมาส์จริง", why)
-    chk_near("ลากด้วยเมาส์จริง: แกน X ไปตามที่ลาก", got[0], T.S(140), 3)
-    chk_near("ลากด้วยเมาส์จริง: แกน Y ไปตามที่ลาก", got[1], T.S(70), 3)
+    print("          หน้าต่างขยับ %s | ห่างจากที่ควรอยู่ %s px" % (got["moved"], got["lag"]))
+    chk("ลากด้วยเมาส์จริง: หน้าต่างอยู่ตรงกับเมาส์เป๊ะ", got["lag"], (0, 0))
+    chk_near("ลากด้วยเมาส์จริง: แกน X ไปตามที่ลาก", got["moved"][0], T.S(140), 2)
+    chk_near("ลากด้วยเมาส์จริง: แกน Y ไปตามที่ลาก", got["moved"][1], T.S(70), 2)
 
 
 def test_anim(inst):
@@ -505,6 +584,8 @@ def main():
     test_fonts(inst)
     test_not_web(inst)
     test_chrome(inst)
+    test_credit(inst)
+    test_backdrop(inst)
     test_flow(inst)
     test_anim(inst)
     test_widgets(inst)
