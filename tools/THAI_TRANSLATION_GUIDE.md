@@ -24,9 +24,18 @@
    `[40B v2 header][file data][sen: blob verbatim][zlib index]`. update sen: field0 = blob offset ใหม่.
 
 ## Scenario coverage
-- **87/90 บทอยู่ใน patch.xp3** (priority สูงสุด, ชนะ scn+patch_extra) → แก้ patch.xp3
+- **87/90 บทอยู่ใน patch.xp3** (ชนะ scn+patch_extra) → แก้ patch.xp3
 - **3 บทอยู่ scn.xp3 อย่างเดียว** → แก้ scn.xp3
 - patch_extra.xp3 = ไม่ต้องแตะ (patch.xp3 ชนะ)
+
+⚠️ **patch.xp3 ไม่ใช่ priority สูงสุดเสมอไป** — ถ้าผู้เล่นลงแพตช์ R18 จะมี `adult.xp3`
+(append pack ของ `sysscn/append_init.tjs`) เข้ามาอยู่ *เหนือ* patch.xp3 และในนั้นมี
+`*.ks.scn` ครบ 92 บท → ไทยใน patch.xp3 ถูกทับหมด
+
+ลำดับจริง: `scn.xp3 < patch_extra.xp3 < patch.xp3 < adult.xp3`
+
+รายละเอียด + วิธีพอร์ตไทยไปฝั่ง R18: [`R18_COMPAT.md`](R18_COMPAT.md) · เครื่องมือ:
+`port_r18.py`, `check_thai.ps1`
 
 ## Toolchain (`tools/`)
 - **FreeMote** v4.5 — decompile/recompile PSB
