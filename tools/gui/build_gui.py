@@ -44,7 +44,8 @@ def main():
         "--distpath", os.path.join(build, "dist"),
         "--workpath", os.path.join(build, "work"),
         "--specpath", build,
-        "--add-data", os.path.join(HERE, "ui", "fonts") + os.pathsep + os.path.join("ui", "fonts"),
+        # ทั้งโฟลเดอร์ ui/ = ฟอนต์ Sarabun + ภาพพื้นหลัง bg.png
+        "--add-data", os.path.join(HERE, "ui") + os.pathsep + "ui",
         "--exclude-module", "webview",
         "--exclude-module", "PIL",
         "--exclude-module", "clr",

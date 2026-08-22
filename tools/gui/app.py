@@ -39,6 +39,14 @@ STEPS = ["หาโฟลเดอร์เกม", "รายการติด
 CONTENT_W = 420          # max-width ของคอลัมน์เนื้อหาในไฟล์ดีไซน์
 STEP_OF = {"locate": 0, "components": 1, "working": 2, "done": 3, "error": 3}
 
+# แผงภาพด้านขวา — กินพื้นที่ที่ว่างอยู่แล้วพอดี ไม่ทับอะไรเลย:
+#   แนวนอน  เริ่มที่ 212 (แถบซ้าย) + 30 (ระยะขอบ) + 420 (คอลัมน์เนื้อหา) = 662
+#   แนวตั้ง  ใต้แถบหัว (44) ถึงเหนือแถวปุ่ม (600 - 74 = 526)
+# ตัวภาพ bg.png กว้าง 280 แต่ 24% ทางซ้ายใสสนิท จึงวางชิดขวาแล้วให้ส่วนที่
+# เกินออกไปทางซ้ายถูก canvas ตัดทิ้ง — ขอบซ้ายที่เห็นจึงจางเป็นศูนย์พอดี
+BG_X, BG_Y = 662, 44
+BG_W, BG_H = 880 - 662, 600 - 74 - 44
+
 # ปุ่มท้ายจอเปลี่ยนความหมายตามหน้า — ตารางเดียวจบ อ่านง่ายกว่ากระจาย if
 FOOTER = {
     "locate":     ("ถัดไป",   "ปิด",     "",                        False),
@@ -47,6 +55,10 @@ FOOTER = {
     "done":       ("เปิดเกม", "ปิด",     "",                        False),
     "error":      ("ลองใหม่", "ปิด",     "",                        False),
 }
+
+
+# บอกให้ครบว่า "ใครทำ" กับ "ไม่ใช่ของใคร" ในบรรทัดเดียว โดยไม่ใส่ชื่อคนแปล
+CREDIT = "งานแปลโดยแฟนเกม · ไม่ใช่ฉบับทางการ"
 
 
 def mb(n: int) -> str:
@@ -254,8 +266,6 @@ class Installer:
             lab = W.label(row, name, 13, fg=T.TEXT_42)
             lab.pack(side="left", padx=(T.S(12), 0))
             self.w_steps.append((rule, lab))
-        W.label(rail, "งานแปลไม่เป็นทางการ",
-                11, fg=T.TEXT_45).place(x=T.S(26), y=T.S(WIN_H - 44 - 74 - 32))
 
         main = tk.Frame(body, bg=T.BG)
         main.grid(row=0, column=1, sticky="nsew")
@@ -297,8 +307,57 @@ class Installer:
         self.b_cancel.pack(side="left", padx=(0, T.S(8)))
         self.b_primary.pack(side="left")
 
+        # เครดิตอยู่ล่างสุดของหน้าต่าง ไม่ใช่ลอยกลางแถบซ้าย — มันเป็นข้อความกำกับ
+        # ไม่ใช่เนื้อหา จึงควรพ้นทางสายตาที่กำลังไล่อ่านขั้นตอนอยู่
+        # วางบน body ไม่ใช่ใน rail: rail กว้างตายตัว 212 px ถ้าเครื่องไหน
+        # เรนเดอร์ฟอนต์กว้างกว่านี้ ข้อความจะโดนตัดหาย
+        self.w_credit = W.label(body, CREDIT, 11, fg=T.TEXT_45)
+        self.w_credit.place(x=T.S(26), rely=1.0, y=-T.S(16), anchor="sw")
+
+        self._build_backdrop(r)
+
         self.root.protocol("WM_DELETE_WINDOW", self.on_cancel)
         self.root.bind("<Escape>", lambda _e: self.on_cancel())
+
+    # ------------------------------------------------------- แผงภาพด้านขวา
+    def _build_backdrop(self, parent):
+        """ภาพประกอบแบบกระจกฝ้า ไล่จางหายไปทางคอลัมน์เนื้อหา
+
+        สร้างเป็นลูกตัวสุดท้ายของ shell จึงอยู่บนสุด — มันทับเฉพาะพื้นที่ว่าง
+        ทางขวาของคอลัมน์เนื้อหา ไม่มี widget ตัวไหนอยู่ตรงนั้น
+        (Tk ไม่มีความโปร่งใสระหว่าง widget วางทับข้อความเมื่อไหร่คือบังทันที)
+
+        การไล่จางถูกฝังไว้ในช่อง alpha ของ bg.png ตั้งแต่ตอน build แล้ว
+        (ดู make_bg.py) ตรงนี้จึงเหลือแค่วางกับเลื่อน
+        """
+        self.bg = self._bg_img = self._bg_item = None
+        p = os.path.join(T.ui_dir(), "bg.png")
+        if not os.path.isfile(p):
+            return                      # ไม่มีภาพก็ยังใช้งานได้ครบทุกอย่าง
+        try:
+            self._bg_img = tk.PhotoImage(file=p)
+        except tk.TclError:
+            self._bg_img = None
+            return
+        cv = tk.Canvas(parent, bg=T.BG, highlightthickness=0, bd=0,
+                       width=T.S(BG_W), height=T.S(BG_H))
+        cv.place(x=T.S(BG_X), y=T.S(BG_Y))
+        # ชิดขวาและกึ่งกลางแนวตั้ง: จอ DPI สูงทำให้ canvas ใหญ่กว่าภาพ ช่องว่าง
+        # ที่เหลือจะอยู่ด้านซ้าย/บน/ล่าง ซึ่งเป็นด้านที่ภาพจางเป็นศูนย์อยู่แล้ว
+        self._bg_item = cv.create_image(T.S(BG_W), T.S(BG_H) // 2,
+                                        image=self._bg_img, anchor="e")
+        self.bg = cv
+        self.slide_backdrop(T.S(72), 0.95, ease=A.out_expo, delay=0.18)
+
+    def slide_backdrop(self, dx, dur, ease=A.out_cubic, delay=0.0):
+        """เลื่อนภาพเข้าที่ — ขอบไล่จางกวาดผ่านทำให้ดูเหมือนกระจกเลื่อน"""
+        if not self.bg:
+            return
+        x1, cy = T.S(BG_W), T.S(BG_H) // 2
+
+        def step(v):
+            self.bg.coords(self._bg_item, x1 + dx * (1 - v), cy)
+        A.tween(dur, step, ease=ease, delay=delay, key="bg")
 
     # ------------------------------------------------- ลากหน้าต่างจากแถบหัว
     #
@@ -416,6 +475,7 @@ class Installer:
         f.place(x=0, y=0, relwidth=1.0, relheight=1.0)
         if first:
             self._enter(f)
+            self.slide_backdrop(T.S(14), 0.55)      # ขยับตามนิดหน่อย ให้รู้สึกเป็นชั้นเดียวกัน
 
         idx = STEP_OF[screen]
         for i, (rule, lab) in enumerate(self.w_steps):

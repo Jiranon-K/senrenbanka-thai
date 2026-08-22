@@ -63,9 +63,14 @@ _FR_PRIVATE = 0x10
 scale = 1.0                            # ตั้งค่าจริงใน init()
 
 
-def fonts_dir() -> str:
+def ui_dir() -> str:
+    """โฟลเดอร์ทรัพยากรหน้าตา — ตอน build เป็น .exe จะถูกแตกไว้ใน _MEIPASS"""
     base = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base, "ui", "fonts")
+    return os.path.join(base, "ui")
+
+
+def fonts_dir() -> str:
+    return os.path.join(ui_dir(), "fonts")
 
 
 def load_fonts() -> bool:
