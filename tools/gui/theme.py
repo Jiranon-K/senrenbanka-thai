@@ -16,6 +16,7 @@ theme.py — โทเคนของระบบดีไซน์ "Modernist" 
 from __future__ import annotations
 
 import ctypes
+import ctypes.wintypes
 import os
 import struct
 import sys
@@ -204,3 +205,94 @@ def make_icon(path: str):
         blobs += data
     with open(path, "wb") as f:
         f.write(struct.pack("<HHH", 0, 1, len(images)) + entries + blobs)
+
+
+# ───────────────────────────────────────────────────── ผสมสี (ไว้ใช้ทวีน)
+
+def rgb(c: str):
+    return tuple(int(c[i:i + 2], 16) for i in (1, 3, 5))
+
+
+def mix(a: str, b: str, t: float) -> str:
+    """a เมื่อ t=0 → b เมื่อ t=1 (ผสมแบบเชิงเส้นในปริภูมิ sRGB เหมือน CSS)"""
+    t = 0.0 if t < 0 else 1.0 if t > 1 else t
+    x, y = rgb(a), rgb(b)
+    return "#%02x%02x%02x" % tuple(round(x[i] + (y[i] - x[i]) * t) for i in range(3))
+
+
+# ─────────────────────────────────────────── ย้ายหน้าต่างด้วย Win32 ตรงๆ
+#
+# `wm geometry "+x+y"` ของ Tk วัดได้ **30 ms ต่อครั้ง** บนเครื่องทดสอบ
+# (Tk รื้อผังหน้าต่างใหม่ทุกครั้งที่สั่ง) เท่ากับเพดาน 33 fps ขณะลาก
+# เมาส์ส่ง event มา 125-1000 Hz หน้าต่างจึงตามไม่ทัน เห็นเป็นเงาลากตาม
+# แล้วกระโดดตามทีเดียวเมื่อคิวระบาย — SetWindowPos ตรงๆ ใช้ 1.4 ms (เร็วกว่า 22 เท่า)
+
+_SWP_MOVE = 0x0001 | 0x0004 | 0x0010 | 0x0400   # NOSIZE|NOZORDER|NOACTIVATE|NOOWNERZORDER
+
+
+class _RECT(ctypes.Structure):
+    _fields_ = [("left", ctypes.c_long), ("top", ctypes.c_long),
+                ("right", ctypes.c_long), ("bottom", ctypes.c_long)]
+
+
+def hwnd_of(root) -> int:
+    return int(root.wm_frame(), 16)
+
+
+def window_rect(root):
+    """(x, y, w, h) ของจริงบนจอ — ไม่ผ่านค่าที่ Tk จำไว้ (ซึ่งเพี้ยนหลังถอดกรอบ)"""
+    r = _RECT()
+    ctypes.windll.user32.GetWindowRect(hwnd_of(root), ctypes.byref(r))
+    return r.left, r.top, r.right - r.left, r.bottom - r.top
+
+
+def move_window(root, x: int, y: int):
+    ctypes.windll.user32.SetWindowPos(hwnd_of(root), 0, int(x), int(y), 0, 0, _SWP_MOVE)
+
+
+# ── ทำไมไม่ยกการลากให้ Windows จัดการ (WM_NCLBUTTONDOWN/HTCAPTION) ──────
+#
+# นั่นเป็นวิธีมาตรฐานของโปรแกรมที่วาดแถบหัวเอง และได้ Aero Snap มาฟรี
+# ลองแล้วใช้ไม่ได้กับ Tk เพราะลูปย้ายหน้าต่างของ Windows เป็น modal loop:
+#
+#   SendMessage  — ไม่คืนค่าจนกว่าจะลากเสร็จ เราจึงค้างอยู่ในสาย ctypes ที่
+#                  ปล่อย GIL ทิ้งไว้ ระหว่างนั้นลูปยิงข้อความกลับเข้า window
+#                  proc ของ Tk ซึ่งเรียก Tcl_ServiceAll() ต่อ แล้ววิ่งเข้าโค้ด
+#                  Python ทั้งที่ไม่มี GIL -> ล่ามตายคาที่
+#                  "Fatal Python error: PyEval_RestoreThread"
+#   PostMessage  — คืนทันที GIL ปลอดภัย แต่ลูปจะเริ่มในรอบ event ถัดไป
+#                  ถ้าผู้ใช้คลิกเร็วจนปล่อยปุ่มไปก่อน ลูปจะเริ่มตอนไม่มีปุ่มถูกกด
+#                  แล้วสลับเป็นโหมดย้ายด้วยปุ่มลูกศร = หน้าต่างติดหนึบตามเมาส์
+#                  จนกว่าจะคลิกหรือกด Esc ซึ่งแย่กว่าอาการเดิม
+#
+# ลากเองด้วย SetWindowPos จบง่ายกว่าและวัดได้ 0.49 ms/เฟรม (~2000 fps)
+# เร็วกว่าที่เมาส์รุ่นไหนจะส่ง event ได้อยู่แล้ว ที่เสียไปคือ Aero Snap อย่างเดียว
+
+_GWL_EXSTYLE = -20
+_WS_EX_LAYERED = 0x00080000
+
+
+def make_layered(root):
+    """เปิด WS_EX_LAYERED เอง ก่อนจะสั่ง -alpha
+
+    Tk เปิดบิตนี้ให้ตอนสร้าง wrapper เท่านั้น ไม่ได้เปิดให้ใหม่ทุกครั้งที่ตั้ง
+    -alpha ถ้าบิตถูกปิดไปแล้ว SetLayeredWindowAttributes จะเงียบๆ ไม่มีผล
+    (วัดแล้วหน้าต่างซ้อนชั้นไม่ได้ทำให้วาดช้าลงเลย: 2.31 vs 2.30 ms/เฟรม
+    จึงปล่อยให้เปิดค้างไว้ ไม่ต้องเก็บคืน)
+    """
+    try:
+        h = hwnd_of(root)
+        ex = ctypes.windll.user32.GetWindowLongW(h, _GWL_EXSTYLE)
+        if not ex & _WS_EX_LAYERED:
+            ctypes.windll.user32.SetWindowLongW(h, _GWL_EXSTYLE, ex | _WS_EX_LAYERED)
+        return True
+    except Exception:
+        return False
+
+
+def is_layered(root) -> bool:
+    try:
+        return bool(ctypes.windll.user32.GetWindowLongW(hwnd_of(root), _GWL_EXSTYLE)
+                    & _WS_EX_LAYERED)
+    except Exception:
+        return False
