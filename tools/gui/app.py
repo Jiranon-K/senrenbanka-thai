@@ -44,6 +44,7 @@ STEP_OF = {"locate": 0, "components": 1, "working": 2, "done": 3, "error": 3}
 #   แนวตั้ง  ใต้แถบหัว (44) ถึงเหนือแถวปุ่ม (600 - 74 = 526)
 # ตัวภาพ bg.png กว้าง 280 แต่ 24% ทางซ้ายใสสนิท จึงวางชิดขวาแล้วให้ส่วนที่
 # เกินออกไปทางซ้ายถูก canvas ตัดทิ้ง — ขอบซ้ายที่เห็นจึงจางเป็นศูนย์พอดี
+LOGO_PX = 20             # เครื่องหมายมุมบนซ้าย (ดีไซน์เดิมเป็นสี่เหลี่ยม 18 px)
 BG_X, BG_Y = 662, 44
 BG_W, BG_H = 880 - 662, 600 - 74 - 44
 
@@ -170,12 +171,8 @@ class Installer:
                 done=lambda: T.move_window(self.root, x, y))
 
     def _set_icon(self):
-        import tempfile
-        p = os.path.join(tempfile.gettempdir(), "sbtp-icon.ico")
         try:
-            if not os.path.isfile(p):
-                T.make_icon(p)
-            self.root.iconbitmap(default=p)
+            self.root.iconbitmap(default=T.icon_file())
         except Exception:
             pass                      # ไอคอนหายไม่ใช่เหตุให้เปิดโปรแกรมไม่ได้
 
@@ -227,8 +224,9 @@ class Installer:
         head = tk.Frame(r, bg=T.BG, height=T.S(44))
         head.grid(row=0, column=0, sticky="ew")
         head.grid_propagate(False)
-        mark = tk.Frame(head, bg=T.ACCENT, width=T.S(18), height=T.S(18))
-        mark.place(x=T.S(14), y=T.S(13))
+        mark, side = self._make_mark(head)
+        self._mark = mark
+        mark.place(x=T.S(14), y=T.S((44 - side) // 2))
         title = W.label(head, "Senren Banka — แพตช์แปลไทย", 13, bold=True)
         title.place(x=T.S(42), y=T.S(12))
         self.w_version = W.label(head, "", 12, fg=T.TEXT_55)
@@ -318,6 +316,24 @@ class Installer:
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_cancel)
         self.root.bind("<Escape>", lambda _e: self.on_cancel())
+
+    def _make_mark(self, head):
+        """เครื่องหมายมุมบนซ้าย — โลโก้ที่ bundle มา ถ้าไม่มีก็สี่เหลี่ยมส้มตามดีไซน์
+
+        คืน (widget, ความสูงเป็น px ตามดีไซน์) เพื่อให้คำนวณตำแหน่งกึ่งกลาง
+        แถบหัวได้ถูกทั้งสองกรณี
+        """
+        self._logo_img = None
+        f = T.logo_file(T.S(LOGO_PX))
+        if f:
+            try:
+                self._logo_img = tk.PhotoImage(file=f)
+            except tk.TclError:
+                self._logo_img = None
+        if self._logo_img is None:
+            return tk.Frame(head, bg=T.ACCENT, width=T.S(18), height=T.S(18)), 18
+        return tk.Label(head, image=self._logo_img, bg=T.BG, bd=0,
+                        highlightthickness=0), LOGO_PX
 
     # ------------------------------------------------------- แผงภาพด้านขวา
     def _build_backdrop(self, parent):

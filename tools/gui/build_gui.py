@@ -33,8 +33,12 @@ def main():
 
     build = os.path.join(REPO, "thai_work", "dist", "_gui_build")
     os.makedirs(build, exist_ok=True)
-    icon = os.path.join(build, "app.ico")
-    theme.make_icon(icon)
+    # ไอคอนที่ make_logo.py สร้างไว้ ถ้ายังไม่มีค่อยใช้สี่เหลี่ยมส้มสำรอง
+    icon = os.path.join(HERE, "ui", "icon.ico")
+    if not os.path.isfile(icon):
+        icon = os.path.join(build, "app.ico")
+        theme.make_icon(icon)
+    print("icon: %s" % icon)
 
     cmd = [
         sys.executable, "-m", "PyInstaller",

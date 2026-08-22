@@ -73,6 +73,35 @@ def fonts_dir() -> str:
     return os.path.join(ui_dir(), "fonts")
 
 
+LOGO_SIZES = (20, 25, 30, 40)      # ตรงกับที่ make_logo.py สร้างไว้
+
+
+def logo_file(px: int):
+    """ไฟล์โลโก้ที่ขนาดใกล้ px ที่สุด — None ถ้าไม่ได้ bundle มา
+
+    Tk ย่อภาพได้แค่หารด้วยจำนวนเต็มแบบ nearest-neighbour ซึ่งขอบจะแตกทันที
+    จึงเตรียมไฟล์ไว้หลายขนาดตอน build แล้วหยิบใช้ตรงๆ ไม่ย่อเลย
+    """
+    best, gap = None, None
+    for s in LOGO_SIZES:
+        f = os.path.join(ui_dir(), "logo@%d.png" % s)
+        if os.path.isfile(f) and (gap is None or abs(s - px) < gap):
+            best, gap = f, abs(s - px)
+    return best
+
+
+def icon_file() -> str:
+    """ไอคอนหน้าต่าง/taskbar — ใช้ที่ bundle มา ถ้าไม่มีค่อยสร้างตัวสำรอง"""
+    f = os.path.join(ui_dir(), "icon.ico")
+    if os.path.isfile(f):
+        return f
+    import tempfile
+    q = os.path.join(tempfile.gettempdir(), "sbtp-icon.ico")
+    if not os.path.isfile(q):
+        make_icon(q)
+    return q
+
+
 def load_fonts() -> bool:
     """ลงทะเบียนฟอนต์ให้เฉพาะ process นี้ ไม่ต้องติดตั้งลงเครื่องผู้เล่น"""
     d = fonts_dir()
@@ -186,9 +215,10 @@ def _png(size: int, pixels) -> bytes:
 
 
 def make_icon(path: str):
-    """สี่เหลี่ยมส้มบนกระดาษขาว = เครื่องหมายมุมซ้ายบนของหน้าต่างในดีไซน์
+    """ไอคอน**สำรอง**: สี่เหลี่ยมส้มบนกระดาษขาว ตามเครื่องหมายในไฟล์ดีไซน์
 
-    เขียน .ico เองแทนการลาก Pillow เข้ามาเพื่อไอคอนอันเดียว
+    ใช้เมื่อไม่มี ui/icon.ico ที่ make_logo.py สร้างไว้ (เช่นรันจาก source
+    โดยยังไม่ได้สร้างไฟล์ภาพ) เขียน .ico เองแทนการลาก Pillow เข้ามา
     """
     rgb_a = tuple(int(ACCENT[i:i + 2], 16) for i in (1, 3, 5))
     sizes = (16, 32, 48, 64, 128, 256)
