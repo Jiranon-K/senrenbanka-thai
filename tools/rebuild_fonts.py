@@ -12,6 +12,7 @@ import os, sys
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
+import targets as T
 import xp3
 
 VAR = P.FONT_VARIANTS
@@ -25,9 +26,13 @@ EDITS = {
 
 
 def main():
-    dst = P.game_file("data.xp3")
-    orig = dst + ".orig"
-    assert os.path.exists(orig), "data.xp3.orig missing"
+    # ชื่อไฟล์ต้นฉบับมาจากตารางเดียวกับ installer — data.xp3 สำรองเป็น .bak
+    # ไม่ใช่ .orig (adult.xp3 ต่างหากที่ใช้ .orig) ตรงนี้เคยเดาเอาเองว่า .orig
+    # ทั้งคู่ แล้ว assert ตกทุกครั้งที่รัน
+    t = T.by_file("data.xp3")
+    dst = P.game_file(t.file)
+    orig = P.game_file(t.orig)
+    assert os.path.exists(orig), "%s missing" % t.orig
 
     ar = xp3.Archive.read(orig)
     for name, (vfile, pfile) in EDITS.items():
