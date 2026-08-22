@@ -46,7 +46,7 @@ Workflow
   # 1) สร้าง strings_cn.csv ของฝั่ง all-ages ให้มีคอลัมน์ th ครบก่อน (ของเดิม)
   python tools/pipeline_cn.py decompile patch_extract
   python tools/pipeline_cn.py export
-  python tools/_merge.py 001      # ...วนทุก prefix ใน thai_work/th/
+  python tools/tsv.py merge 001   # ...วนทุก prefix ใน thai_work/th/
   #
   # 2) ฝั่ง R18
   python tools/port_r18.py decompile adult_extract    # -> thai_work/json_r18
@@ -72,91 +72,51 @@ Workflow
 * บรรทัดที่ align ไม่ติด จะปล่อยว่าง → ในเกมจะเห็นเป็นภาษาจีนเดิม (ไม่พัง ไม่ค้าง)
 * pack ใช้ keystream method เดิม (ks = origEnc XOR origPlain) — ไม่ต้องรู้คีย์
 """
-import os, sys, csv, json, glob, struct, zlib, shutil, subprocess, difflib
+import os, sys, csv, json, glob, shutil, subprocess, difflib
 
 sys.stdout.reconfigure(encoding="utf-8")
 csv.field_size_limit(10 ** 9)
 
-GAME   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORK   = os.path.join(GAME, "thai_work")
-JSOND  = os.path.join(WORK, "json_r18")           # R18 json (ปลายทาง)
-PSBD   = os.path.join(WORK, "psb_r18")            # R18 recompiled psb
-CSV_CN = os.path.join(WORK, "strings_cn.csv")     # ของเดิม (all-ages) ต้องมี th ครบ
-CSV_R18 = os.path.join(WORK, "strings_r18.csv")   # ของใหม่
-PSBDEC = os.path.join(GAME, "tools", "FreeMote", "PsbDecompile.exe")
-PSBLD  = os.path.join(GAME, "tools", "FreeMote", "PsBuild.exe")
-CN = 2                                            # CN language slot index
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
+import scenario
+import xp3
 
+# ระบบเลข idx ของฝั่ง R18 — รับ 5 ช่อง (มีเกาหลีเพิ่มเข้ามา) และเข้มกว่าฝั่ง
+# all-ages ตรงที่ทุกสมาชิกต้องเป็นข้อความ **คนละระบบเลขกับ scenario.ALL_AGES**
+# ห้ามสลับ (อ่านหัวไฟล์ tools/scenario.py)
+LAYOUT = scenario.R18
+CN = scenario.CN
 
-# ---------------------------------------------------------------- PSB walkers
-# (เหมือน pipeline_cn.py ทุกประการ — คัดลอกมาเพื่อให้ไฟล์นี้รันได้เดี่ยวๆ)
-
-def is_block(x):
-    # all-ages (patch.xp3) = 4 ภาษา [JP, EN, CN, TW]
-    # R18 (adult.xp3)      = 5 ภาษา [JP, EN, CN, TW, KO]  <-- เกาหลีถูกเพิ่มเข้ามา
-    #   (นี่คือสาเหตุหลักที่ไฟล์ R18 ใหญ่กว่า ~11.7% ไม่ใช่ฉาก H อย่างเดียว)
-    # เงื่อนไข "ทุก element เป็น str/None" กัน false positive จาก node อย่าง
-    #   [["bgm","bgm",{...}], ["lse","loopse",{...}], ...] ซึ่งบังเอิญมี 4 ช่องเหมือนกัน
-    return (isinstance(x, list) and len(x) in (4, 5)
-            and all(isinstance(e, list) and len(e) >= 2
-                    and (e[0] is None or isinstance(e[0], str)) and isinstance(e[1], str)
-                    and all(v is None or isinstance(v, str) for v in e)
-                    for e in x))
-
-
-def walk(node, cb):
-    if isinstance(node, list):
-        if is_block(node): cb(node)
-        for e in node: walk(e, cb)
-    elif isinstance(node, dict):
-        for k in node: walk(node[k], cb)
-
-
-def is_choice(x):
-    lang = x.get("language") if isinstance(x, dict) else None
-    return (isinstance(lang, list) and len(lang) in (4, 5)      # R18 = +KO
-            and isinstance(lang[2], dict) and "text" in lang[2])
-
-
-def walk_choices(node, cb):
-    if isinstance(node, dict):
-        if is_choice(node): cb(node)
-        for k in node: walk_choices(node[k], cb)
-    elif isinstance(node, list):
-        for e in node: walk_choices(e, cb)
-
-
-def json_files(d):
-    return sorted(p for p in glob.glob(os.path.join(d, "*.ks.json"))
-                  if not p.endswith(".resx.json"))
+json_files = scenario.json_files
 
 
 # ---------------------------------------------------------------- 1. decompile
 
 def cmd_decompile():
     srcdir = sys.argv[2]
-    os.makedirs(JSOND, exist_ok=True)
+    os.makedirs(P.JSON_R18, exist_ok=True)
     files = sorted(glob.glob(os.path.join(srcdir, "*.ks.scn")))
     print(f"decompiling {len(files)} R18 scenarios from {srcdir}")
     for fp in files:
-        subprocess.run([PSBDEC, os.path.abspath(fp)], capture_output=True)
+        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(fp)], capture_output=True)
         base = os.path.basename(fp)[:-4]
         for ext in (".json", ".resx.json"):
             s = os.path.join(srcdir, base + ext)
             if os.path.exists(s):
-                shutil.move(s, os.path.join(JSOND, base + ext))
-    print("done ->", JSOND)
+                shutil.move(s, os.path.join(P.JSON_R18, base + ext))
+    print("done ->", P.JSON_R18)
 
 
 # ---------------------------------------------------------------- 2. align
 
 def _load_cn_csv():
     """strings_cn.csv (ฝั่ง all-ages) -> {file: {'blocks': [rows in order], 'choices': [rows]}}"""
-    if not os.path.exists(CSV_CN):
-        sys.exit(f"[ERROR] ไม่พบ {CSV_CN}\n"
-                 f"        รัน pipeline_cn.py decompile/export + _merge.py ให้ครบก่อน")
+    if not os.path.exists(P.CSV_CN):
+        sys.exit(f"[ERROR] ไม่พบ {P.CSV_CN}\n"
+                 f"        รัน pipeline_cn.py decompile/export + tsv.py merge ให้ครบก่อน")
     per = {}
-    with open(CSV_CN, encoding="utf-8-sig") as f:
+    with open(P.CSV_CN, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             e = per.setdefault(r["file"], {"blocks": [], "choices": []})
             (e["choices"] if r["idx"].startswith("ch") else e["blocks"]).append(r)
@@ -181,15 +141,13 @@ def _align(src_keys, dst_keys):
 def cmd_align():
     cn = _load_cn_csv()
     rows, stats = [], []
-    for jf in json_files(JSOND):
+    for jf in json_files(P.JSON_R18):
         name = os.path.basename(jf)
         d = json.load(open(jf, encoding="utf-8"))
 
         # ---- เก็บบล็อกฝั่ง R18 ตามลำดับ walk (ต้องตรงกับตอน import เป๊ะๆ) ----
-        dst_blocks = []
-        walk(d, lambda b: dst_blocks.append(b))
-        dst_choices = []
-        walk_choices(d, lambda x: dst_choices.append(x))
+        dst_blocks = list(LAYOUT.blocks(d))
+        dst_choices = list(LAYOUT.choices(d))
 
         src = cn.get(name)
         # export() ของ pipeline เดิม "ข้าม" บล็อกที่ jp และ en ว่างทั้งคู่
@@ -245,7 +203,7 @@ def cmd_align():
         flag = "" if got == total else "   <-- ต้องแปลเพิ่ม %d" % (total - got)
         print(f"  {name:<48} {got:5}/{total:<5} ({(got/total*100 if total else 100):5.1f}%){flag}")
 
-    with open(CSV_R18, "w", encoding="utf-8-sig", newline="") as f:
+    with open(P.CSV_R18, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
         w.writerow(["file", "idx", "speaker_en", "jp", "en", "cn", "th", "src"])
         w.writerows(rows)
@@ -254,15 +212,15 @@ def cmd_align():
     got = sum(g for _, g, _ in stats)
     pct = (got / tot * 100) if tot else 0.0
     print(f"\nรวม: reuse ได้ {got}/{tot} บรรทัด ({pct:.1f}%) — ต้องแปลใหม่ {tot-got} บรรทัด")
-    print("เขียน ->", CSV_R18)
+    print("เขียน ->", P.CSV_R18)
 
 
 def cmd_report():
     """พิมพ์สถานะรายไฟล์ + เขียน thai_work/PROGRESS_R18.md เป็น dashboard"""
-    if not os.path.exists(CSV_R18):
-        sys.exit(f"[ERROR] ยังไม่มี {CSV_R18} — รัน `port_r18.py align` ก่อน")
+    if not os.path.exists(P.CSV_R18):
+        sys.exit(f"[ERROR] ยังไม่มี {P.CSV_R18} — รัน `port_r18.py align` ก่อน")
     per, newonly = {}, {}
-    with open(CSV_R18, encoding="utf-8-sig") as f:
+    with open(P.CSV_R18, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             e = per.setdefault(r["file"], [0, 0])
             e[1] += 1
@@ -295,7 +253,7 @@ def cmd_report():
         d, t = per[k]
         mark = "" if d == t else f" {t - d}"
         md.append(f"| {k.replace('.ks.json', '')} | {d} | {t} | {'✅' if d == t else mark} | {newonly.get(k, 0)} |")
-    out = os.path.join(WORK, "PROGRESS_R18.md")
+    out = P.PROGRESS_R18_MD
     with open(out, "w", encoding="utf-8") as f:
         f.write("\n".join(md) + "\n")
     print("\nเขียน dashboard ->", out)
@@ -306,7 +264,7 @@ def cmd_report():
 def cmd_import():
     sub = sys.argv[2] if len(sys.argv) > 2 else None
     blk, cho = {}, {}
-    with open(CSV_R18, encoding="utf-8-sig") as f:
+    with open(P.CSV_R18, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             r["th"] = r["th"].replace("～", "〜")   # FF5E -> 301C (มี glyph ในฟอนต์)
             i = r["idx"]
@@ -316,7 +274,7 @@ def cmd_import():
                 blk.setdefault(r["file"], {})[int(i)] = r
 
     tot = ctot = 0
-    for jf in json_files(JSOND):
+    for jf in json_files(P.JSON_R18):
         name = os.path.basename(jf)
         if sub and sub not in name: continue
         d = json.load(open(jf, encoding="utf-8"))
@@ -324,8 +282,7 @@ def cmd_import():
 
         be = blk.get(name)
         if be:
-            blocks = []
-            walk(d, lambda b: blocks.append(b))
+            blocks = list(LAYOUT.blocks(d))
             n = 0
             for i, b in enumerate(blocks):          # idx ในไฟล์นี้ = index ของ walk เต็ม
                 r = be.get(i)
@@ -337,8 +294,7 @@ def cmd_import():
 
         ce = cho.get(name)
         if ce:
-            chs = []
-            walk_choices(d, lambda x: chs.append(x))
+            chs = list(LAYOUT.choices(d))
             n = 0
             for i, x in enumerate(chs):
                 r = ce.get(i)
@@ -351,110 +307,49 @@ def cmd_import():
         if changed:
             json.dump(d, open(jf, "w", encoding="utf-8"), ensure_ascii=False)
 
-    print(f"imported {tot} Thai lines + {ctot} choice options into CN slot ({JSOND})")
+    print(f"imported {tot} Thai lines + {ctot} choice options into CN slot ({P.JSON_R18})")
 
 
 # ---------------------------------------------------------------- 4. recompile
 
 def cmd_recompile():
-    os.makedirs(PSBD, exist_ok=True)
+    os.makedirs(P.PSB_R18, exist_ok=True)
     sub = sys.argv[2] if len(sys.argv) > 2 else None
-    for jf in json_files(JSOND):
+    for jf in json_files(P.JSON_R18):
         if sub and sub not in os.path.basename(jf): continue
-        subprocess.run([PSBLD, os.path.abspath(jf)], cwd=PSBD, capture_output=True)
+        subprocess.run([P.PSB_BUILD, os.path.abspath(jf)], cwd=P.PSB_R18, capture_output=True)
         base = os.path.basename(jf)[:-5]            # *.ks
         for cand in (base + ".pure.scn", base + ".psb"):
-            pc = os.path.join(PSBD, cand)
+            pc = os.path.join(P.PSB_R18, cand)
             if os.path.exists(pc):
-                shutil.move(pc, os.path.join(PSBD, base + ".scn")); break
-    print("recompiled ->", PSBD)
+                shutil.move(pc, os.path.join(P.PSB_R18, base + ".scn")); break
+    print("recompiled ->", P.PSB_R18)
 
 
 # ---------------------------------------------------------------- 5. pack
 
-def parse_index(d):
-    ofs = struct.unpack("<Q", d[11:19])[0]
-    real = struct.unpack("<Q", d[ofs + 9:ofs + 17])[0] if d[ofs] == 0x80 else ofs
-    comp = struct.unpack("<Q", d[real + 1:real + 9])[0]
-    return zlib.decompress(d[real + 17:real + 17 + comp])
-
-
 def cmd_pack():
     """เหมือน pipeline_cn.py pack ทุกอย่าง ต่างแค่อ่าน psb จาก thai_work/psb_r18"""
-    archive = os.path.join(GAME, sys.argv[2]); extract = sys.argv[3]
-    orig = archive + ".orig"
-    if not os.path.exists(orig): shutil.copy(archive, orig)
-    d = open(orig, "rb").read()
-    idx = parse_index(d)
-    sp = idx.find(b"sen:")
-    sen = idx[sp + 12: sp + 12 + struct.unpack("<Q", idx[sp + 4:sp + 12])[0]]
-    blob_off = struct.unpack("<I", sen[0:4])[0]
-    blob = d[blob_off: blob_off + struct.unpack("<I", sen[12:16])[0]]
-    first = idx.find(b"File"); prefix = bytearray(idx[:first])
+    name, extract = sys.argv[2], sys.argv[3]
+    archive = P.game_file(name)
+    ar = xp3.Archive.read(xp3.backup_once(archive))
 
-    plain_by_size = {}
-    for p in glob.glob(os.path.join(extract, "*.ks.scn")):
-        plain_by_size.setdefault(os.path.getsize(p), []).append(p)
-    psb_by_name = {os.path.basename(p): p for p in glob.glob(os.path.join(PSBD, "*.ks.scn"))}
+    mine = {os.path.basename(p): p for p in glob.glob(os.path.join(P.PSB_R18, "*.ks.scn"))}
+    skipped = []
+    for entry, plain in ar.match_by_size(extract).items():
+        myscn = mine.get(os.path.basename(plain))
+        if not myscn:
+            continue
+        with open(plain, "rb") as f: orig = f.read()
+        with open(myscn, "rb") as f: new = f.read()
+        if not ar.replace(entry, new, orig):
+            skipped.append((os.path.basename(plain), len(new), entry.size))
 
-    p = first; ents = []
-    while p < len(idx) and idx[p:p + 4] == b"File":
-        p += 4; cs = struct.unpack("<Q", idx[p:p + 8])[0]; p += 8
-        chunk = idx[p:p + cs]; p += cs
-        q = 0; subs = []; nm = off = size = None
-        while q < len(chunk):
-            tag = chunk[q:q + 4]; q += 4
-            ss = struct.unpack("<Q", chunk[q:q + 8])[0]; q += 8
-            sd = bytearray(chunk[q:q + ss]); q += ss; subs.append([tag, sd])
-            if tag == b"info":
-                nl = struct.unpack("<H", sd[20:22])[0]
-                nm = sd[22:22 + nl * 2].decode("utf-16-le", "replace")
-            if tag == b"segm":
-                off = struct.unpack("<Q", sd[4:12])[0]
-                size = struct.unpack("<Q", sd[12:20])[0]
-        ents.append({"subs": subs, "name": nm, "off": off, "size": size})
-
-    enc_map = {}; nrepl = 0; skipped = []
-    for e in ents:
-        cands = plain_by_size.get(e["size"], [])
-        if len(cands) != 1: continue
-        realname = os.path.basename(cands[0])
-        myscn = psb_by_name.get(realname)
-        if not myscn: continue
-        origE = d[e["off"]:e["off"] + e["size"]]
-        origP = open(cands[0], "rb").read()
-        mydata = open(myscn, "rb").read()
-        if len(mydata) > e["size"]:
-            skipped.append((realname, len(mydata), e["size"])); continue
-        mydata += b"\x00" * (e["size"] - len(mydata))
-        # keystream = origEnc XOR origPlain ; newEnc = myData XOR keystream
-        # ทำผ่าน big-int XOR (เร็วกว่า loop ทีละไบต์เป็นร้อยเท่า สำหรับไฟล์ระดับ MB)
-        n = e["size"]
-        ks_int = int.from_bytes(origE, "big") ^ int.from_bytes(origP, "big")
-        enc_map[e["name"]] = (int.from_bytes(mydata, "big") ^ ks_int).to_bytes(n, "big")
-        nrepl += 1
-    print(f"{sys.argv[2]}: matched+encrypted {nrepl} scenarios")
+    print(f"{name}: matched+encrypted {ar.replaced} scenarios")
     for n, got, cap in skipped:
         print(f"  SKIP {n}: recompiled {got} > orig {cap}")
-
-    buf = bytearray(d[0:40])
-    for e in ents:
-        payload = enc_map.get(e["name"], d[e["off"]:e["off"] + e["size"]])
-        e["newoff"] = len(buf); buf += payload
-    nbo = len(buf); buf += blob; iofs = len(buf)
-    struct.pack_into("<I", prefix, prefix.find(b"sen:") + 12, nbo)
-    nidx = bytearray(prefix)
-    for e in ents:
-        for tag, sd in e["subs"]:
-            if tag == b"segm": sd[4:12] = struct.pack("<Q", e["newoff"])
-        chunk = bytearray()
-        for tag, sd in e["subs"]: chunk += tag + struct.pack("<Q", len(sd)) + sd
-        nidx += b"File" + struct.pack("<Q", len(chunk)) + chunk
-    cidx = zlib.compress(bytes(nidx), 6)
-    buf += b"\x01" + struct.pack("<Q", len(cidx)) + struct.pack("<Q", len(nidx)) + cidx
-    buf[32:40] = struct.pack("<Q", iofs)
-    open(archive, "wb").write(buf)
-    print(f"  wrote {archive} ({len(buf)} bytes)")
+    ar.save(archive)
+    print(f"  wrote {archive} ({os.path.getsize(archive)} bytes)")
 
 
 if __name__ == "__main__":

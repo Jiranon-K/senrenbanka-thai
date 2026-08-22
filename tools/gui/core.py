@@ -30,6 +30,7 @@ import subprocess
 import sys
 import threading
 import time
+from dataclasses import dataclass
 
 CHUNK = 1 << 22  # 4 MiB
 
@@ -142,17 +143,42 @@ class Aborted(Exception):
     """ผู้ใช้กดยกเลิก"""
 
 
+@dataclass(frozen=True)
+class Step:
+    """เหตุการณ์หนึ่งก้าวระหว่าง verify / install / uninstall
+
+    ทั้งสามเมธอดรายงานความคืบหน้าด้วย `progress(สัดส่วน, Step)` เหมือนกันหมด
+
+    เดิมทั้งสามส่งคนละแบบ: verify กับ uninstall ส่งชื่อไฟล์เปล่าๆ ส่วน install
+    ส่งโทเคน "stage.apply:patch.xp3" ที่ฝั่ง UI ต้องเอาไป parse ด้วย s[12:]
+    (นับความยาว prefix เอาเอง) ผลคือมีสาขา "stage.restore:" ค้างอยู่ใน UI
+    ที่ไม่มีวันถูกเรียก เพราะ uninstall ไม่เคยส่งโทเคนนั้นออกมาเลย
+
+    core ไม่รู้จักภาษาไทยสักคำ — ข้อความที่ผู้ใช้เห็นอยู่ในตารางเดียวใน app.py
+    """
+
+    HASH = "hash"           # กำลังคำนวณ SHA256 ของไฟล์
+    BACKUP = "backup"       # กำลังเปลี่ยนชื่อไฟล์ต้นฉบับเป็น .bak
+    APPLY = "apply"         # กำลังแปะ diff ลงไฟล์
+    DISABLE = "disable"     # กำลังปิดไฟล์ R18 (เปลี่ยนชื่อเป็น .off)
+    RESTORE = "restore"     # กำลังคืนไฟล์ต้นฉบับ
+    DONE = "done"
+
+    kind: str
+    file: str = ""
+
+
 class Target:
     """ไฟล์เกมหนึ่งไฟล์ที่แพตช์แตะ"""
 
-    def __init__(self, game: str, spec: dict):
+    def __init__(self, game_dir: str, spec: dict):
         self.name = spec["file"]              # patch.xp3
         self.delta = spec["delta"]            # thai-patch.xdelta
         self.label = spec["label"]            # "บทพูด"
         self.required = spec["required"]
         self.orig = spec["sha_orig"]
         self.thai = spec["sha_thai"]
-        self.path = os.path.join(game, self.name)
+        self.path = os.path.join(game_dir, self.name)
         self.bak = self.path + ".bak"
         self.size = os.path.getsize(self.path) if os.path.isfile(self.path) else 0
         self.present = os.path.isfile(self.path)
@@ -163,14 +189,19 @@ class Plan:
     """สถานะของโฟลเดอร์เกมหนึ่งโฟลเดอร์ + สิ่งที่จะทำกับมัน"""
 
     # ไฟล์ที่แพตช์ R18 เอามาวาง — ปิดได้ด้วยการเปลี่ยนชื่อ (ไม่ลบ)
+    # ใช้เมื่อ manifest ไม่ได้บอกไว้ (ชุดติดตั้งที่ build ก่อน tools/targets.py)
     R18_FILES = ("adult.xp3", "adult2.xp3")
     OFF = ".off"
 
-    def __init__(self, game: str, res: str | None = None, include_r18: bool = True):
-        self.game = os.path.abspath(game)
+    def __init__(self, game_dir: str, res: str | None = None, include_r18: bool = True):
+        self.game_dir = os.path.abspath(game_dir)
         self.res = res or resource_dir()
-        self.mf = load_manifest(self.res)
-        self.targets = [Target(self.game, s) for s in self.mf["targets"]]
+        self.manifest = load_manifest(self.res)
+        self.targets = [Target(self.game_dir, s) for s in self.manifest["targets"]]
+        # ตารางเดียวกับที่ build_release.py ใช้เขียน install.bat (tools/targets.py)
+        # เดิม hardcode ไว้ในไฟล์นี้ ไม่มีใครยืนยันได้ว่าตรงกับฝั่ง .bat ไหม
+        self.r18_files = tuple(self.manifest.get("disable_on_all_ages")
+                               or self.R18_FILES)
         self.include_r18 = include_r18
         self.verified = False
 
@@ -192,13 +223,13 @@ class Plan:
         """
         ts = [t for t in self.targets if t.present]
         if not self.include_r18:
-            ts = [t for t in ts if t.name not in self.R18_FILES]
+            ts = [t for t in ts if t.name not in self.r18_files]
         return ts
 
     @property
     def r18_available(self) -> bool:
         """เครื่องนี้ลงแพตช์ R18 ไว้ไหม (มี adult.xp3 อยู่จริง)"""
-        return os.path.isfile(os.path.join(self.game, "adult.xp3"))
+        return os.path.isfile(os.path.join(self.game_dir, "adult.xp3"))
 
     @property
     def disable_list(self) -> list[str]:
@@ -209,14 +240,14 @@ class Plan:
         """
         if self.include_r18 or not self.r18_available:
             return []
-        return [f for f in self.R18_FILES
-                if os.path.isfile(os.path.join(self.game, f))]
+        return [f for f in self.r18_files
+                if os.path.isfile(os.path.join(self.game_dir, f))]
 
     @property
     def disabled_now(self) -> list[str]:
         """ไฟล์ R18 ที่ถูกปิดไว้อยู่ตอนนี้"""
-        return [f for f in self.R18_FILES
-                if os.path.isfile(os.path.join(self.game, f + self.OFF))]
+        return [f for f in self.r18_files
+                if os.path.isfile(os.path.join(self.game_dir, f + self.OFF))]
 
     @property
     def mode(self) -> str:
@@ -245,6 +276,7 @@ class Plan:
         """คำนวณ SHA256 ทุกไฟล์ที่เกี่ยวข้อง แล้วสรุปสถานะรวม
 
         คืน: "ready" | "installed" | "unsupported"
+        progress(สัดส่วน, Step)
         """
         total = sum(t.size for t in self.active) or 1
         done = 0
@@ -256,7 +288,7 @@ class Plan:
                     raise Aborted()
                 done += n
                 if progress:
-                    progress(done / total, _t.name)
+                    progress(done / total, Step(Step.HASH, _t.name))
 
             h = sha256(t.path, bump)
             if h == t.thai:
@@ -281,7 +313,7 @@ class Plan:
     def install(self, progress=None, cancel=None):
         """rename -> xdelta -> ล้มเมื่อไหร่คืนทุกอย่าง
 
-        progress(fraction, stage_text)
+        progress(สัดส่วน, Step)
         """
         assert self.verified, "ต้อง verify() ก่อน install()"
         targets = self.active
@@ -293,8 +325,8 @@ class Plan:
         def rollback():
             for f in turned_off:
                 try:
-                    os.replace(os.path.join(self.game, f + self.OFF),
-                               os.path.join(self.game, f))
+                    os.replace(os.path.join(self.game_dir, f + self.OFF),
+                               os.path.join(self.game_dir, f))
                 except OSError:
                     pass
             for t in renamed:
@@ -308,7 +340,7 @@ class Plan:
 
         try:
             if progress:
-                progress(0.0, "stage.backup")
+                progress(0.0, Step(Step.BACKUP))
             for t in targets:
                 if cancel and cancel():
                     raise Aborted()
@@ -319,22 +351,22 @@ class Plan:
                 if cancel and cancel():
                     raise Aborted()
                 base = done
+                step = Step(Step.APPLY, t.name)
                 if progress:
-                    progress(base / total, "stage.apply:" + t.name)
-                self._decode(t, lambda n: progress and progress(min(1.0, (base + n) / total),
-                                                               "stage.apply:" + t.name),
-                             cancel)
+                    progress(base / total, step)
+                self._decode(t, lambda n: progress and progress(
+                    min(1.0, (base + n) / total), step), cancel)
                 done += t.size
 
             for f in self.disable_list:
                 if progress:
-                    progress(1.0, "stage.disable:" + f)
-                os.replace(os.path.join(self.game, f),
-                           os.path.join(self.game, f + self.OFF))
+                    progress(1.0, Step(Step.DISABLE, f))
+                os.replace(os.path.join(self.game_dir, f),
+                           os.path.join(self.game_dir, f + self.OFF))
                 turned_off.append(f)
 
             if progress:
-                progress(1.0, "stage.done")
+                progress(1.0, Step(Step.DONE))
         except BaseException:
             rollback()
             raise
@@ -377,6 +409,7 @@ class Plan:
 
     # ---- ถอน ----
     def uninstall(self, progress=None):
+        """คืนไฟล์ต้นฉบับทั้งหมด — progress(สัดส่วน, Step)"""
         restored = []
         items = [t.name for t in self.targets if os.path.isfile(t.bak)]
         items += self.disabled_now
@@ -388,21 +421,21 @@ class Plan:
                     os.remove(t.path)
                 os.replace(t.bak, t.path)
             else:                                   # ไฟล์ R18 ที่ถูกปิดไว้
-                os.replace(os.path.join(self.game, name + self.OFF),
-                           os.path.join(self.game, name))
+                os.replace(os.path.join(self.game_dir, name + self.OFF),
+                           os.path.join(self.game_dir, name))
             restored.append(name)
             if progress:
-                progress((i + 1) / len(items), name)
+                progress((i + 1) / len(items), Step(Step.RESTORE, name))
         return restored
 
 
 # ------------------------------------------------------------------ เปิดเกม
 
-def launch_game(game: str) -> bool:
-    exe = os.path.join(game, "SenrenBanka.exe")
+def launch_game(game_dir: str) -> bool:
+    exe = os.path.join(game_dir, "SenrenBanka.exe")
     if not os.path.isfile(exe):
         return False
-    subprocess.Popen([exe], cwd=game, close_fds=True)
+    subprocess.Popen([exe], cwd=game_dir, close_fds=True)
     return True
 
 

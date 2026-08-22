@@ -13,9 +13,10 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.pens.cu2quPen import Cu2QuPen
 
-GAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FD   = os.path.join(GAME, "thai_work", "fonts")
-SHS_DIR = os.path.join(GAME, "dataxp3", "font")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
+FD = P.FONTS
+SHS_DIR = os.path.join(P.EXTRACT_DATA, "font")
 # Explicit CJK punctuation (kept verbatim; some are NOT in GB2312, e.g. FF5E ～).
 PUNCT = [0x300C, 0x300D, 0x300E, 0x300F, 0x3010, 0x3011, 0x3001, 0x3002, 0x30FB, 0x301C,
          0x266A, 0xFF01, 0xFF1F, 0xFF08, 0xFF09,    # 【】(name brackets cn) + （）(chapter)

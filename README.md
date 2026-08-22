@@ -45,10 +45,29 @@
 ## โครงสร้าง
 
 ```
-tools/     เครื่องมือแปล/แพ็กไฟล์ (Python) + xdelta (ทำตัวติดตั้ง)
-tools/gui/ ตัวติดตั้งแบบหน้าต่าง (tkinter, native Win32) — ดีไซน์จาก Claude Design
-thai_work/ คำแปลไทยทั้งหมด + progress tracker + glossary
+CONTEXT.md  ศัพท์ของโปรเจกต์ — CN slot, load order, keystream, target/plan/step
+
+tools/
+  paths.py       ที่อยู่ของทุกอย่าง (REPO vs โฟลเดอร์เกม) — ประกาศที่เดียว
+  xp3.py         อ่าน/เขียน archive .xp3 ด้วย keystream (ไม่ต้องรู้คีย์)
+  scenario.py    เดินบทพูดในสคริปต์ — สอง layout: ALL_AGES / R18
+  targets.py     ตารางไฟล์ที่แพตช์แตะ -> manifest.json + ชิ้นส่วนของ .bat
+  pipeline_cn.py สายแปล all-ages : decompile/export/import/recompile/pack
+  port_r18.py    สายแปล R18 (align ด้วยข้อความ JP ไม่ใช่ index)
+  tsv.py         งานประจำวันกับ thai_work/th/*.tsv : dump / merge / align
+  qc.py          ตรวจก่อน pack — ไม่แปล / ไม่มี glyph / tag หาย / ล้นกล่อง
+  track.py       สแกนความคืบหน้า -> scenarios.json + PROGRESS.md
+  build_release.py  ทำชุดติดตั้ง (diff -> ตรวจย้อนกลับ -> .bat -> zip)
+  test_pipeline.py  เทส xp3/scenario/targets โดยไม่ต้องมีเกม
+
+tools/gui/       ตัวติดตั้งแบบหน้าต่าง (tkinter, native Win32)
+tools/gui/build/ เครื่องมือทำ asset — ทำงานตอน build เท่านั้น ไม่เข้าไปใน .exe
+
+thai_work/       คำแปลไทยทั้งหมด + progress tracker + glossary
 ```
+
+**อ่าน [`CONTEXT.md`](CONTEXT.md) ก่อนแก้โค้ด** — คำว่า "CN" ในชื่อไฟล์ไม่ได้แปลว่า
+ภาษาจีน และ "repo" กับ "โฟลเดอร์เกม" เป็นคนละโฟลเดอร์กัน
 
 ดูสถานะแบบละเอียดรายไฟล์ได้ที่ [`thai_work/PROGRESS.md`](thai_work/PROGRESS.md)
 

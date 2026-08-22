@@ -42,7 +42,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 import anim as A                                              # noqa: E402
 import app as gui                                             # noqa: E402
 import core                                                   # noqa: E402
+import assets                                                 # noqa: E402
 import theme as T                                             # noqa: E402
+import winui                                                  # noqa: E402
 import widgets as W                                           # noqa: E402
 
 results, failed, skipped = [], [], []
@@ -133,15 +135,15 @@ def real_mouse_drag(inst, dx, dy):
     A.flush()
     root.update()
 
-    x, y, _w, _h = T.window_rect(root)
+    x, y, _w, _h = winui.window_rect(root)
     px, py = x + T.S(300), y + T.S(20)          # กลางแถบหัว ไม่โดนปุ่มย่อ/ปิด
-    if _root_window_at(px, py) != T.hwnd_of(root):
+    if _root_window_at(px, py) != winui.hwnd_of(root):
         root.withdraw()
         return None, "จุดที่จะกดไม่ใช่หน้าต่างของเรา (มีหน้าต่างอื่นบัง)"
 
     home = wt.POINT()
     u32.GetCursorPos(ctypes.byref(home))
-    hwnd = T.hwnd_of(root)          # เก็บไว้ให้เธรดขับใช้ (GetWindowRect เรียกข้ามเธรดได้)
+    hwnd = winui.hwnd_of(root)          # เก็บไว้ให้เธรดขับใช้ (GetWindowRect เรียกข้ามเธรดได้)
     done = threading.Event()
     got = {}
 
@@ -185,7 +187,7 @@ def real_mouse_drag(inst, dx, dy):
         root.update()
         time.sleep(0.003)
     root.update()
-    T.move_window(root, x, y)
+    winui.move_window(root, x, y)
     root.withdraw()
     root.update()
     if "moved" not in got:
@@ -218,14 +220,14 @@ def test_not_web(inst):
 def test_chrome(inst):
     print("=" * 70)
     print("แถบหัวที่วาดเอง")
-    chk("ถอดแถบหัวของ Windows แล้ว", T.has_caption(inst.root), False)
+    chk("ถอดแถบหัวของ Windows แล้ว", winui.has_caption(inst.root), False)
     chk("ไม่ได้ใช้ overrideredirect (ไม่งั้น taskbar/Alt-Tab หาย)",
         bool(inst.root.overrideredirect()), False)
     chk_true("มีปุ่มย่อ/ปิดของตัวเอง", inst.b_min and inst.b_close)
     chk("ขนาดหน้าต่างตรงดีไซน์",
         (inst.root.winfo_width(), inst.root.winfo_height()), (T.S(880), T.S(600)))
     chk("ไม่มีชื่อผู้แปลบนหน้าจอ",
-        [t for t in _all_text(inst.shell) if "Jiranon" in t], [])
+        [t for t in _all_text(inst.border) if "Jiranon" in t], [])
 
 
 PNG_MAGIC = bytes([137, 80, 78, 71, 13, 10, 26, 10])
@@ -246,7 +248,7 @@ def ico_frames(path):
 def test_logo(inst):
     print("=" * 70)
     print("โลโก้และไอคอน")
-    img = inst._logo_img
+    img = inst.win._logo_img
     chk_true("โหลดโลโก้ได้", img is not None)
     if img is not None:
         chk("ขนาดโลโก้ตรงกับที่ขอ (ไม่ได้ให้ Tk ย่อเอง)",
@@ -258,11 +260,11 @@ def test_logo(inst):
 
     # เตรียมไว้หลายขนาดเพราะ Tk ย่อภาพได้แค่หารจำนวนเต็มแบบ nearest
     for want, px in ((20, 21), (25, 24), (30, 31), (40, 55)):
-        f = T.logo_file(px)
+        f = assets.logo_file(px)
         chk("ขอ %2d px -> ได้ logo@%d" % (px, want),
             os.path.basename(f or ""), "logo@%d.png" % want)
 
-    ico = T.icon_file()
+    ico = assets.icon_file()
     chk("ใช้ไอคอนที่ bundle มา ไม่ใช่ตัวสำรอง",
         os.path.basename(os.path.dirname(ico)), "ui")
     frames = ico_frames(ico)
@@ -272,16 +274,16 @@ def test_logo(inst):
         all(png for _, png in frames), True)
 
     # ถ้าไม่มีไฟล์โลโก้ ต้องถอยไปใช้สี่เหลี่ยมตามดีไซน์ ไม่ใช่ล้ม
-    real = T.logo_file
-    T.logo_file = lambda _px: None
+    real = assets.logo_file
+    assets.logo_file = lambda _px: None
     try:
-        w, side = inst._make_mark(inst.shell)
+        w, side = inst.win.mark(inst.border)
         chk("ไม่มีโลโก้ -> ถอยไปใช้สี่เหลี่ยมตามดีไซน์",
             (w.winfo_class(), side), ("Frame", 18))
         w.destroy()
     finally:
-        T.logo_file = real
-        inst._logo_img = img
+        assets.logo_file = real
+        inst.win._logo_img = img
 
 
 def test_credit(inst):
@@ -289,7 +291,7 @@ def test_credit(inst):
     print("เครดิตท้ายหน้าต่าง")
     c = inst.w_credit
     body = c.master
-    chk("มีบรรทัดเดียว", [t for t in _all_text(inst.shell) if "แฟนเกม" in t],
+    chk("มีบรรทัดเดียว", [t for t in _all_text(inst.border) if "แฟนเกม" in t],
         [gui.CREDIT])
     chk_true("บอกว่าใครทำ", "แฟนเกม" in gui.CREDIT)
     chk_true("บอกว่าไม่ใช่ของทางการ", "ไม่ใช่ฉบับทางการ" in gui.CREDIT)
@@ -307,7 +309,7 @@ def test_credit(inst):
 def test_backdrop(inst):
     print("=" * 70)
     print("แผงภาพพื้นหลัง")
-    cv, img = inst.bg, inst._bg_img
+    cv, img = inst.win.bg, inst.win._bg_img
     chk_true("โหลด bg.png ได้", cv is not None and img is not None)
     if not cv:
         return
@@ -330,50 +332,50 @@ def test_backdrop(inst):
 
     A.flush()
     home = T.S(gui.BG_W)
-    chk("เลื่อนเข้าที่แล้วชิดขอบขวาพอดี", round(cv.coords(inst._bg_item)[0]), home)
-    inst.slide_backdrop(T.S(40), 0.5)
-    chk_true("สั่งเลื่อนแล้วขยับจริง", cv.coords(inst._bg_item)[0] > home)
+    chk("เลื่อนเข้าที่แล้วชิดขอบขวาพอดี", round(cv.coords(inst.win._bg_item)[0]), home)
+    inst.win.slide_backdrop(T.S(40), 0.5)
+    chk_true("สั่งเลื่อนแล้วขยับจริง", cv.coords(inst.win._bg_item)[0] > home)
     A.flush()
     chk("เลื่อนจบแล้วกลับเข้าที่เดิม",
-        round(cv.coords(inst._bg_item)[0]), home)
+        round(cv.coords(inst.win._bg_item)[0]), home)
 
-    saved = inst.bg
-    inst.bg = None
-    inst.slide_backdrop(T.S(20), 0.2)      # เครื่องที่ไม่มี bg.png ต้องไม่ล้ม
+    saved = inst.win.bg
+    inst.win.bg = None
+    inst.win.slide_backdrop(T.S(20), 0.2)      # เครื่องที่ไม่มี bg.png ต้องไม่ล้ม
     A.flush()
-    chk("ไม่มีภาพก็ยังทำงานได้", inst.bg, None)
-    inst.bg = saved
+    chk("ไม่มีภาพก็ยังทำงานได้", inst.win.bg, None)
+    inst.win.bg = saved
 
 
 def test_drag(inst, allow_input=True):
     print("=" * 70)
     print("ลากหน้าต่าง")
     root = inst.root
-    x0, y0, w0, h0 = T.window_rect(root)
+    x0, y0, w0, h0 = winui.window_rect(root)
 
     # ── สูตรคำนวณตำแหน่ง
-    inst._drag_start(FakeEvent(x0 + 300, y0 + 20))
-    chk("จำระยะจากมุมหน้าต่างถึงเมาส์ได้", inst._drag, (300, 20))
-    inst._drag_move(FakeEvent(x0 + 300 + 137, y0 + 20 + 61))
-    x1, y1, w1, h1 = T.window_rect(root)
+    inst.win._drag_start(FakeEvent(x0 + 300, y0 + 20))
+    chk("จำระยะจากมุมหน้าต่างถึงเมาส์ได้", inst.win._drag, (300, 20))
+    inst.win._drag_move(FakeEvent(x0 + 300 + 137, y0 + 20 + 61))
+    x1, y1, w1, h1 = winui.window_rect(root)
     chk("เมาส์ขยับเท่าไร หน้าต่างขยับเท่านั้นเป๊ะ", (x1 - x0, y1 - y0), (137, 61))
     chk("ขนาดไม่เปลี่ยนระหว่างลาก", (w1, h1), (w0, h0))
-    inst._drag_end(None)
-    chk("ปล่อยปุ่มแล้วเลิกลาก", inst._drag, None)
-    inst._drag_move(FakeEvent(x0 + 999, y0 + 999))
+    inst.win._drag_end(None)
+    chk("ปล่อยปุ่มแล้วเลิกลาก", inst.win._drag, None)
+    inst.win._drag_move(FakeEvent(x0 + 999, y0 + 999))
     chk("ปล่อยแล้วขยับเมาส์ หน้าต่างต้องอยู่นิ่ง",
-        T.window_rect(root)[:2], (x1, y1))
+        winui.window_rect(root)[:2], (x1, y1))
 
     # ── ความเร็ว: ของเดิมวัดได้ 30.6 ms/เฟรม = 33 fps ซึ่งคือต้นเหตุอาการเงา
-    inst._drag_start(FakeEvent(x1 + 300, y1 + 20))
+    inst.win._drag_start(FakeEvent(x1 + 300, y1 + 20))
     N = 60
     t = time.perf_counter()
     for i in range(N):
-        inst._drag_move(FakeEvent(x1 + 300 + (i % 30), y1 + 20))
+        inst.win._drag_move(FakeEvent(x1 + 300 + (i % 30), y1 + 20))
         root.update()
     ms = (time.perf_counter() - t) * 1000 / N
-    inst._drag_end(None)
-    T.move_window(root, x0, y0)
+    inst.win._drag_end(None)
+    winui.move_window(root, x0, y0)
     print("          วัดได้ %.2f ms/เฟรม (%.0f fps) — ของเดิม 30.6 ms (33 fps)"
           % (ms, 1000 / ms))
     chk("หนึ่งเฟรมต้องต่ำกว่า 8 ms", ms < 8.0, True)
@@ -385,19 +387,19 @@ def test_drag(inst, allow_input=True):
 
     root.deiconify()
     root.update()
-    xa, ya, _w, _h = T.window_rect(root)
-    inst._drag_start(FakeEvent(xa + 300, ya + 20))
-    inst._drag_move(FakeEvent(xa + 300 + 90, ya + 20 + 45))
-    inst._drag_end(None)
+    xa, ya, _w, _h = winui.window_rect(root)
+    inst.win._drag_start(FakeEvent(xa + 300, ya + 20))
+    inst.win._drag_move(FakeEvent(xa + 300 + 90, ya + 20 + 45))
+    inst.win._drag_end(None)
     root.update()
-    xb, yb, _w, _h = T.window_rect(root)
+    xb, yb, _w, _h = winui.window_rect(root)
     chk("Tk รู้ตำแหน่งใหม่ด้วย", (root.winfo_x(), root.winfo_y()), (xb, yb))
     root.iconify()
     root.update()
     root.deiconify()
     root.update()
-    chk("ย่อแล้วเรียกคืน หน้าต่างไม่เด้งกลับที่เดิม", T.window_rect(root)[:2], (xb, yb))
-    T.move_window(root, xa, ya)
+    chk("ย่อแล้วเรียกคืน หน้าต่างไม่เด้งกลับที่เดิม", winui.window_rect(root)[:2], (xb, yb))
+    winui.move_window(root, xa, ya)
     root.update()
 
     # ── ของจริง: กดเมาส์จริงแล้วลาก ต้องเข้าลูปย้ายหน้าต่างของ Windows
@@ -520,22 +522,22 @@ def test_window_fx(inst):
     print("เข้า-ออกของหน้าต่าง")
     root = inst.root
     root.attributes("-alpha", 0.0)
-    inst._appear()
+    inst.win.appear()
     A.flush()
     chk("เฟดเข้าจบที่ทึบเต็ม", float(root.attributes("-alpha")), 1.0)
     # Tk เปิด WS_EX_LAYERED ให้ตอนสร้าง wrapper เท่านั้น ถ้าบิตหลุดไป
     # -alpha จะเงียบไปเฉยๆ (เฟดตอนปิดจะไม่ทำงาน) — จึงต้องเปิดเองให้แน่
     chk("ตั้งความทึบได้จริง (บิตหน้าต่างซ้อนชั้นยังอยู่)",
-        T.make_layered(root) and T.is_layered(root), True)
+        winui.make_layered(root) and winui.is_layered(root), True)
     root.attributes("-alpha", 0.4)
     root.update()
     chk_near("ค่าที่ตั้งมีผลจริง", float(root.attributes("-alpha")), 0.4, 0.01)
     root.attributes("-alpha", 1.0)
 
-    x, y, _w, _h = T.window_rect(root)
-    inst._shake()                       # หน้าต่างถูก withdraw อยู่ -> ต้องไม่ทำอะไร
+    x, y, _w, _h = winui.window_rect(root)
+    inst.win.shake()                       # หน้าต่างถูก withdraw อยู่ -> ต้องไม่ทำอะไร
     A.flush()
-    chk("ไม่สั่นตอนหน้าต่างยังไม่โผล่", T.window_rect(root)[:2], (x, y))
+    chk("ไม่สั่นตอนหน้าต่างยังไม่โผล่", winui.window_rect(root)[:2], (x, y))
 
 
 def test_flow(inst):
@@ -604,12 +606,19 @@ def test_flow(inst):
     inst.show("working")
     inst.progress(0, "เตรียมการ", jump=True)
     chk("เริ่มงานใหม่ เปอร์เซ็นต์กลับไป 0 ทันที", inst.w_pct.cget("text"), "0%")
-    inst.progress(64, inst.stage_text("stage.apply:patch.xp3"))
+    inst.progress(64, inst.step_text(core.Step(core.Step.APPLY, "patch.xp3")))
     settle(inst)
     chk("เปอร์เซ็นต์ขึ้นถูก", inst.w_pct.cget("text"), "64%")
     chk("แถบกับตัวเลขเป็นค่าเดียวกันเสมอ", round(inst.w_bar.value), 64)
     chk_true("ข้อความขั้นตอนแปลเป็นไทย",
              inst.w_stage.cget("text").startswith("แปะแพตช์ patch.xp3"))
+    # ทุก kind ต้องมีคำแปล ไม่มีตัวไหนหลุดออกมาเป็นโค้ดดิบให้ผู้ใช้เห็น
+    kinds = [core.Step.HASH, core.Step.BACKUP, core.Step.APPLY,
+             core.Step.DISABLE, core.Step.RESTORE, core.Step.DONE]
+    chk("core.Step ทุกแบบมีข้อความไทย",
+        [k for k in kinds if inst.step_text(core.Step(k, "x.xp3")) in (k, "")], [])
+    chk("ไม่เหลือ %s ค้างในข้อความ",
+        [k for k in kinds if "%s" in inst.step_text(core.Step(k, "x.xp3"))], [])
     inst.job = None
 
     inst.goto_done(True, "ติดตั้งสำเร็จ", "…")
@@ -628,11 +637,52 @@ def test_flow(inst):
         inst.w_err_title.cget("fg"), T.TEXT)
 
 
+def test_modules():
+    """โครงสร้างโมดูล — ของที่แยกกันแล้วต้องไม่ไหลกลับมาปนกันอีก"""
+    print("=" * 70)
+    print("โครงสร้างโมดูล")
+
+    here = os.path.dirname(os.path.abspath(__file__))
+
+    # theme = โทเคนล้วน ต้อง import ได้โดยไม่ลาก ctypes ตามมา
+    # (แปลว่าเทส widget รันบนเครื่องที่ไม่ใช่ Windows ได้)
+    r = subprocess.run(
+        [sys.executable, "-c",
+         "import sys; sys.path.insert(0, %r); import theme; "
+         "print('ctypes' in sys.modules)" % here],
+        capture_output=True, text=True)
+    chk("import theme แล้วไม่ลาก ctypes ตามมา", r.stdout.strip(), "False")
+
+    # ขนาดโลโก้ต้องมีชุดเดียว — ฝั่ง build import ไปจาก assets
+    sys.path.insert(0, os.path.join(here, "build"))
+    import importlib
+    ml = importlib.import_module("make_logo")
+    chk("ขนาดโลโก้: ฝั่ง build ใช้ชุดเดียวกับตัวแอป",
+        ml.LOGO_SIZES, assets.LOGO_SIZES)
+    chk("ไฟล์โลโก้ที่ bundle มา ตรงกับรายการขนาด",
+        sorted(s for s in assets.LOGO_SIZES
+               if os.path.isfile(os.path.join(assets.ui_dir(), "logo@%d.png" % s))),
+        sorted(assets.LOGO_SIZES))
+
+    # เครื่องมือตอน build ต้องไม่ถูก import จากตัวแอป
+    app_side = ("app.py", "core.py", "theme.py", "widgets.py", "anim.py",
+                "winui.py", "assets.py")
+    leaked = []
+    for f in app_side:
+        with open(os.path.join(here, f), encoding="utf-8") as fh:
+            text = fh.read()
+        for m in ("imgtool", "make_bg", "make_logo", "build_gui"):
+            if ("import %s" % m) in text:
+                leaked.append("%s -> %s" % (f, m))
+    chk("ตัวแอปไม่ import อะไรจาก build/ เลย", leaked, [])
+
+
 def main():
     allow_input = "--no-input" not in sys.argv
     print("=" * 70)
     print("ฟอนต์")
-    chk_true("ลงทะเบียนฟอนต์ Sarabun ได้", T.load_fonts())
+    chk_true("ลงทะเบียนฟอนต์ Sarabun ได้", winui.load_fonts(assets.font_files()))
+    test_modules()
 
     inst = gui.Installer()
     inst.root.withdraw()
