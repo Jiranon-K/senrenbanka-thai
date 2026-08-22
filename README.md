@@ -10,6 +10,24 @@
 
 ---
 
+## ตัวติดตั้ง
+
+![ตัวติดตั้งแพตช์แปลไทย — หาโฟลเดอร์เกม → รายการติดตั้ง → ติดตั้ง → เสร็จสิ้น](docs/installer.gif)
+
+โปรแกรม Windows จริงๆ (tkinter + Win32) — ไม่มีเบราว์เซอร์ ไม่มี HTTP server
+ไม่เปิดพอร์ต ไม่ต้องพึ่ง WebView2 และ**หาโฟลเดอร์เกมให้เอง** (อ่าน Steam
+library ทุกไดรฟ์) จึงแตกซิปไว้ที่ไหนก็ได้ ไม่ต้องแตกทับโฟลเดอร์เกม
+
+| | |
+|---|---|
+| ![หน้าหาโฟลเดอร์เกม](docs/installer-locate.png) | ![หน้ารายการติดตั้ง](docs/installer-components.png) |
+| ตรวจ SHA256 ก่อนแตะไฟล์ใดๆ แล้วบอกว่าเจอเกมแบบไหน (all-ages / ลงแพตช์ R18 ไว้แล้ว / ลงไทยไปแล้ว) | บอกครบว่าจะแตะไฟล์ไหนบ้าง ขนาดเท่าไร ติ๊กเลือกฉาก R18 ได้ ถอดคืนได้ทุกเมื่อ |
+
+> โลโก้มุมบนซ้ายกับแผงภาพด้านขวาในภาพเหล่านี้ตัดมาจากภาพในเกม จึงไม่ได้อยู่ใน
+> repo — `git clone` มาเปล่าๆ จะได้ดีไซน์ Modernist ล้วน (เครื่องหมายเป็น
+> สี่เหลี่ยมส้ม ไม่มีแผงภาพ) สร้างของตัวเองได้ด้วย
+> `tools/gui/build/make_logo.py` และ `make_bg.py` (ดู [`tools/gui/README.md`](tools/gui/README.md))
+
 ## ติดตั้งง่าย (แนะนำ — ไม่ต้องลงโปรแกรมอะไรเพิ่ม)
 
 1. มีเกม Senren Banka แท้บน Steam (เวอร์ชันตรงกับ Release ที่ระบุ)
@@ -24,7 +42,7 @@
 
 ## ถ้าลงแพตช์ R18 ไว้
 
-ซิปเดียวใช้ได้ทั้งสองแบบ — `install.bat` เห็น `adult.xp3` ก็จะแปะไทยให้ฉาก R18 ให้เอง
+ซิปเดียวใช้ได้ทั้งสองแบบ — ตัวติดตั้งเห็น `adult.xp3` ก็จะแปะไทยให้ฉาก R18 ให้เอง
 
 เหตุผล: แพตช์ R18 ติดตั้ง `adult.xp3` ซึ่งเป็น *append pack* ที่มีสคริปต์บทพูดครบ 92 บท และอยู่ **เหนือ** `patch.xp3` ในลำดับโหลด (`scn < patch_extra < patch < adult`) คำแปลไทยที่เขียนไว้ใน `patch.xp3` จึงถูกทับทั้งหมด แพตช์ v1.1 เลยเขียนไทยลงในสคริปต์ฝั่ง R18 โดยตรง
 
@@ -41,6 +59,18 @@
 ฝั่ง R18 ใช้ `port_r18.py` (align ด้วยข้อความ JP ต้นฉบับ ไม่ใช่ index) — ดู [`tools/R18_COMPAT.md`](tools/R18_COMPAT.md)
 
 ทำชุดติดตั้งเอง: `python tools/build_release.py --version 1.1` (สร้าง diff → ตรวจย้อนกลับ → เขียน installer → zip)
+
+### เทส
+
+```powershell
+python tools/test_pipeline.py           # xp3 / scenario / targets — ไม่ต้องมีเกม
+python tools/gui/test_core.py           # ตรรกะตัวติดตั้ง
+python tools/gui/test_app.py --no-input # หน้าจอตัวติดตั้ง
+bash   tools/test_installer.sh          # install.bat / uninstall.bat
+```
+
+`test_pipeline.py` ประกอบ `.xp3` ขนาดจิ๋วขึ้นมาในหน่วยความจำ จึงรันได้บนเครื่อง
+ที่ไม่มีเกมเลย ส่วนเคสที่มีเกมอยู่จะเพิ่มการตรวจกับ archive จริงให้เอง
 
 ## โครงสร้าง
 
@@ -64,6 +94,7 @@ tools/gui/       ตัวติดตั้งแบบหน้าต่าง
 tools/gui/build/ เครื่องมือทำ asset — ทำงานตอน build เท่านั้น ไม่เข้าไปใน .exe
 
 thai_work/       คำแปลไทยทั้งหมด + progress tracker + glossary
+docs/            ภาพประกอบ README
 ```
 
 **อ่าน [`CONTEXT.md`](CONTEXT.md) ก่อนแก้โค้ด** — คำว่า "CN" ในชื่อไฟล์ไม่ได้แปลว่า
@@ -78,4 +109,5 @@ thai_work/       คำแปลไทยทั้งหมด + progress tracke
 - โค้ดเครื่องมือ (`tools/*.py`) — MIT ([`LICENSE`](LICENSE))
 - คำแปลไทย (`thai_work/th/`, `glossary.csv`) — งานแปลแฟน เพื่อการศึกษา/ใช้ส่วนตัว
 - ฟอนต์ที่ build ใช้ชื่อ reserved "Source Han Sans SC" ตาม OFL — ห้าม redistribute, build เองเท่านั้น
-- เกม/บทต้นฉบับ — ลิขสิทธิ์ Yuzusoft/NekoNyan ไม่รวมอยู่ใน repo นี้
+- ฟอนต์ Sarabun ที่ตัวติดตั้งใช้ — OFL, `OFL.txt` อยู่ข้างไฟล์
+- เกม/บทต้นฉบับ/ภาพในเกม — ลิขสิทธิ์ Yuzusoft/NekoNyan ไม่รวมอยู่ใน repo นี้
