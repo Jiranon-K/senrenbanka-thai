@@ -2,20 +2,31 @@
 # -*- coding: utf-8 -*-
 """
 QC for translated scenarios. Run after `import`, before `pack`.
-  qc.py <substr|all>
-Checks (on post-import json_cn + strings_cn.csv):
+  qc.py <substr|all> [all-ages|r18]        (default: all-ages)
+Checks (on the post-import json + strings CSV of the chosen corpus):
   1 untranslated  : CN slot still has Han/kana  (=> □ or original Chinese on screen)
   2 missing glyph : char in CN slot not in Sarabun-merged.ttf cmap  (=> □)
   3 tag preserve  : control codes (%NN; [..] \\n ${..} 【】) count en vs th mismatch
   4 overflow      : len(th)/len(en) > 1.7  (may overflow textbox)
   5 glossary      : en has glossary key but th missing its value
 Exit 1 if any untranslated or missing-glyph (hard errors).
+
+เดิมไฟล์นี้มีตัวเดินบล็อกเป็นของตัวเอง ซึ่งรับแค่ 4 ช่องภาษา แปลว่าตอนเอามา
+ตรวจฝั่ง R18 (ที่มี 5 ช่อง) มันข้ามบทพูดทั้งหมดไปเงียบๆ แล้วรายงานว่าผ่าน
+ทั้งที่ยังไม่ได้ตรวจอะไรเลย — ตอนนี้ใช้ layout ตัวเดียวกับ pipeline โดยเลือก
+ตามคลังที่กำลังตรวจ (ดู tools/scenario.py)
 """
-import os, sys, csv, json, glob, re
+import os, sys, csv, json, re
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fontTools.ttLib import TTFont
 import paths as P
+import scenario
+
+CORPUS = {
+    "all-ages": (P.JSON_CN, P.CSV_CN, scenario.ALL_AGES),
+    "r18":      (P.JSON_R18, P.CSV_R18, scenario.R18),
+}
 
 def han_kana(s): return [c for c in s if 0x4E00<=ord(c)<=0x9FFF or 0x3040<=ord(c)<=0x30FF]
 def codes(s):
@@ -24,38 +35,38 @@ def codes(s):
 
 def main():
     sub = sys.argv[1] if len(sys.argv) > 1 else "all"
+    which = sys.argv[2] if len(sys.argv) > 2 else "all-ages"
+    if which not in CORPUS:
+        sys.exit("corpus ต้องเป็น all-ages หรือ r18 (ได้ %r)" % which)
+    json_dir, csv_path, layout = CORPUS[which]
+    print("corpus: %s  (%s)" % (which, json_dir))
+
     cmap = set(TTFont(P.FONT_MERGED).getBestCmap().keys())
     gloss = [(r["en"].strip(), r["th"].strip()) for r in csv.DictReader(open(P.GLOSSARY, encoding="utf-8-sig")) if r["en"].strip()]
-    jfiles = [f for f in glob.glob(os.path.join(P.JSON_CN, "*.ks.json"))
-              if not f.endswith(".resx.json") and (sub == "all" or sub in os.path.basename(f))]
+    jfiles = [f for f in scenario.json_files(json_dir)
+              if sub == "all" or sub in os.path.basename(f)]
     hard = 0
     for jf in jfiles:
         name = os.path.basename(jf); d = json.load(open(jf, encoding="utf-8"))
         untr=[]; miss={}
-        def isb(x): return isinstance(x,list) and len(x)==4 and all(isinstance(e,list) and len(e)>=2 and isinstance(e[1],str) for e in x)
         def chk(txt):
             hk = han_kana(txt)
             if hk: untr.append(txt[:40])
             for c in txt:
                 if ord(c)>0x7e and ord(c) not in cmap and not (0x0e00<=ord(c)<=0x0e7f):
                     miss[c]=miss.get(c,0)+1
-        def w(x):
-            if isinstance(x,list):
-                if isb(x): chk(x[2][1])
-                for e in x: w(e)
-            elif isinstance(x,dict):
-                lang=x.get("language")
-                if isinstance(lang,list) and len(lang)==4 and isinstance(lang[2],dict) and "text" in lang[2]: chk(lang[2]["text"])
-                for v in x.values(): w(v)
-        w(d)
+        for b in layout.blocks(d):
+            chk(b[scenario.CN][1])
+        for x in layout.choices(d):
+            chk(x["language"][scenario.CN]["text"])
         print(f"\n=== {name} ===")
         if untr: print(f"  [1] UNTRANSLATED: {len(untr)}  e.g. {untr[:3]}"); hard+=1
         else: print("  [1] untranslated: 0 ✓")
         if miss: print(f"  [2] MISSING GLYPH: {[(c,hex(ord(c)),n) for c,n in miss.items()]}"); hard+=1
         else: print("  [2] missing glyph: 0 ✓")
     # CSV-based checks (tag/overflow/glossary)
-    if os.path.exists(P.CSV_CN):
-        rows=[r for r in csv.DictReader(open(P.CSV_CN,encoding="utf-8-sig"))
+    if os.path.exists(csv_path):
+        rows=[r for r in csv.DictReader(open(csv_path,encoding="utf-8-sig"))
               if (sub=="all" or sub in r["file"]) and r["th"].strip()]
         tagbad=[]; over=[]; glo=[]
         for r in rows:

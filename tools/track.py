@@ -11,6 +11,7 @@ import os, sys, csv, json, glob
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
+import scenario
 H_KEYWORDS = ["初体験", "オナニー", "２回目", "いちゃラヴ", "その後"]
 
 def route_of(name):
@@ -22,21 +23,16 @@ def is_h(name):
     return any(k in name for k in H_KEYWORDS)
 
 def counts(stem):
-    """blocks + choices from decompiled json (None if not decompiled)."""
+    """blocks + choices from decompiled json (None if not decompiled).
+
+    ใช้ layout ตัวเดียวกับ pipeline_cn.py เพื่อให้เลขในตารางตรงกับจำนวนแถวใน
+    strings_cn.csv จริงๆ (เดิมมีตัวเดินของตัวเองที่หลวมกว่า เลยนับไม่ตรงกัน)
+    """
     jf = os.path.join(P.JSON_CN, stem + ".json")
     if not os.path.exists(jf): return None, None
     d = json.load(open(jf, encoding="utf-8"))
-    def isb(x): return isinstance(x,list) and len(x)==4 and all(isinstance(e,list) and len(e)>=2 and isinstance(e[1],str) for e in x)
-    nb=[0]; nc=[0]
-    def w(x):
-        if isinstance(x,list):
-            if isb(x): nb[0]+=1
-            for e in x: w(e)
-        elif isinstance(x,dict):
-            lang=x.get("language")
-            if isinstance(lang,list) and len(lang)==4 and isinstance(lang[2],dict) and "text" in lang[2]: nc[0]+=1
-            for v in x.values(): w(v)
-    w(d); return nb[0], nc[0]
+    return (sum(1 for _ in scenario.ALL_AGES.blocks(d)),
+            sum(1 for _ in scenario.ALL_AGES.choices(d)))
 
 def translated_counts():
     """per json-file: (filled, total) th from strings_cn.csv"""
