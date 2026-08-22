@@ -28,6 +28,7 @@ A.flush() (จบทุกทวีนทันที) ก่อนตรวจ 
 import ctypes
 import ctypes.wintypes as wt
 import os
+import struct
 import subprocess
 import sys
 import threading
@@ -225,6 +226,62 @@ def test_chrome(inst):
         (inst.root.winfo_width(), inst.root.winfo_height()), (T.S(880), T.S(600)))
     chk("ไม่มีชื่อผู้แปลบนหน้าจอ",
         [t for t in _all_text(inst.shell) if "Jiranon" in t], [])
+
+
+PNG_MAGIC = bytes([137, 80, 78, 71, 13, 10, 26, 10])
+
+
+def ico_frames(path):
+    """คืน [(ขนาด, เป็น PNG ไหม), ...] ที่อยู่ในไฟล์ .ico"""
+    d = open(path, "rb").read()
+    n = struct.unpack("<H", d[4:6])[0]
+    out = []
+    for i in range(n):
+        e = 6 + 16 * i
+        ln, off = struct.unpack("<II", d[e + 8:e + 16])
+        out.append(((d[e] or 256), d[off:off + 8] == PNG_MAGIC))
+    return out
+
+
+def test_logo(inst):
+    print("=" * 70)
+    print("โลโก้และไอคอน")
+    img = inst._logo_img
+    chk_true("โหลดโลโก้ได้", img is not None)
+    if img is not None:
+        chk("ขนาดโลโก้ตรงกับที่ขอ (ไม่ได้ให้ Tk ย่อเอง)",
+            (img.width(), img.height()), (T.S(gui.LOGO_PX),) * 2)
+        chk("เครื่องหมายเป็นภาพ ไม่ใช่สี่เหลี่ยมสีเดียว",
+            inst._mark.winfo_class(), "Label")
+        top = inst._mark.winfo_y()
+        chk("วางกึ่งกลางแถบหัวพอดี", top * 2 + img.height(), T.S(44))
+
+    # เตรียมไว้หลายขนาดเพราะ Tk ย่อภาพได้แค่หารจำนวนเต็มแบบ nearest
+    for want, px in ((20, 21), (25, 24), (30, 31), (40, 55)):
+        f = T.logo_file(px)
+        chk("ขอ %2d px -> ได้ logo@%d" % (px, want),
+            os.path.basename(f or ""), "logo@%d.png" % want)
+
+    ico = T.icon_file()
+    chk("ใช้ไอคอนที่ bundle มา ไม่ใช่ตัวสำรอง",
+        os.path.basename(os.path.dirname(ico)), "ui")
+    frames = ico_frames(ico)
+    chk("ไอคอนมีครบทุกขนาดที่ Windows ใช้",
+        [s for s, _ in frames], [16, 20, 24, 32, 48, 64, 128, 256])
+    chk("ทุกขนาดเก็บเป็น PNG (มีช่อง alpha)",
+        all(png for _, png in frames), True)
+
+    # ถ้าไม่มีไฟล์โลโก้ ต้องถอยไปใช้สี่เหลี่ยมตามดีไซน์ ไม่ใช่ล้ม
+    real = T.logo_file
+    T.logo_file = lambda _px: None
+    try:
+        w, side = inst._make_mark(inst.shell)
+        chk("ไม่มีโลโก้ -> ถอยไปใช้สี่เหลี่ยมตามดีไซน์",
+            (w.winfo_class(), side), ("Frame", 18))
+        w.destroy()
+    finally:
+        T.logo_file = real
+        inst._logo_img = img
 
 
 def test_credit(inst):
@@ -584,6 +641,7 @@ def main():
     test_fonts(inst)
     test_not_web(inst)
     test_chrome(inst)
+    test_logo(inst)
     test_credit(inst)
     test_backdrop(inst)
     test_flow(inst)
