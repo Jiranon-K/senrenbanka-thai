@@ -55,7 +55,7 @@ cmd.exe อ่าน batch ทีละบรรทัดโดย decode ด้
     python tools/build_release.py --version 1.1
     python tools/build_release.py --version 1.1 --reuse      # ไม่ encode ใหม่
 """
-import os, sys, argparse, hashlib, shutil, subprocess, zipfile
+import os, sys, argparse, hashlib, json, shutil, subprocess, zipfile
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -315,15 +315,27 @@ README = """\
 รองรับทั้งเกม Steam ล้วน และเกมที่ลงแพตช์ R18 ไว้แล้ว
 ตัวติดตั้งจะตรวจเองว่าเครื่องคุณเป็นแบบไหน
 
-วิธีติดตั้ง
+วิธีติดตั้ง (แบบง่าย — แนะนำ)
 -----------
 1. ต้องมีเกม Senren Banka แท้บน Steam ติดตั้งไว้ก่อน
-2. แตกไฟล์ zip นี้ให้ครบทุกไฟล์ แล้วเอาไปวางใน "โฟลเดอร์เกม"
-   วิธีหา: Steam > คลิกขวาที่เกม > Manage > Browse local files
-   ตัวอย่าง: ...\\SteamLibrary\\steamapps\\common\\SenrenBanka\\
-3. ดับเบิลคลิก install.bat
+2. แตกไฟล์ zip นี้ให้ครบทุกไฟล์ ไว้ที่ไหนก็ได้ (ไม่ต้องแตกทับโฟลเดอร์เกม)
+3. ดับเบิลคลิก SenrenBanka-Thai-Patch.exe
+   ตัวติดตั้งจะหาโฟลเดอร์เกมให้เอง กด "ถัดไป" แล้ว "ติดตั้ง"
+   ถ้าเครื่องมีแพตช์ R18 อยู่ จะมีช่อง "ฉาก R18" ให้เลือกในหน้ารายการ
+     ติ๊กไว้  = ลงเวอร์ชัน R18 (ฉาก R18 เป็นไทยด้วย)
+     ติ๊กออก = ลงเวอร์ชัน all-ages (ปิด adult.xp3/adult2.xp3 ไว้ กดถอดแพตช์แล้วได้คืน)
 4. เปิดเกม > Options > Language > เลือก "Chinese (Simplified)"
 5. เล่นได้เลย ข้อความจะเป็นภาษาไทย
+
+ถอดคืน: เปิดตัวติดตั้งอีกครั้ง แล้วกด "ถอดแพตช์"
+
+วิธีติดตั้ง (แบบ command line)
+-----------
+ถ้าตัวหน้าต่างเปิดไม่ขึ้น (เครื่องที่ไม่มี Edge WebView2 Runtime) ใช้ install.bat แทนได้
+ผลลัพธ์เหมือนกันทุกอย่าง แต่ต้องเอาไฟล์ทั้งหมด "ไปวางในโฟลเดอร์เกม" ก่อน
+   วิธีหาโฟลเดอร์เกม: Steam > คลิกขวาที่เกม > Manage > Browse local files
+   ตัวอย่าง: ...\\SteamLibrary\\steamapps\\common\\SenrenBanka\\
+แล้วดับเบิลคลิก install.bat (ถอดคืนด้วย uninstall.bat)
 
   ทำไมต้องเลือกจีน: ช่องภาษาจีนใช้ฟอนต์แบบ vector สลับเป็นฟอนต์ไทยได้
   ส่วนช่อง JP/EN ใช้ภาพตัวอักษรที่ render มาแล้ว ใส่ไทยไม่ได้
@@ -331,7 +343,13 @@ README = """\
 
 ถ้าลงแพตช์ R18 ไว้
 -----------
-ติดตั้งได้เหมือนกัน ตัวติดตั้งจะเห็น adult.xp3 แล้วแปะไทยให้ฉาก R18 ด้วยอัตโนมัติ
+ติดตั้งได้เหมือนกัน และเลือกได้ว่าจะเอาเวอร์ชันไหน:
+
+  เวอร์ชัน R18       ฉาก R18 เป็นภาษาไทยด้วย (ค่าเริ่มต้น)
+  เวอร์ชัน all-ages  ปิด adult.xp3 + adult2.xp3 ไว้ เกมกลับเป็นฉบับ all-ages
+                     (แค่เปลี่ยนชื่อเป็น .off ไม่ได้ลบ กด "ถอดแพตช์" แล้วได้คืนครบ)
+
+install.bat ทำได้เฉพาะเวอร์ชัน R18 อัตโนมัติ ถ้าอยากเลือกให้ใช้ตัวติดตั้งแบบหน้าต่าง
 
 ** ห้ามรันตัวติดตั้งแพตช์ R18 ซ้ำหลังลงแพตช์ไทยแล้ว **
 มันจะเขียนทับ adult.xp3 ทำให้ไทยหายทั้งเกม (ไม่ใช่แค่ฉาก R18)
@@ -341,7 +359,8 @@ README = """\
 
 วิธีถอดแพตช์
 -----------
-ดับเบิลคลิก uninstall.bat  (คืนไฟล์ต้นฉบับทั้ง patch.xp3 / data.xp3 / adult.xp3)
+ในตัวติดตั้ง: กดปุ่ม "ถอดแพตช์"
+หรือดับเบิลคลิก uninstall.bat  (คืนไฟล์ต้นฉบับทั้ง patch.xp3 / data.xp3 / adult.xp3)
 
 ปัญหาที่พบบ่อย
 -----------
@@ -395,6 +414,8 @@ def main():
                     help="ใช้ .xdelta เดิมถ้ามีอยู่แล้ว (ยังตรวจย้อนกลับเหมือนเดิม)")
     ap.add_argument("--coverage",
                     default="แปลครบทั้งเกมฝั่ง all-ages; ฝั่ง R18 แปลแล้วบางส่วน")
+    ap.add_argument("--gui", action="store_true",
+                    help="build ตัวติดตั้งแบบ GUI ใส่เข้าไปในซิปด้วย (ต้องมี PyInstaller)")
     a = ap.parse_args()
 
     game = os.path.abspath(a.game_dir) if a.game_dir else find_game_dir(REPO)
@@ -430,9 +451,32 @@ def main():
               % (name, os.path.getsize(delta) / 2 ** 20))
 
         hashes[thai] = (h_orig, h_thai)
-        present.append((name, orig, thai, label))
+        present.append((name, orig, thai, label, required))
 
     shutil.copy2(xd, os.path.join(out, "xdelta3.exe"))
+
+    # manifest.json — source of truth เดียวกับที่ install.bat ฝัง hash ไว้
+    # ตัว GUI (tools/gui/) อ่านไฟล์นี้ จะได้ไม่มีทางหลุด sync กับ .bat
+    manifest = {
+        "version": a.version,
+        "product": "Senren Banka — แพตช์แปลไทย",
+        "repo": "https://github.com/Jiranon-K/senrenbanka-thai",
+        "coverage": a.coverage,
+        "targets": [
+            {
+                "file": thai,
+                "delta": name,
+                "label": label,
+                "required": req,
+                "sha_orig": hashes[thai][0],
+                "sha_thai": hashes[thai][1],
+                "delta_size": os.path.getsize(os.path.join(out, name)),
+            }
+            for name, _o, thai, label, req in present
+        ],
+    }
+    with open(os.path.join(out, "manifest.json"), "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=2)
 
     def h(f, i):
         return hashes[f][i] if f in hashes else "0" * 64
@@ -452,12 +496,18 @@ def main():
     write_text(os.path.join(out, "README.txt"),
                README.replace("__VER__", a.version).replace("__COVERAGE__", a.coverage))
 
+    # GUI สร้างทีหลังสุด เพราะต้องให้ manifest.json มีอยู่ก่อน แล้วค่อยนับ checksum
+    if a.gui:
+        print("\n[gui] build ตัวติดตั้งแบบ GUI")
+        run(sys.executable, os.path.join(REPO, "tools", "gui", "build_gui.py"),
+            "--out", out)
+
     lines = ["Senren Banka Thai patch v%s - SHA256" % a.version, "",
              "ไฟล์เกมที่รองรับ (ก่อนแปะแพตช์):"]
-    for _, _orig, thai, _lbl in present:
+    for _, _orig, thai, _lbl, _req in present:
         lines.append("  %-14s %s" % (thai, hashes[thai][0]))
     lines += ["", "ไฟล์เกมหลังแปะแพตช์:"]
-    for _, _orig, thai, _lbl in present:
+    for _, _orig, thai, _lbl, _req in present:
         lines.append("  %-14s %s" % (thai, hashes[thai][1]))
     lines += ["", "ไฟล์ในชุดติดตั้ง:"]
     for f in sorted(os.listdir(out)):
