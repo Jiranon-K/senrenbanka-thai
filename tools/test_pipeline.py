@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-test_pipeline.py — เทส tools/xp3.py กับ tools/scenario.py
+test_pipeline.py — เทสเครื่องมือฝั่ง tools/ ที่ไม่ใช่ GUI
 
     python tools/test_pipeline.py
 
+ครอบ xp3.py (รูปแบบ archive), scenario.py (ตัวเดินบทพูด) และ targets.py
+(ตารางไฟล์ที่แพตช์แตะ)
+
 **ไม่ต้องมีเกม ไม่ต้องมีไฟล์ .xp3** — สร้าง archive จิ๋วขึ้นมาในหน่วยความจำเอง
-นี่คือเหตุผลที่แยกสองโมดูลนี้ออกมา: ตอนที่โค้ดพวกนี้ยังฝังอยู่ใน cmd_pack()
+นี่คือเหตุผลที่แยกโมดูลพวกนี้ออกมา: ตอนที่โค้ดยังฝังอยู่ใน cmd_pack()
 ที่อ่าน sys.argv เองและเขียนทับ archive 855 MB เอง มันเทสไม่ได้เลยสักบรรทัด
 
-ถ้ามี archive จริงอยู่ในเครื่อง จะเทสเพิ่มอีกชุด (ข้ามเองถ้าไม่มี)
+ถ้ามี archive จริง / ชุดติดตั้งที่ build ไว้อยู่ในเครื่อง จะเทสเพิ่มอีกชุด
+(ข้ามเองถ้าไม่มี)
 """
 from __future__ import annotations
 
@@ -413,12 +417,107 @@ def test_json_files():
         ["a.ks.json", "b.ks.json"])
 
 
+# ══════════════════════════════════════════════ targets: ตารางไฟล์เป้าหมาย
+
+def test_targets_table():
+    print("=" * 70)
+    print("targets — ตารางไฟล์ที่แพตช์แตะ")
+    import targets as T
+
+    chk("ไม่มีชื่อไฟล์ซ้ำ",
+        len({t.file for t in T.TARGETS}), len(T.TARGETS))
+    chk("ไม่มีชื่อ diff ซ้ำ",
+        len({t.delta for t in T.TARGETS}), len(T.TARGETS))
+    chk("ไม่มีชื่อตัวแปร .bat ซ้ำ (ORIG_x/THAI_x จะทับกัน)",
+        len({t.var for t in T.TARGETS}), len(T.TARGETS))
+    chk("ตัวแปร .bat เป็น A-Z ล้วน",
+        [t.var for t in T.TARGETS if not t.var.isascii() or not t.var.isupper()], [])
+    chk("ไฟล์ R18 ทุกตัวไม่บังคับ (เครื่องที่ไม่ลง R18 ต้องติดตั้งได้)",
+        [t.file for t in T.TARGETS if t.r18 and t.required], [])
+    chk("ทุก target ที่เป็น R18 อยู่ในรายการที่ต้องปิดตอนเลือก all-ages",
+        [t.file for t in T.TARGETS if t.r18 and t.file not in T.DISABLE_ON_ALL_AGES],
+        [])
+
+    # ชิ้นส่วนที่ generate ลง .bat ต้องพูดถึงทุกไฟล์
+    for name, text in (("รายชื่อไฟล์ในซิป", T.bat_required_files()),
+                       ("บล็อก rollback", T.bat_rollback()),
+                       ("uninstall: หา .bak", T.bat_uninstall_found()),
+                       ("uninstall: คืนไฟล์", T.bat_uninstall_restore())):
+        missing = [t.file for t in T.TARGETS
+                   if (t.delta if "ซิป" in name else t.file) not in text]
+        chk("%s ครบทุก target" % name, missing, [])
+
+    sets = T.bat_hash_vars({"patch.xp3": ("a" * 64, "b" * 64)})
+    chk("target ที่ไม่ได้ build ได้ศูนย์ 64 ตัว (ไม่มีทางตรงกับของจริง)",
+        sets.count("0" * 64), 2 * (len(T.TARGETS) - 1))
+    chk("แฮชที่ส่งเข้าไปถูกใส่ลงตัวแปรถูกตัว",
+        'set "THAI_PATCH=%s"' % ("b" * 64) in sets, True)
+
+    try:
+        T.check_bat_mentions_every_target("ไม่มีอะไรเลย", "เทส")
+        chk(".bat ที่ไม่พูดถึง target ต้องหยุด build", "ไม่หยุด", "หยุด")
+    except SystemExit as ex:
+        chk_true(".bat ที่ไม่พูดถึง target หยุด build พร้อมบอกชื่อไฟล์",
+                 "patch.xp3" in str(ex))
+
+
+def test_generated_bat_matches_shipped():
+    """.bat ที่ generate ต้องเหมือนตัวที่ปล่อยไปแล้วทุกบรรทัด (ยกเว้นค่าแฮช)"""
+    print("=" * 70)
+    print("targets — .bat ที่ generate เทียบกับชุดติดตั้งที่ build ไว้")
+
+    dist = os.environ.get("SBTP_RES")
+    if not dist or not os.path.isfile(os.path.join(dist, "install.bat")):
+        return skip("เทียบกับ .bat ที่ปล่อยไปแล้ว",
+                    "ตั้ง SBTP_RES ชี้ไปที่โฟลเดอร์ชุดติดตั้งก่อน")
+
+    import re
+    import build_release as B
+    import targets as T
+
+    shipped = {}
+    for n in ("install.bat", "uninstall.bat"):
+        with open(os.path.join(dist, n), encoding="utf-8") as f:
+            shipped[n] = f.read()
+
+    hashes = {}
+    for t in T.TARGETS:
+        o = re.search(r'set "ORIG_%s=(\w+)"' % t.var, shipped["install.bat"])
+        h = re.search(r'set "THAI_%s=(\w+)"' % t.var, shipped["install.bat"])
+        if o and h:
+            hashes[t.file] = (o.group(1), h.group(1))
+
+    def fill(body):
+        return (body.replace("__VER__", "1.1")
+                    .replace("__DELTAS__", T.bat_required_files())
+                    .replace("__ROLLBACK__", T.bat_rollback())
+                    .replace("__UNINSTALL_FOUND__", T.bat_uninstall_found())
+                    .replace("__UNINSTALL_RESTORE__", T.bat_uninstall_restore()))
+
+    made = {
+        "install.bat": (B.BAT_HEAD % ("Installer", "1.1")) + "\n"
+                       + T.bat_hash_vars(hashes) + "\n" + fill(B.INSTALL_BODY),
+        "uninstall.bat": (B.BAT_HEAD % ("Uninstaller", "1.1"))
+                         + fill(B.UNINSTALL_BODY),
+    }
+
+    def norm(text):
+        return [re.sub(r"[ \t]+", " ", ln.rstrip())
+                for ln in text.replace("\r\n", "\n").split("\n")]
+
+    for n, text in made.items():
+        chk("%s ตรงกับที่ปล่อยไปแล้วทุกบรรทัด" % n,
+            norm(shipped[n]), norm(text))
+
+
 # ═════════════════════════════════════════════════════════════ main
 
 def main():
     test_layouts_differ()
     test_walk_order()
     test_json_files()
+    test_targets_table()
+    test_generated_bat_matches_shipped()
     test_xp3_roundtrip()
     test_xp3_guards()
     test_xp3_match_by_size()
