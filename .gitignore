@@ -18,6 +18,11 @@
 /tools/xdelta/
 /tools/GARbro/
 /tools/_dl/
+/tools/**/__pycache__/
+# The one exception to "no third-party binaries": tools/gui/ui/fonts/Sarabun-*.ttf.
+# The OFL explicitly permits redistribution, OFL.txt ships beside them, and the
+# GUI has to render Thai offline — a build without them falls back to whatever
+# the machine happens to have.
 
 # 4) thai_work/ — keep only our translation data + dashboards
 !/thai_work/
