@@ -411,6 +411,16 @@ def main():
             print("[skip]   %-20s ไม่มี %s -> ข้าม" % (t.delta, t.orig))
             continue
 
+        # ไฟล์ที่แพตช์แล้วต้องไม่โตกว่าต้นฉบับ — ของใหม่ถูก pad ให้เท่าช่องเดิม
+        # เสมอ ผังจึงยาวเท่ากัน (ต่างกันได้ไม่กี่ร้อยไบต์จากช่องว่างที่ Yuzu
+        # เผื่อไว้ กับขนาด index หลัง zlib) โตขึ้นเป็น MB = แพ็กด้วยโค้ดรุ่นที่
+        # ยังอ่าน segm ผิดช่องและก็อป payload ที่ใช้ร่วมกันแยกทุกตัว —
+        # ปล่อยออกไปคือส่ง 33 MB ที่ไม่มีประโยชน์ไปลงเครื่องผู้เล่นทุกคน
+        grew = os.path.getsize(pt) - os.path.getsize(po)
+        if grew > (1 << 20):
+            sys.exit("%s โตกว่า %s อยู่ %.1f MB — แพ็กใหม่ก่อนปล่อย"
+                     % (t.file, t.orig, grew / 2 ** 20))
+
         delta = os.path.join(out, t.delta)
         if not (a.reuse and os.path.isfile(delta)):
             print("[encode] %-20s %s" % (t.delta, t.label))
@@ -458,10 +468,6 @@ def main():
     with open(os.path.join(out, "manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
 
-    # เพิ่ม target แล้วลืมแก้ .bat = build ไม่ผ่าน ดีกว่าปล่อยแพตช์ครึ่งเดียว
-    T.check_bat_mentions_every_target(INSTALL_BODY, "install.bat")
-    T.check_bat_mentions_every_target(UNINSTALL_BODY, "uninstall.bat")
-
     def fill(body):
         return (body.replace("__VER__", a.version)
                     .replace("__DELTAS__", T.bat_required_files())
@@ -469,13 +475,18 @@ def main():
                     .replace("__UNINSTALL_FOUND__", T.bat_uninstall_found())
                     .replace("__UNINSTALL_RESTORE__", T.bat_uninstall_restore()))
 
+    # เพิ่ม target แล้วลืมแก้ .bat = build ไม่ผ่าน ดีกว่าปล่อยแพตช์ครึ่งเดียว
+    # ต้องตรวจ **ข้อความที่เติมค่าแล้ว** — ชื่อไฟล์ทั้งหมดงอกมาจาก targets.py
+    # ตอน fill() ในตัว template มีแต่ placeholder ตรวจตัว template จึงตกเสมอ
+    install_bat = (BAT_HEAD % ("Installer", a.version)) + "\n" \
+        + T.bat_hash_vars(hashes) + "\n" + fill(INSTALL_BODY)
+    uninstall_bat = (BAT_HEAD % ("Uninstaller", a.version)) + fill(UNINSTALL_BODY)
+    T.check_bat_mentions_every_target(install_bat, "install.bat")
+    T.check_bat_mentions_every_target(uninstall_bat, "uninstall.bat")
+
     # bom=False สำคัญมาก — ดู "หมายเหตุเรื่อง encoding ของ .bat" ด้านบน
-    write_text(os.path.join(out, "install.bat"),
-               (BAT_HEAD % ("Installer", a.version)) + "\n"
-               + T.bat_hash_vars(hashes) + "\n" + fill(INSTALL_BODY), bom=False)
-    write_text(os.path.join(out, "uninstall.bat"),
-               (BAT_HEAD % ("Uninstaller", a.version)) + fill(UNINSTALL_BODY),
-               bom=False)
+    write_text(os.path.join(out, "install.bat"), install_bat, bom=False)
+    write_text(os.path.join(out, "uninstall.bat"), uninstall_bat, bom=False)
     write_text(os.path.join(out, "README.txt"),
                README.replace("__VER__", a.version).replace("__COVERAGE__", a.coverage))
 
