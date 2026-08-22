@@ -1,7 +1,8 @@
 # Senren Banka — Thai Translation toolkit
-# This repo lives inside the GAME directory. To avoid ever committing
-# copyrighted game assets (or multi-GB archives), we IGNORE EVERYTHING by
-# default and then explicitly un-ignore only our own tools + translation data.
+# This repo sits inside the game directory, or anywhere below it — tools/paths.py
+# walks up to find SenrenBanka.exe, so don't assume the two are the same folder.
+# To avoid ever committing copyrighted game assets (or multi-GB archives), we
+# IGNORE EVERYTHING by default and then un-ignore only our own tools + data.
 
 # 1) ignore every top-level entry
 /*
@@ -10,6 +11,7 @@
 !/.gitignore
 !/.gitattributes
 !/README.md
+!/CONTEXT.md
 !/LICENSE
 
 # 3) tools/  — our pipeline scripts + guide (NOT 3rd-party binaries)
@@ -31,7 +33,7 @@
 !/thai_work/glossary.csv
 !/thai_work/PROGRESS.md
 !/thai_work/PROGRESS_R18.md
-!/thai_work/manifest.json
+!/thai_work/scenarios.json
 !/thai_work/progress.json
 
 # 5) within th/: keep Thai translations (idx -> th), drop the source dumps
@@ -42,5 +44,6 @@
 # *.xp3 / *.xp3.orig                game archives (Yuzusoft assets, multi-GB)
 # thai_work/strings_cn.csv          master CSV (contains JP + official EN)
 # thai_work/fonts/                  base/merged/variant font binaries (build locally)
-# thai_work/{json_cn,psb_cn,pe_extract}/   decompiled scenarios (copyrighted)
-# dataxp3/ scnxp3/ savedata/ ...    extracted game data
+# thai_work/{json_cn,psb_cn,json_r18,psb_r18}/  decompiled scenarios (copyrighted)
+# thai_work/{dataxp3,scnxp3}/       archives ที่แตกออกมา (ที่อยู่ใน tools/paths.py)
+# thai_work/dist/                   ชุดติดตั้งที่ build ออกมา

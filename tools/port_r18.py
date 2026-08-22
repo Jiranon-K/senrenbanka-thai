@@ -46,7 +46,7 @@ Workflow
   # 1) สร้าง strings_cn.csv ของฝั่ง all-ages ให้มีคอลัมน์ th ครบก่อน (ของเดิม)
   python tools/pipeline_cn.py decompile patch_extract
   python tools/pipeline_cn.py export
-  python tools/_merge.py 001      # ...วนทุก prefix ใน thai_work/th/
+  python tools/tsv.py merge 001   # ...วนทุก prefix ใน thai_work/th/
   #
   # 2) ฝั่ง R18
   python tools/port_r18.py decompile adult_extract    # -> thai_work/json_r18
@@ -77,14 +77,8 @@ import os, sys, csv, json, glob, struct, zlib, shutil, subprocess, difflib
 sys.stdout.reconfigure(encoding="utf-8")
 csv.field_size_limit(10 ** 9)
 
-GAME   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORK   = os.path.join(GAME, "thai_work")
-JSOND  = os.path.join(WORK, "json_r18")           # R18 json (ปลายทาง)
-PSBD   = os.path.join(WORK, "psb_r18")            # R18 recompiled psb
-CSV_CN = os.path.join(WORK, "strings_cn.csv")     # ของเดิม (all-ages) ต้องมี th ครบ
-CSV_R18 = os.path.join(WORK, "strings_r18.csv")   # ของใหม่
-PSBDEC = os.path.join(GAME, "tools", "FreeMote", "PsbDecompile.exe")
-PSBLD  = os.path.join(GAME, "tools", "FreeMote", "PsBuild.exe")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
 CN = 2                                            # CN language slot index
 
 
@@ -135,28 +129,28 @@ def json_files(d):
 
 def cmd_decompile():
     srcdir = sys.argv[2]
-    os.makedirs(JSOND, exist_ok=True)
+    os.makedirs(P.JSON_R18, exist_ok=True)
     files = sorted(glob.glob(os.path.join(srcdir, "*.ks.scn")))
     print(f"decompiling {len(files)} R18 scenarios from {srcdir}")
     for fp in files:
-        subprocess.run([PSBDEC, os.path.abspath(fp)], capture_output=True)
+        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(fp)], capture_output=True)
         base = os.path.basename(fp)[:-4]
         for ext in (".json", ".resx.json"):
             s = os.path.join(srcdir, base + ext)
             if os.path.exists(s):
-                shutil.move(s, os.path.join(JSOND, base + ext))
-    print("done ->", JSOND)
+                shutil.move(s, os.path.join(P.JSON_R18, base + ext))
+    print("done ->", P.JSON_R18)
 
 
 # ---------------------------------------------------------------- 2. align
 
 def _load_cn_csv():
     """strings_cn.csv (ฝั่ง all-ages) -> {file: {'blocks': [rows in order], 'choices': [rows]}}"""
-    if not os.path.exists(CSV_CN):
-        sys.exit(f"[ERROR] ไม่พบ {CSV_CN}\n"
-                 f"        รัน pipeline_cn.py decompile/export + _merge.py ให้ครบก่อน")
+    if not os.path.exists(P.CSV_CN):
+        sys.exit(f"[ERROR] ไม่พบ {P.CSV_CN}\n"
+                 f"        รัน pipeline_cn.py decompile/export + tsv.py merge ให้ครบก่อน")
     per = {}
-    with open(CSV_CN, encoding="utf-8-sig") as f:
+    with open(P.CSV_CN, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             e = per.setdefault(r["file"], {"blocks": [], "choices": []})
             (e["choices"] if r["idx"].startswith("ch") else e["blocks"]).append(r)
@@ -181,7 +175,7 @@ def _align(src_keys, dst_keys):
 def cmd_align():
     cn = _load_cn_csv()
     rows, stats = [], []
-    for jf in json_files(JSOND):
+    for jf in json_files(P.JSON_R18):
         name = os.path.basename(jf)
         d = json.load(open(jf, encoding="utf-8"))
 
@@ -245,7 +239,7 @@ def cmd_align():
         flag = "" if got == total else "   <-- ต้องแปลเพิ่ม %d" % (total - got)
         print(f"  {name:<48} {got:5}/{total:<5} ({(got/total*100 if total else 100):5.1f}%){flag}")
 
-    with open(CSV_R18, "w", encoding="utf-8-sig", newline="") as f:
+    with open(P.CSV_R18, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
         w.writerow(["file", "idx", "speaker_en", "jp", "en", "cn", "th", "src"])
         w.writerows(rows)
@@ -254,15 +248,15 @@ def cmd_align():
     got = sum(g for _, g, _ in stats)
     pct = (got / tot * 100) if tot else 0.0
     print(f"\nรวม: reuse ได้ {got}/{tot} บรรทัด ({pct:.1f}%) — ต้องแปลใหม่ {tot-got} บรรทัด")
-    print("เขียน ->", CSV_R18)
+    print("เขียน ->", P.CSV_R18)
 
 
 def cmd_report():
     """พิมพ์สถานะรายไฟล์ + เขียน thai_work/PROGRESS_R18.md เป็น dashboard"""
-    if not os.path.exists(CSV_R18):
-        sys.exit(f"[ERROR] ยังไม่มี {CSV_R18} — รัน `port_r18.py align` ก่อน")
+    if not os.path.exists(P.CSV_R18):
+        sys.exit(f"[ERROR] ยังไม่มี {P.CSV_R18} — รัน `port_r18.py align` ก่อน")
     per, newonly = {}, {}
-    with open(CSV_R18, encoding="utf-8-sig") as f:
+    with open(P.CSV_R18, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             e = per.setdefault(r["file"], [0, 0])
             e[1] += 1
@@ -295,7 +289,7 @@ def cmd_report():
         d, t = per[k]
         mark = "" if d == t else f" {t - d}"
         md.append(f"| {k.replace('.ks.json', '')} | {d} | {t} | {'✅' if d == t else mark} | {newonly.get(k, 0)} |")
-    out = os.path.join(WORK, "PROGRESS_R18.md")
+    out = P.PROGRESS_R18_MD
     with open(out, "w", encoding="utf-8") as f:
         f.write("\n".join(md) + "\n")
     print("\nเขียน dashboard ->", out)
@@ -306,7 +300,7 @@ def cmd_report():
 def cmd_import():
     sub = sys.argv[2] if len(sys.argv) > 2 else None
     blk, cho = {}, {}
-    with open(CSV_R18, encoding="utf-8-sig") as f:
+    with open(P.CSV_R18, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             r["th"] = r["th"].replace("～", "〜")   # FF5E -> 301C (มี glyph ในฟอนต์)
             i = r["idx"]
@@ -316,7 +310,7 @@ def cmd_import():
                 blk.setdefault(r["file"], {})[int(i)] = r
 
     tot = ctot = 0
-    for jf in json_files(JSOND):
+    for jf in json_files(P.JSON_R18):
         name = os.path.basename(jf)
         if sub and sub not in name: continue
         d = json.load(open(jf, encoding="utf-8"))
@@ -351,23 +345,23 @@ def cmd_import():
         if changed:
             json.dump(d, open(jf, "w", encoding="utf-8"), ensure_ascii=False)
 
-    print(f"imported {tot} Thai lines + {ctot} choice options into CN slot ({JSOND})")
+    print(f"imported {tot} Thai lines + {ctot} choice options into CN slot ({P.JSON_R18})")
 
 
 # ---------------------------------------------------------------- 4. recompile
 
 def cmd_recompile():
-    os.makedirs(PSBD, exist_ok=True)
+    os.makedirs(P.PSB_R18, exist_ok=True)
     sub = sys.argv[2] if len(sys.argv) > 2 else None
-    for jf in json_files(JSOND):
+    for jf in json_files(P.JSON_R18):
         if sub and sub not in os.path.basename(jf): continue
-        subprocess.run([PSBLD, os.path.abspath(jf)], cwd=PSBD, capture_output=True)
+        subprocess.run([P.PSB_BUILD, os.path.abspath(jf)], cwd=P.PSB_R18, capture_output=True)
         base = os.path.basename(jf)[:-5]            # *.ks
         for cand in (base + ".pure.scn", base + ".psb"):
-            pc = os.path.join(PSBD, cand)
+            pc = os.path.join(P.PSB_R18, cand)
             if os.path.exists(pc):
-                shutil.move(pc, os.path.join(PSBD, base + ".scn")); break
-    print("recompiled ->", PSBD)
+                shutil.move(pc, os.path.join(P.PSB_R18, base + ".scn")); break
+    print("recompiled ->", P.PSB_R18)
 
 
 # ---------------------------------------------------------------- 5. pack
@@ -381,7 +375,7 @@ def parse_index(d):
 
 def cmd_pack():
     """เหมือน pipeline_cn.py pack ทุกอย่าง ต่างแค่อ่าน psb จาก thai_work/psb_r18"""
-    archive = os.path.join(GAME, sys.argv[2]); extract = sys.argv[3]
+    archive = P.game_file(sys.argv[2]); extract = sys.argv[3]
     orig = archive + ".orig"
     if not os.path.exists(orig): shutil.copy(archive, orig)
     d = open(orig, "rb").read()
@@ -395,7 +389,7 @@ def cmd_pack():
     plain_by_size = {}
     for p in glob.glob(os.path.join(extract, "*.ks.scn")):
         plain_by_size.setdefault(os.path.getsize(p), []).append(p)
-    psb_by_name = {os.path.basename(p): p for p in glob.glob(os.path.join(PSBD, "*.ks.scn"))}
+    psb_by_name = {os.path.basename(p): p for p in glob.glob(os.path.join(P.PSB_R18, "*.ks.scn"))}
 
     p = first; ents = []
     while p < len(idx) and idx[p:p + 4] == b"File":

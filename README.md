@@ -45,10 +45,14 @@
 ## โครงสร้าง
 
 ```
-tools/     เครื่องมือแปล/แพ็กไฟล์ (Python) + xdelta (ทำตัวติดตั้ง)
-tools/gui/ ตัวติดตั้งแบบหน้าต่าง (tkinter, native Win32) — ดีไซน์จาก Claude Design
-thai_work/ คำแปลไทยทั้งหมด + progress tracker + glossary
+CONTEXT.md  ศัพท์ของโปรเจกต์ — CN slot, load order, keystream, target/plan/step
+tools/      เครื่องมือแปล/แพ็กไฟล์ (Python) + xdelta (ทำตัวติดตั้ง)
+tools/gui/  ตัวติดตั้งแบบหน้าต่าง (tkinter, native Win32) — ดีไซน์จาก Claude Design
+thai_work/  คำแปลไทยทั้งหมด + progress tracker + glossary
 ```
+
+**อ่าน [`CONTEXT.md`](CONTEXT.md) ก่อนแก้โค้ด** — คำว่า "CN" ในชื่อไฟล์ไม่ได้แปลว่า
+ภาษาจีน และ "repo" กับ "โฟลเดอร์เกม" เป็นคนละโฟลเดอร์กัน
 
 ดูสถานะแบบละเอียดรายไฟล์ได้ที่ [`thai_work/PROGRESS.md`](thai_work/PROGRESS.md)
 

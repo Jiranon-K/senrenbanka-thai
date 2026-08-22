@@ -58,9 +58,9 @@ cmd.exe อ่าน batch ทีละบรรทัดโดย decode ด้
 import os, sys, argparse, hashlib, json, shutil, subprocess, zipfile
 
 sys.stdout.reconfigure(encoding="utf-8")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DIST = os.path.join(REPO, "thai_work", "dist")
+import paths as P                                             # noqa: E402
 
 # (ชื่อ diff, ไฟล์ต้นฉบับ, ไฟล์ที่แปะไทยแล้ว, จำเป็นไหม, ป้ายไทย)
 TARGETS = [
@@ -78,20 +78,8 @@ def sha256(path):
     return h.hexdigest()
 
 
-def find_game_dir(start):
-    d = os.path.abspath(start)
-    while True:
-        if os.path.isfile(os.path.join(d, "SenrenBanka.exe")):
-            return d
-        parent = os.path.dirname(d)
-        if parent == d:
-            sys.exit("หาโฟลเดอร์เกมไม่เจอ (ไม่พบ SenrenBanka.exe) — ระบุด้วย --game-dir")
-        d = parent
-
-
 def find_xdelta():
-    for p in (os.path.join(REPO, "tools", "xdelta", "xdelta3.exe"),
-              os.path.join(os.path.dirname(REPO), "xdelta3.exe")):
+    for p in (P.XDELTA, os.path.join(os.path.dirname(P.REPO), "xdelta3.exe")):
         if os.path.isfile(p):
             return p
     sys.exit("ไม่พบ xdelta3.exe — วางไว้ที่ tools/xdelta/xdelta3.exe "
@@ -418,9 +406,9 @@ def main():
                     help="build ตัวติดตั้งแบบ GUI ใส่เข้าไปในซิปด้วย (ต้องมี PyInstaller)")
     a = ap.parse_args()
 
-    game = os.path.abspath(a.game_dir) if a.game_dir else find_game_dir(REPO)
+    game = os.path.abspath(a.game_dir) if a.game_dir else P.game_dir()
     xd = find_xdelta()
-    out = os.path.join(DIST, "senrenbanka-thai-patch-v%s" % a.version)
+    out = os.path.join(P.DIST, "senrenbanka-thai-patch-v%s" % a.version)
     os.makedirs(out, exist_ok=True)
     print("game dir : %s" % game)
     print("xdelta3  : %s" % xd)
@@ -499,7 +487,7 @@ def main():
     # GUI สร้างทีหลังสุด เพราะต้องให้ manifest.json มีอยู่ก่อน แล้วค่อยนับ checksum
     if a.gui:
         print("\n[gui] build ตัวติดตั้งแบบ GUI")
-        run(sys.executable, os.path.join(REPO, "tools", "gui", "build_gui.py"),
+        run(sys.executable, os.path.join(P.REPO, "tools", "gui", "build_gui.py"),
             "--out", out)
 
     lines = ["Senren Banka Thai patch v%s - SHA256" % a.version, "",

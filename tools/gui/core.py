@@ -145,14 +145,14 @@ class Aborted(Exception):
 class Target:
     """ไฟล์เกมหนึ่งไฟล์ที่แพตช์แตะ"""
 
-    def __init__(self, game: str, spec: dict):
+    def __init__(self, game_dir: str, spec: dict):
         self.name = spec["file"]              # patch.xp3
         self.delta = spec["delta"]            # thai-patch.xdelta
         self.label = spec["label"]            # "บทพูด"
         self.required = spec["required"]
         self.orig = spec["sha_orig"]
         self.thai = spec["sha_thai"]
-        self.path = os.path.join(game, self.name)
+        self.path = os.path.join(game_dir, self.name)
         self.bak = self.path + ".bak"
         self.size = os.path.getsize(self.path) if os.path.isfile(self.path) else 0
         self.present = os.path.isfile(self.path)
@@ -166,11 +166,11 @@ class Plan:
     R18_FILES = ("adult.xp3", "adult2.xp3")
     OFF = ".off"
 
-    def __init__(self, game: str, res: str | None = None, include_r18: bool = True):
-        self.game = os.path.abspath(game)
+    def __init__(self, game_dir: str, res: str | None = None, include_r18: bool = True):
+        self.game_dir = os.path.abspath(game_dir)
         self.res = res or resource_dir()
-        self.mf = load_manifest(self.res)
-        self.targets = [Target(self.game, s) for s in self.mf["targets"]]
+        self.manifest = load_manifest(self.res)
+        self.targets = [Target(self.game_dir, s) for s in self.manifest["targets"]]
         self.include_r18 = include_r18
         self.verified = False
 
@@ -198,7 +198,7 @@ class Plan:
     @property
     def r18_available(self) -> bool:
         """เครื่องนี้ลงแพตช์ R18 ไว้ไหม (มี adult.xp3 อยู่จริง)"""
-        return os.path.isfile(os.path.join(self.game, "adult.xp3"))
+        return os.path.isfile(os.path.join(self.game_dir, "adult.xp3"))
 
     @property
     def disable_list(self) -> list[str]:
@@ -210,13 +210,13 @@ class Plan:
         if self.include_r18 or not self.r18_available:
             return []
         return [f for f in self.R18_FILES
-                if os.path.isfile(os.path.join(self.game, f))]
+                if os.path.isfile(os.path.join(self.game_dir, f))]
 
     @property
     def disabled_now(self) -> list[str]:
         """ไฟล์ R18 ที่ถูกปิดไว้อยู่ตอนนี้"""
         return [f for f in self.R18_FILES
-                if os.path.isfile(os.path.join(self.game, f + self.OFF))]
+                if os.path.isfile(os.path.join(self.game_dir, f + self.OFF))]
 
     @property
     def mode(self) -> str:
@@ -293,8 +293,8 @@ class Plan:
         def rollback():
             for f in turned_off:
                 try:
-                    os.replace(os.path.join(self.game, f + self.OFF),
-                               os.path.join(self.game, f))
+                    os.replace(os.path.join(self.game_dir, f + self.OFF),
+                               os.path.join(self.game_dir, f))
                 except OSError:
                     pass
             for t in renamed:
@@ -329,8 +329,8 @@ class Plan:
             for f in self.disable_list:
                 if progress:
                     progress(1.0, "stage.disable:" + f)
-                os.replace(os.path.join(self.game, f),
-                           os.path.join(self.game, f + self.OFF))
+                os.replace(os.path.join(self.game_dir, f),
+                           os.path.join(self.game_dir, f + self.OFF))
                 turned_off.append(f)
 
             if progress:
@@ -388,8 +388,8 @@ class Plan:
                     os.remove(t.path)
                 os.replace(t.bak, t.path)
             else:                                   # ไฟล์ R18 ที่ถูกปิดไว้
-                os.replace(os.path.join(self.game, name + self.OFF),
-                           os.path.join(self.game, name))
+                os.replace(os.path.join(self.game_dir, name + self.OFF),
+                           os.path.join(self.game_dir, name))
             restored.append(name)
             if progress:
                 progress((i + 1) / len(items), name)
@@ -398,11 +398,11 @@ class Plan:
 
 # ------------------------------------------------------------------ เปิดเกม
 
-def launch_game(game: str) -> bool:
-    exe = os.path.join(game, "SenrenBanka.exe")
+def launch_game(game_dir: str) -> bool:
+    exe = os.path.join(game_dir, "SenrenBanka.exe")
     if not os.path.isfile(exe):
         return False
-    subprocess.Popen([exe], cwd=game, close_fds=True)
+    subprocess.Popen([exe], cwd=game_dir, close_fds=True)
     return True
 
 
