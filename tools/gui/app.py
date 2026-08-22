@@ -17,6 +17,7 @@ app.py — หน้าต่างติดตั้งแพตช์แปล
 """
 from __future__ import annotations
 
+import math
 import os
 import queue
 import sys
@@ -28,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import tkinter as tk                                          # noqa: E402
 from tkinter import filedialog                                # noqa: E402
 
+import anim as A                                              # noqa: E402
 import core                                                   # noqa: E402
 import theme as T                                             # noqa: E402
 import widgets as W                                           # noqa: E402
@@ -62,6 +64,11 @@ class Installer:
 
         self.root = tk.Tk()
         T.init(self.root, (WIN_W, WIN_H))
+        A.setup(self.root)
+        # โปร่งใสไว้ก่อน **ตั้งแต่ยังไม่ map** เพื่อไม่ให้เห็นหน้าต่างตอนที่ยัง
+        # วางผังไม่เสร็จ แล้วขยับไปมาเอง (_center / _fix_size) — เดิมเห็นเป็น
+        # หน้าต่างเปล่ากระพริบแล้วเด้งตำแหน่ง เข้ามาค่อยไล่ความทึบขึ้นทีเดียว
+        self.root.attributes("-alpha", 0.0)
         self.root.title("Senren Banka — แพตช์แปลไทย")
         self.root.configure(bg=T.BG)
         self.root.resizable(False, False)
@@ -76,18 +83,21 @@ class Installer:
         self.cancel = threading.Event()
         self.plan: core.Plan | None = None
         self.info: dict | None = None
-        self.screen = "locate"
+        self.screen = None         # ยังไม่มีหน้าไหนถูกแสดง -> หน้าแรกได้อนิเมชันด้วย
         self.job: str | None = None
         self.busy = False
         self.installed = False
         self.r18_locked = False    # adult.xp3 เป็น build ที่ไม่รองรับ -> ลงได้แค่ all-ages
         self.w_r18_row = None
         self._debounce = None
+        self._drag = None
+        self._closing = False
 
         self._build()
         self._fix_size()
         self.root.after(40, self._pump)
         self.root.after(0, self.boot)
+        self.root.after(1, self._appear)
 
     # ------------------------------------------------------------ พื้นฐาน
     def _center(self, w, h):
@@ -107,6 +117,45 @@ class Installer:
         if dw or dh:
             self.root.geometry("%dx%d" % (T.S(WIN_W) - dw, T.S(WIN_H) - dh))
             self.root.update_idletasks()
+
+    # ------------------------------------------------- เข้า/ออกของหน้าต่าง
+    def _appear(self):
+        """ไล่ความทึบ 0 -> 1 ครั้งเดียวตอนเปิด"""
+        A.tween(0.20, lambda v: self.root.attributes("-alpha", v),
+                ease=A.out_quad, done=self._appeared, key="alpha")
+
+    def _appeared(self):
+        self.root.attributes("-alpha", 1.0)
+
+    def _bye(self):
+        """จางออกแล้วค่อยปิด — กันปิดซ้ำและมีตัวกันเหนียวเผื่อทวีนสะดุด"""
+        if self._closing:
+            return
+        self._closing = True
+
+        def kill():
+            try:
+                self.root.destroy()
+            except Exception:
+                pass
+        if not A.enabled():
+            return kill()
+        T.make_layered(self.root)
+        A.tween(0.12, lambda v: self.root.attributes("-alpha", 1.0 - v),
+                ease=A.out_quad, done=kill, key="alpha")
+        self.root.after(320, kill)
+
+    def _shake(self):
+        """สั่นซ้าย-ขวาเบาๆ ตอนล้มเหลว — บอกว่า 'หยุดตรงนี้' โดยไม่ต้องมีเสียง"""
+        if not A.enabled() or not self.root.winfo_viewable():
+            return
+        x, y, _w, _h = T.window_rect(self.root)
+        amp = T.S(7)
+
+        def step(v):
+            T.move_window(self.root, x + round(amp * (1 - v) * math.sin(v * math.pi * 6)), y)
+        A.tween(0.42, step, ease=A.linear, key="shake",
+                done=lambda: T.move_window(self.root, x, y))
 
     def _set_icon(self):
         import tempfile
@@ -185,6 +234,7 @@ class Installer:
         for w in (head, mark, title, self.w_version):
             w.bind("<ButtonPress-1>", self._drag_start)
             w.bind("<B1-Motion>", self._drag_move)
+            w.bind("<ButtonRelease-1>", self._drag_end)
 
         body = tk.Frame(r, bg=T.BG)
         body.grid(row=1, column=0, sticky="nsew")
@@ -225,9 +275,11 @@ class Installer:
             "done": self._screen_done(content),
             "error": self._screen_error(content),
         }
+        # ใช้ place ไม่ใช่ grid: อนิเมชันเลื่อนขึ้นตอนเปลี่ยนหน้าขยับแค่ลูกตัวเอง
+        # ถ้าใช้ grid แล้วขยับ pady ทุกเฟรม Tk จะคำนวณผังทั้งหน้าต่างใหม่ทุกเฟรม
         for f in self.screens.values():
-            f.grid(row=0, column=0, sticky="nsew")
-            f.grid_remove()
+            f.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+            f.place_forget()
 
         # ── ท้ายจอ
         foot = tk.Frame(main, bg=T.BG, height=T.S(74))
@@ -249,13 +301,27 @@ class Installer:
         self.root.bind("<Escape>", lambda _e: self.on_cancel())
 
     # ------------------------------------------------- ลากหน้าต่างจากแถบหัว
+    #
+    # เดิมใช้ root.geometry("+x+y") ต่อหนึ่ง <B1-Motion> ซึ่งวัดได้ 30 ms ต่อครั้ง
+    # (Tk รื้อผังหน้าต่างใหม่ทุกครั้งที่สั่ง) = เพดาน 33 fps ขณะที่เมาส์ส่ง event
+    # มา 125-1000 Hz หน้าต่างจึงตามหลังเคอร์เซอร์เป็นเงา แล้วกระโดดตามทีเดียว
+    # ตอนคิวระบาย — คือ "เห็น ghost แล้วแอปวาป" พอดี
+    #
+    # ทางแก้คือขยับหน้าต่างด้วย SetWindowPos ตรงๆ ซึ่งวัดได้ 0.49 ms/เฟรม
+    # (~2000 fps) เร็วกว่าเดิม 60 เท่า และเร็วกว่าที่เมาส์จะส่ง event ทัน
+    # ส่วนวิธี "ยกให้ Windows ลากเอง" ใช้กับ Tk ไม่ได้ — เหตุผลอยู่ใน theme.py
+
     def _drag_start(self, e):
-        self._drag = (e.x_root - self.root.winfo_x(), e.y_root - self.root.winfo_y())
+        x, y, _w, _h = T.window_rect(self.root)
+        self._drag = (e.x_root - x, e.y_root - y)
 
     def _drag_move(self, e):
-        if not getattr(self, "_drag", None):
+        if not self._drag:
             return
-        self.root.geometry("+%d+%d" % (e.x_root - self._drag[0], e.y_root - self._drag[1]))
+        T.move_window(self.root, e.x_root - self._drag[0], e.y_root - self._drag[1])
+
+    def _drag_end(self, _e):
+        self._drag = None
 
     # ------------------------------------------------------------- แต่ละหน้า
     def _screen_locate(self, parent):
@@ -301,9 +367,13 @@ class Installer:
         self.w_stage.pack(anchor="w", pady=(T.S(6), T.S(30)))
         self.w_pct = W.label(f, "0%", 38, bold=True)
         self.w_pct.pack(anchor="w", pady=(0, T.S(12)))
-        self.w_bar = W.ProgressBar(f, width=T.S(420))
+        # ตัวเลขเดินตามแถบเสมอ (แถบเป็นเจ้าของค่า) จะได้ไม่มีทางขัดกันเอง
+        self.w_bar = W.ProgressBar(f, width=T.S(420), on_value=self._show_pct)
         self.w_bar.pack(anchor="w")
         return f
+
+    def _show_pct(self, v):
+        self.w_pct.config(text="%d%%" % round(v))
 
     def _screen_done(self, parent):
         f = tk.Frame(parent, bg=T.BG)
@@ -337,15 +407,34 @@ class Installer:
 
     # ------------------------------------------------------------ เดินสถานะ
     def show(self, screen):
+        first = self.screen != screen
         self.screen = screen
         for k, f in self.screens.items():
-            (f.grid if k == screen else f.grid_remove)()
+            if k != screen:
+                f.place_forget()
+        f = self.screens[screen]
+        f.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+        if first:
+            self._enter(f)
+
         idx = STEP_OF[screen]
         for i, (rule, lab) in enumerate(self.w_steps):
-            rule.config(bg=T.ACCENT if i == idx else T.ACCENT_300 if i < idx else T.DIVIDER)
-            lab.config(fg=T.TEXT if i == idx else T.TEXT_42,
-                       font=T.F(13, bold=(i == idx)))
+            rule.to(T.ACCENT if i == idx else T.ACCENT_300 if i < idx else T.DIVIDER,
+                    active=(i == idx))
+            fg = T.TEXT if i == idx else T.TEXT_42
+            lab._fg0 = fg
+            lab.config(font=T.F(13, bold=(i == idx)))
+            W._tint(lab, "foreground", fg, dur=0.28, ease=A.out_cubic, tag="step")
         self._render_footer()
+
+    def _enter(self, f):
+        """หน้าใหม่เลื่อนขึ้น 14px พร้อมไล่สีตัวหนังสือขึ้นมาจากพื้น"""
+        rise = T.S(14)
+
+        def step(v):
+            f.place_configure(y=round(rise * (1 - v)))
+            W.tint_tree(f, v)
+        A.tween(0.30, step, ease=A.out_cubic, key="screen")
 
     def _render_footer(self):
         primary, cancel, note, back = FOOTER[self.screen]
@@ -367,9 +456,8 @@ class Installer:
         else:
             self.b_back.pack_forget()
 
-    def progress(self, pct, stage=None):
-        self.w_pct.config(text="%d%%" % pct)
-        self.w_bar.set(pct)
+    def progress(self, pct, stage=None, jump=False):
+        self.w_bar.reset(pct) if jump else self.w_bar.set(pct)
         if stage is not None:
             self.w_stage.config(text=stage)
 
@@ -402,6 +490,7 @@ class Installer:
         else:
             self.w_err_box.pack_forget()
         self.show("error")
+        self._shake()
 
     def goto_done(self, installed, title, sub):
         self.busy = False
@@ -489,7 +578,7 @@ class Installer:
         self.job = "verify"
         self.cancel.clear()
         self.w_working_title.config(text="กำลังตรวจไฟล์เกม")
-        self.progress(0, "อ่านไฟล์เพื่อคำนวณ SHA256")
+        self.progress(0, "อ่านไฟล์เพื่อคำนวณ SHA256", jump=True)
         self.show("working")
         p = self.plan
 
@@ -555,6 +644,9 @@ class Installer:
                 side="left", padx=(T.S(12), 0))
             W.label(row, mb(t.size), 12, fg=T.TEXT_50).pack(side="right")
 
+        boxes = [w for r in self.w_comps.winfo_children()
+                 for w in r.winfo_children() if isinstance(w, W.CheckMark)]
+
         self.w_r18_row = None
         if p.r18_available:
             adult = next(t for t in p.targets if t.name == "adult.xp3")
@@ -568,6 +660,9 @@ class Installer:
             for w in (lab, row):
                 w.bind("<Button-1>", lambda _e: self.toggle_r18())
             self.w_r18_row = (box, lab, size)
+            boxes.append(box)
+        # ติ๊กไล่กันทีละตัว (stagger ของ anime.js) — ตาไล่อ่านรายการทันพอดี
+        A.stagger(boxes, lambda _i, b, d: b.pop_in(d), gap=0.055, start=0.14)
         self._render_r18_state()
 
     def _render_r18_state(self):
@@ -576,8 +671,13 @@ class Installer:
             box, lab, size = self.w_r18_row
             box.set(p.include_r18)
             fg = T.TEXT if p.include_r18 else T.TEXT_42
-            lab.config(fg=fg)
-            size.config(fg=T.TEXT_50 if p.include_r18 else T.TEXT_42)
+            fg2 = T.TEXT_50 if p.include_r18 else T.TEXT_42
+            # ทวีนเปลี่ยนหน้าไล่สีจาก _fg0 อยู่ ต้องจบมันก่อนแล้วอัปเดตสีเป้าหมาย
+            # ไม่งั้นแถวจะสว่างกลับเองตอนทวีนเดินถึงเฟรมสุดท้าย
+            A.finish("screen")
+            lab._fg0, size._fg0 = fg, fg2
+            W._tint(lab, "foreground", fg, dur=0.18, tag="r18")
+            W._tint(size, "foreground", fg2, dur=0.18, tag="r18")
 
         if not p.r18_available:
             self.w_comps_foot.config(
@@ -607,7 +707,7 @@ class Installer:
         self.job = "install"
         self.cancel.clear()
         self.w_working_title.config(text="กำลังติดตั้ง")
-        self.progress(0, "เตรียมการ")
+        self.progress(0, "เตรียมการ", jump=True)
         self.show("working")
         p = self.plan
 
@@ -628,7 +728,7 @@ class Installer:
     def begin_uninstall(self):
         self.job = "uninstall"
         self.w_working_title.config(text="กำลังถอดแพตช์")
-        self.progress(0, "คืนไฟล์ต้นฉบับ")
+        self.progress(0, "คืนไฟล์ต้นฉบับ", jump=True)
         self.show("working")
         p = self.plan
 
@@ -646,7 +746,7 @@ class Installer:
         if self.busy:
             self.cancel.set()
         else:
-            self.root.destroy()
+            self._bye()
 
     def on_back(self):
         if self.screen == "done" and self.installed:
@@ -680,7 +780,7 @@ class Installer:
             self.begin_install()
         elif self.screen == "done":
             if core.launch_game(self.plan.game):
-                self.root.destroy()
+                self._bye()
             else:
                 self.fail("เปิดเกมไม่สำเร็จ", "ไม่พบ SenrenBanka.exe ในโฟลเดอร์ที่เลือก")
         elif self.screen == "error":
