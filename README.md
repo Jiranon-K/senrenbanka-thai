@@ -6,9 +6,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/เวอร์ชัน-v1.1-f2802b?style=for-the-badge" alt="v1.1">
-  <img src="https://img.shields.io/badge/บทพูด-86%2F86%20บท-2f9e44?style=for-the-badge" alt="86/86">
-  <img src="https://img.shields.io/badge/รองรับ-แพตช์%20R18-6741d9?style=for-the-badge" alt="R18">
+  <img src="https://img.shields.io/badge/version-v1.1-f2802b?style=for-the-badge" alt="v1.1">
+  <img src="https://img.shields.io/badge/script-86%2F86%20chapters-2f9e44?style=for-the-badge" alt="86/86">
+  <img src="https://img.shields.io/badge/supports-R18%20patch-6741d9?style=for-the-badge" alt="R18">
   <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-2b6cb0?style=for-the-badge" alt="Windows">
 </p>
 
