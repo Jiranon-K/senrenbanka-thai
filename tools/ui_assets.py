@@ -165,11 +165,74 @@ def cmd_inventory():
     print("total %d images -> %s" % (len(rows), os.path.relpath(TODO, P.REPO)))
 
 
+TEXT = os.path.join(UI, "text")       # translated text files, same relative paths as in data.xp3
+KS = os.path.join(UI, "ks")
+
+
+def garbro_extract(archive: str, name: str, out_dir: str) -> str:
+    subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                    os.path.join(P.TOOLS, "garbro_extract.ps1"), "-Archive", archive,
+                    "-OutDir", out_dir, "-Filter", name, "-KeepPaths"], capture_output=True)
+    return os.path.join(out_dir, name.replace("/", os.sep))
+
+
+def cmd_pack_text(out: str | None = None, verify: bool = True):
+    """Pack thai_work/ui/text/** into data.xp3 at the same paths.
+
+    Files go in as plain UTF-16 with BOM — the engine reads that directly, so the
+    original simple-crypt wrapper (FE FE 01/02 ...) is not needed. Sizes may grow:
+    see xp3.Archive.replace_sized.
+    """
+    import xp3
+    files = sorted(os.path.relpath(f, TEXT).replace(os.sep, "/")
+                   for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
+    if not files:
+        sys.exit("nothing under " + TEXT)
+    target = out or P.game_file("data.xp3")
+    base = xp3.backup_once(P.game_file("data.xp3"))        # always rebuild from the untouched copy
+    plain = {n: open(os.path.join(TEXT, n), "rb").read() for n in files}
+
+    os.makedirs(KS, exist_ok=True)
+    req = os.path.join(KS, "req.tsv")
+    with open(req, "w", encoding="utf-8") as fh:
+        for n in files:
+            fh.write("%s\t%d\n" % (n, len(plain[n])))
+    r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                        os.path.join(P.TOOLS, "xp3_keystream.ps1"), "-Archive", base,
+                        "-List", req, "-OutDir", KS], capture_output=True, text=True)
+    if r.returncode:
+        sys.exit(r.stdout + r.stderr)
+    manifest = [l.rstrip("\r\n").split("\t") for l in open(os.path.join(KS, "manifest.tsv"), encoding="utf-8-sig")
+                if l.strip()]
+
+    ar = xp3.Archive.read(base)
+    by_offset = {e.offset: e for e in ar.entries}
+    for i, name, offset in manifest:
+        e = by_offset[int(offset)]
+        ks = open(os.path.join(KS, i + ".ks"), "rb").read()
+        old = e.stored
+        new = ar.replace_sized(e, plain[name], ks)
+        print("  %-32s %7d -> %7d bytes stored%s" % (name, old, new, " (zlib)" if e.compressed else ""))
+    ar.save(target)
+    print("wrote %s (%d entries replaced)" % (target, ar.replaced))
+
+    if verify:                                   # read every file back through GARbro
+        chk = os.path.join(UI, "verify")
+        shutil.rmtree(chk, ignore_errors=True)
+        bad = [n for n in files
+               if open(garbro_extract(target, n, chk), "rb").read() != plain[n]]
+        print("verify: %d/%d files read back byte-identical" % (len(files) - len(bad), len(files)))
+        if bad:
+            sys.exit("MISMATCH: " + ", ".join(bad))
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    cmd =sys.argv[1] if len(sys.argv) > 1 else ""
+    cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "inventory":
         cmd_inventory()
+    elif cmd == "pack-text":
+        cmd_pack_text(sys.argv[2] if len(sys.argv) > 2 else None)
     else:
         print(__doc__)
         sys.exit(2)

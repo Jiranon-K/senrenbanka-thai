@@ -217,6 +217,34 @@ class Archive:
             entry.stored, "big")
         return True
 
+    def replace_sized(self, entry: Entry, new_plain: bytes, keystream: bytes) -> int:
+        """Replace an entry with content of any size; returns the stored size.
+
+        `keystream` comes from xp3_keystream.ps1 (cx is a pure XOR, so decrypting
+        zeros gives it at any length) and must be at least len(new_plain).
+        build() already lays entries out one after another, so only the size
+        fields have to change: segm (flags, unpacked, stored) and info (unpacked,
+        stored). An entry the original stored zlib-compressed stays compressed —
+        compression wraps the encrypted bytes, as the engine expects.
+        """
+        if len(keystream) < len(new_plain):
+            raise ValueError("%s: keystream %d < data %d" % (entry.name, len(keystream), len(new_plain)))
+        enc = (int.from_bytes(new_plain, "big")
+               ^ int.from_bytes(keystream[:len(new_plain)], "big")).to_bytes(len(new_plain), "big")
+        stored = zlib.compress(enc, 9) if entry.compressed else enc
+        for tag, data in entry.subs:
+            if tag == b"segm":
+                if len(data) != 28:
+                    raise ValueError("%s: %d segments — not supported" % (entry.name, len(data) // 28))
+                data[12:20] = struct.pack("<Q", len(new_plain))
+                data[20:28] = struct.pack("<Q", len(stored))
+            elif tag == b"info":
+                data[4:12] = struct.pack("<Q", len(new_plain))
+                data[12:20] = struct.pack("<Q", len(stored))
+        entry.size, entry.stored = len(new_plain), len(stored)
+        self._new[entry.name] = stored
+        return len(stored)
+
     @property
     def replaced(self) -> int:
         return len(self._new)
