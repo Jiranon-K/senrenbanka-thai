@@ -117,8 +117,12 @@ WORDS = re.compile(r"[぀-ヿ一-鿿A-Za-zＡ-Ｚａ-ｚ]")
 
 
 def is_marker(r: dict) -> bool:
-    """Engine rows the CSV carries alongside dialogue (speaker 'face'/'lse', text 'bgm')."""
-    return r["speaker_en"] in ("face", "lse") or r["jp"].strip() == "bgm"
+    """Engine rows the CSV carries alongside dialogue: 'bgm', 'layer', 'ch_effect0'...
+
+    Same rule as tsv.is_control — no character above U+3000 means it isn't text.
+    """
+    return (r["speaker_en"] in ("face", "lse")
+            or not any(ord(c) > 0x3000 for c in r["jp"]))
 
 
 def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
@@ -206,6 +210,11 @@ def validate(rows: list, out: dict) -> list:
         t = th[r["idx"]]
         if not t.strip():
             bad.append("%s empty" % r["idx"])
+        elif KANA_HAN.search(t):                      # the Thai font has no kana/kanji
+            bad.append("%s kana/kanji left: %r" % (r["idx"], t[:30]))
+        # the literal two-character escape \n is a line break, not Latin text
+        elif re.search(r"[฀-๿][A-Za-z]|[A-Za-z][฀-๿]", t.replace("\\n", " ")):
+            bad.append("%s latin inside a thai word: %r" % (r["idx"], t[:30]))
         # Only whole-line quotes (dialogue) must keep their brackets; a 『quote』 inside
         # narration may legitimately move when Thai reorders the sentence.
         elif (opener(r["jp"]) and closer(r["jp"])
@@ -234,6 +243,25 @@ def text_of(msg: dict) -> str:
     return next((b["text"] for b in msg.get("content", []) if b.get("type") == "text"), "")
 
 
+# Characters the patched game font is known to draw beyond Thai/ASCII
+# (tools/build_thai_font.py merges these CJK marks into Sarabun).
+KEEP_WIDE = set("【】「」『』、。・〜～♪！？（）―…")
+KANA_HAN = re.compile(r"[぀-ヺー-ヿ一-鿿]")   # ・ (U+30FB) is in the font
+THAI_DIGITS = str.maketrans("๐๑๒๓๔๕๖๗๘๙", "0123456789")
+
+
+def normalize(t: str) -> str:
+    """Map characters with no glyph in the Thai font to ones that have one."""
+    out = []
+    for c in t.translate(THAI_DIGITS):
+        if c == "　":
+            c = " "
+        elif 0xFF01 <= ord(c) <= 0xFF5E and c not in KEEP_WIDE:
+            c = chr(ord(c) - 0xFEE0)                  # fullwidth ASCII -> ASCII
+        out.append(c)
+    return "".join(out)
+
+
 def accept(which, pf, rows, msg) -> list:
     if msg.get("stop_reason") != "end_turn":
         return ["stop_reason %s" % msg.get("stop_reason")]
@@ -241,6 +269,8 @@ def accept(which, pf, rows, msg) -> list:
         out = json.loads(text_of(msg))
     except json.JSONDecodeError as e:
         return ["bad json: %s" % e]
+    for l in out.get("lines", []):
+        l["th"] = normalize(l["th"])
     problems = validate(rows, out)
     if not problems:
         save(which, pf, {l["idx"]: l["th"] for l in out["lines"]})
@@ -340,7 +370,8 @@ def cmd_merge(a):
     """
     order = {}
     for r in load_rows("cn"):
-        order.setdefault(prefix(r["file"]), []).append(r["idx"])
+        if not is_marker(r):                          # control rows never carry Thai
+            order.setdefault(prefix(r["file"]), []).append(r["idx"])
     for pf in a.prefix:
         new = json.load(open(os.path.join(MT, "cn", pf + ".json"), encoding="utf-8"))
         tsv = os.path.join(P.TH_DIR, pf + ".tsv")

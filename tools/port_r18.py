@@ -195,6 +195,11 @@ def cmd_align():
                     cmatched += 1
                 else:
                     origin = "UNTRANSLATED"
+            elif any("฀" <= c <= "๿" for c in cn_txt):
+                # json_r18 was imported before, so this CN slot already holds Thai and
+                # can't match the Chinese on the all-ages side — keep it, don't drop it
+                th, origin = cn_txt, "KEPT"
+                cmatched += 1
             rows.append([name, "ch%d" % k, "(choice)", cn_txt, en, cn_txt, th, origin])
 
         total = len(dst_idx_kept) + len(dst_choices)
