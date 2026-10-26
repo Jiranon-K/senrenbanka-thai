@@ -43,6 +43,7 @@ PRICE = {"input": 2.00, "cache_write": 2.50, "cache_read": 0.20, "output": 10.00
 
 MT = os.path.join(P.WORK, "mt")
 USAGE_LOG = os.path.join(MT, "usage.jsonl")
+HFLAGS = os.path.join(MT, "hflags_r18.json")    # written by hfilter.py
 CSVS = {"cn": P.CSV_CN, "r18": P.CSV_R18}
 
 STYLE = """You translate the Japanese visual novel "Senren＊Banka" (Yuzusoft) into natural, fluent Thai
@@ -132,6 +133,8 @@ def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
     by = {}
     for r in rows:
         by.setdefault(prefix(r["file"]), []).append(r)
+    hflags = {k: set(v) for k, v in json.load(open(HFLAGS, encoding="utf-8")).items()} \
+        if which == "r18" and os.path.exists(HFLAGS) else {}
     for pf in sorted(by):
         if (files and pf not in files) or pf in exclude:
             continue
@@ -139,6 +142,14 @@ def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
             print("skip H scenario", pf)
             continue
         lines = by[pf]
+        if which == "r18":
+            # R18 chapters interleave story and sex scenes. Only lines hfilter.py has
+            # cleared are sent — neither translated nor shown as context — and a
+            # chapter it hasn't classified is not sent at all.
+            if pf not in hflags:
+                print("skip %s: not classified by hfilter.py" % pf)
+                continue
+            lines = [r for r in lines if r["idx"] not in hflags[pf]]
         todo, copied = [], {}
         for i, r in enumerate(lines):
             if is_marker(r) or not (retranslate_all or not r["th"].strip()):
@@ -390,6 +401,28 @@ def cmd_merge(a):
         print("%s: %d lines from mt, %d -> %d in th/" % (pf, len(new), before, len(cur)))
 
 
+def cmd_merge_r18(a):
+    """mt/r18/<prefix>.json -> th_r18/<prefix>.tsv (tracked), then into strings_r18.csv."""
+    os.makedirs(P.TH_R18_DIR, exist_ok=True)
+    rows = load_rows("r18")
+    for pf in a.prefix:
+        new = json.load(open(os.path.join(MT, "r18", pf + ".json"), encoding="utf-8"))
+        order = [r["idx"] for r in rows if prefix(r["file"]) == pf and r["idx"] in new]
+        with open(os.path.join(P.TH_R18_DIR, pf + ".tsv"), "w", encoding="utf-8") as fh:
+            for i in order:
+                fh.write("%s\t%s\n" % (i, new[i].replace("\t", " ")))
+        n = 0
+        for r in rows:
+            if prefix(r["file"]) == pf and r["idx"] in new and not r["th"].strip():
+                r["th"], r["src"] = new[r["idx"]], "TH_R18"
+                n += 1
+        print("%s: %d lines -> th_r18/%s.tsv, %d filled in strings_r18.csv" % (pf, len(order), pf, n))
+    with open(CSVS["r18"], "w", encoding="utf-8-sig", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+        w.writeheader()
+        w.writerows(rows)
+
+
 def cmd_wait(a):
     """Block until every listed batch has ended (meant for a background shell)."""
     key = load_key()
@@ -432,7 +465,8 @@ if __name__ == "__main__":
     sub.add_parser("collect").add_argument("batch_id")
     sub.add_parser("wait").add_argument("batch_id", nargs="+")
     sub.add_parser("merge").add_argument("prefix", nargs="+")
+    sub.add_parser("merge-r18").add_argument("prefix", nargs="+")
     sub.add_parser("cost")
     a = ap.parse_args()
-    {"sync": cmd_sync, "submit": cmd_submit, "collect": cmd_collect, "wait": cmd_wait, "merge": cmd_merge,
+    {"sync": cmd_sync, "submit": cmd_submit, "collect": cmd_collect, "wait": cmd_wait, "merge": cmd_merge, "merge-r18": cmd_merge_r18,
      "cost": cmd_cost}[a.cmd](a)
