@@ -49,7 +49,7 @@ TARGETS = [
     Target("patch.xp3", "patch.xp3.bak", "thai-patch.xdelta",
            "บทพูด (all-ages)", required=True, r18=False, var="PATCH"),
     Target("data.xp3", "data.xp3.bak", "thai-data.xdelta",
-           "ฟอนต์ Sarabun", required=True, r18=False, var="DATA"),
+           "ฟอนต์ + ข้อความเมนู", required=True, r18=False, var="DATA"),
     Target("adult.xp3", "adult.xp3.orig", "thai-adult.xdelta",
            "บทพูดฝั่ง R18", required=False, r18=True, var="ADULT"),
 ]

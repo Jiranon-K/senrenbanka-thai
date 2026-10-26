@@ -8,15 +8,17 @@
 
 ทำงานเหมือน `install.bat` ทุกประการ แต่หาโฟลเดอร์เกมให้เอง จึงแตกซิปไว้ที่ไหนก็ได้
 
-ดีไซน์มาจาก Claude Design — โปรเจกต์ *Fan-translation mod installer*,
-ไฟล์ `Mod Installer.dc.html` (ระบบดีไซน์ **Modernist**)
+หน้าตาแบบ **shadcn/ui**: สีกลางชุด zinc, มุมโค้ง 6–8 px, การ์ด, ป้ายทรงแคปซูล,
+แถบข้างพื้น zinc-50 — สีส้มใช้เฉพาะปุ่มหลัก ขั้นปัจจุบัน และของที่ถูกเลือก
+โครงหน้าจอเดิมมาจาก Claude Design — โปรเจกต์ *Fan-translation mod installer*
+(รุ่นแรกใช้ระบบดีไซน์ Modernist ซึ่งเป็นมุมฉากล้วน)
 
 ## Stack
 
 | ชั้น | เลือกอะไร | ทำไม |
 |---|---|---|
 | หน้าต่าง | **tkinter** (มากับ Python) | เป็น Win32 window จริง ไม่มี dependency เพิ่ม และ `.exe` เล็กสุด |
-| หน้าตา | Frame/Label/Canvas + สีจากโทเคนดีไซน์ | Modernist ใช้ `--radius: 0px` ไม่มี gradient ไม่มีเงาในตัว panel — ยกมาเป็น native widget ได้ครบโดยไม่เสียรายละเอียด |
+| หน้าตา | Frame/Label/Canvas + โทเคนใน `theme.py` + รูปทรงจาก `shape.py` | Canvas ของ Tk วาดโค้งแบบขอบหยัก (ไม่มี anti-aliasing) จึงวาดมุมโค้งและเครื่องหมายถูกเป็น PhotoImage เอง — ผสมกับสีพื้นที่รู้อยู่แล้ว ไม่ต้องใช้ alpha ไม่ต้องพึ่ง PIL |
 | ตรรกะ | Python (`core.py`) | toolchain เดียวกับ pipeline แปล และเทสได้โดยไม่ต้องเปิดหน้าต่าง |
 | อนิเมชัน | `anim.py` เขียนเอง (~230 บรรทัด) | Tk ไม่มีระบบ animation และห้ามเพิ่ม dependency — เอาแนวคิดของ anime.js มา: duration + easing + ตัวจับเวลากลางตัวเดียว |
 | แพ็ก | PyInstaller `--onefile --windowed` | ผู้เล่นได้ไฟล์เดียว ไม่ต้องลง Python |
@@ -43,7 +45,9 @@ theme.py      โทเคนดีไซน์ล้วน — สี ฟอน
 winui.py      ปลั๊ก Win32 — DPI / ถอดแถบหัว / ย้ายหน้าต่าง / layered / ฟอนต์
 assets.py     หาไฟล์ใน ui/ — โลโก้ตาม DPI, ไอคอน, ภาพพื้นหลัง, ฟอนต์
 anim.py       ทวีน/easing/ตัวจับเวลากลาง — อนิเมชันทุกตัวในแอปเดินผ่านไฟล์นี้
-widgets.py    .btn / .tag / .input / progress / checkbox / badge เป็น Tk widget
+shape.py      สี่เหลี่ยมมุมโค้ง + เส้น แบบขอบเนียน เป็น PhotoImage (cache มุมตามขนาด)
+widgets.py    Button / Tag(badge) / Field(input) / Card / Checkbox / Progress / Badge
+              แบบ shadcn — ตัวที่มีข้อความตอบ config/cget เหมือน Label
 window.py     เปลือกหน้าต่าง — สร้าง Tk / จัดกลาง / เข้า-ออก / ลาก / สั่น /
               โลโก้ / แผงภาพ  (ไม่รู้เรื่องการติดตั้งเลย)
 app.py        5 หน้าจอ + เดินสถานะ + เธรด + ดักคราช
