@@ -53,6 +53,7 @@ PSB_R18 = os.path.join(WORK, "psb_r18")
 # ──────────────────────────────────────────────────────── งานแปล: ร่วม
 
 TH_DIR = os.path.join(WORK, "th")                  # คำแปลรายฉาก <stem>.tsv
+TH_R18_DIR = os.path.join(WORK, "th_r18")          # Thai for R18-only lines, idx = strings_r18.csv numbering
 GLOSSARY = os.path.join(WORK, "glossary.csv")
 
 # ชื่อ "scenarios.json" ไม่ใช่ "manifest.json" — ในโปรเจกต์นี้มีไฟล์ชื่อ
