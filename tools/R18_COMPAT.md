@@ -183,7 +183,7 @@ python tools/port_r18.py pack adult.xp3       "<game>dult_extract"
 python tools/port_r18.py pack patch_extra.xp3 "<game>dult_extract"
 ```
 
-ชุดติดตั้งรุ่นถัดไปต้องมี diff ของ `patch_extra.xp3` ด้วย
+ตั้งแต่ v1.2 ชุดติดตั้งมี `thai-patchextra.xdelta` (`patch_extra.xp3.orig` → `patch_extra.xp3`) และแปะเฉพาะโหมด R18 — เครื่อง Steam ล้วนมี `patch_extra.xp3` ของ Steam ซึ่งเป็นคนละไฟล์ ตัวติดตั้งไม่แตะ
 
 **ไม่แจกเป็นไฟล์ `.ks.scn` ดิบ** ถึงจะง่ายกว่า (ดู `scenario_R18/` ด้านล่าง) —
 เพราะสคริปต์หนึ่งไฟล์มีบททั้ง JP/EN/CN/TW/KO ครบ = แจกบทเกมลิขสิทธิ์ตรงๆ

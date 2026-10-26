@@ -137,12 +137,14 @@ echo [1/4] ตรวจไฟล์เกม ^(SHA256^) - ใช้เวลา�
 call :sha256 "patch.xp3" H_PATCH
 call :sha256 "data.xp3"  H_DATA
 if "%MODE%"=="R18" call :sha256 "adult.xp3" H_ADULT
+if "%MODE%"=="R18" if exist "patch_extra.xp3" call :sha256 "patch_extra.xp3" H_PEXTRA
 
 if defined H_PATCH if /i "!H_PATCH!"=="%THAI_PATCH%"     goto :already
 if defined H_ADULT if /i "!H_ADULT!"=="%THAI_ADULT%"     goto :already
 if defined H_PATCH if /i not "!H_PATCH!"=="%ORIG_PATCH%" goto :ver_game
 if defined H_DATA  if /i not "!H_DATA!"=="%ORIG_DATA%"   goto :ver_game
 if defined H_ADULT if /i not "!H_ADULT!"=="%ORIG_ADULT%" goto :ver_adult
+if defined H_PEXTRA if /i not "!H_PEXTRA!"=="%ORIG_PEXTRA%" goto :ver_pextra
 echo       ผ่าน
 echo.
 
@@ -153,6 +155,10 @@ move /y "data.xp3" "data.xp3.bak" >nul
 if errorlevel 1 goto :rollback
 if "%MODE%"=="R18" (
     move /y "adult.xp3" "adult.xp3.bak" >nul
+    if errorlevel 1 goto :rollback
+)
+if defined H_PEXTRA (
+    move /y "patch_extra.xp3" "patch_extra.xp3.bak" >nul
     if errorlevel 1 goto :rollback
 )
 echo.
@@ -167,6 +173,11 @@ if errorlevel 1 goto :rollback
 if "%MODE%"=="R18" (
     echo       - adult.xp3  ^(บทพูดฉาก R18^)
     "%~dp0xdelta3.exe" -d -f -s "adult.xp3.bak" "thai-adult.xdelta" "adult.xp3"
+    if errorlevel 1 goto :rollback
+)
+if defined H_PEXTRA (
+    echo       - patch_extra.xp3  ^(บทพูดฉาก R18 ชุดสำรอง^)
+    "%~dp0xdelta3.exe" -d -f -s "patch_extra.xp3.bak" "thai-patchextra.xdelta" "patch_extra.xp3"
     if errorlevel 1 goto :rollback
 )
 echo.
@@ -211,6 +222,17 @@ echo.
 echo แปลว่าใช้แพตช์ R18 คนละ build กัน - ยังติดตั้งไม่ได้
 echo ^(ไม่แปะให้ครึ่งเดียว เพราะ adult.xp3 ทับบทพูดใน patch.xp3 อยู่
 echo   ถ้าแปะแค่ patch.xp3 เกมจะขึ้นภาษาจีนเงียบๆ หาสาเหตุยาก^)
+echo.
+echo ไฟล์เกมยังไม่ถูกแก้ไขเลย ปลอดภัย
+goto :fail
+
+:ver_pextra
+echo.
+echo [ERROR] patch_extra.xp3 ไม่ตรงกับ build ของแพตช์ R18 ที่รองรับ
+echo แพตช์ไทยชุดนี้ทำจาก patch_extra.xp3 ที่ SHA256 ขึ้นต้นด้วย %ORIG_PEXTRA:~0,16%
+echo แต่ของเครื่องนี้ขึ้นต้นด้วย !H_PEXTRA:~0,16!
+echo.
+echo แพตช์ R18 วางสคริปต์บทพูดไว้ในไฟล์นี้ด้วย ถ้าไม่แปะ เกมจะยังขึ้นบทเก่า - ยังติดตั้งไม่ได้
 echo.
 echo ไฟล์เกมยังไม่ถูกแก้ไขเลย ปลอดภัย
 goto :fail
@@ -336,7 +358,7 @@ install.bat ทำได้เฉพาะเวอร์ชัน R18 อัต
 วิธีถอดแพตช์
 -----------
 ในตัวติดตั้ง: กดปุ่ม "ถอดแพตช์"
-หรือดับเบิลคลิก uninstall.bat  (คืนไฟล์ต้นฉบับทั้ง patch.xp3 / data.xp3 / adult.xp3)
+หรือดับเบิลคลิก uninstall.bat  (คืนไฟล์ต้นฉบับทั้ง patch.xp3 / data.xp3 / adult.xp3 / patch_extra.xp3)
 
 ปัญหาที่พบบ่อย
 -----------
