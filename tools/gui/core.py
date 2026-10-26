@@ -176,6 +176,9 @@ class Target:
         self.delta = spec["delta"]            # thai-patch.xdelta
         self.label = spec["label"]            # "บทพูด"
         self.required = spec["required"]
+        # ไฟล์ฝั่ง R18 — แปะเฉพาะเมื่อเครื่องนี้ลง R18 และเลือกเวอร์ชัน R18
+        # (ชุดติดตั้งเก่าไม่มีช่องนี้ ตอนนั้นมีแค่ adult.xp3)
+        self.r18 = spec.get("r18", self.name == "adult.xp3")
         self.orig = spec["sha_orig"]
         self.thai = spec["sha_thai"]
         self.path = os.path.join(game_dir, self.name)
@@ -224,6 +227,10 @@ class Plan:
         ts = [t for t in self.targets if t.present]
         if not self.include_r18:
             ts = [t for t in ts if t.name not in self.r18_files]
+        # patch_extra.xp3 มีทุกเครื่อง แต่ของ Steam ล้วนเป็นคนละไฟล์กับของ R18
+        # ถ้าไม่กรองออก เครื่อง Steam ล้วนจะโดนฟ้องว่า "เวอร์ชันเกมไม่ตรง"
+        if not (self.include_r18 and self.r18_available):
+            ts = [t for t in ts if not t.r18]
         return ts
 
     @property

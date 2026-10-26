@@ -32,7 +32,9 @@ GAME_DIR = paths.game_dir()
 SANDBOX = os.path.join(GAME_DIR, "_gui_test")
 
 PRISTINE = {"patch.xp3": "patch.xp3.bak", "data.xp3": "data.xp3.bak",
-            "adult.xp3": "adult.xp3.orig"}
+            "adult.xp3": "adult.xp3.orig", "patch_extra.xp3": "patch_extra.xp3.orig"}
+# เครื่อง Steam ล้วนก็มี patch_extra.xp3 แต่เป็นคนละไฟล์ (53 MB) — ต้องไม่ถูกแตะ
+STEAM_PATCH_EXTRA = "patch_extra.xp3.steam.bak"
 
 fails = []
 
@@ -58,6 +60,8 @@ def setup(name, mode):
     files = ["patch.xp3", "data.xp3"] + (["adult.xp3"] if mode == "r18" else [])
     for f in files:
         hardlink(os.path.join(d, f), os.path.join(GAME_DIR, PRISTINE[f]))
+    hardlink(os.path.join(d, "patch_extra.xp3"), os.path.join(
+        GAME_DIR, PRISTINE["patch_extra.xp3"] if mode == "r18" else STEAM_PATCH_EXTRA))
     return d
 
 
@@ -106,6 +110,15 @@ def full_cycle(name, mode):
     chk("ถอดคืนครบ", sorted(restored), sorted(t.name for t in p.active))
     chk("หลังถอด = ไฟล์ต้นฉบับ", hashes(p), expect(p, "orig"))
     chk("ไม่มี .bak เหลือ", any(os.path.isfile(t.bak) for t in p.active), False)
+    pe = os.path.join(d, "patch_extra.xp3")
+    if mode == "r18":
+        chk("โหมด R18 แปะ patch_extra.xp3 ด้วย",
+            "patch_extra.xp3" in [t.name for t in p.active], True)
+    else:
+        chk("Steam ล้วน: ไม่แตะ patch_extra.xp3",
+            ("patch_extra.xp3" in [t.name for t in p.active],
+             core.sha256(pe) == core.sha256(os.path.join(GAME_DIR, STEAM_PATCH_EXTRA))),
+            (False, True))
 
 
 def case_allages_on_r18():
@@ -155,7 +168,9 @@ def case_bad_adult():
     p = core.Plan(d)
     chk("mode", p.mode, "R18")
     chk("verify", p.verify(), "unsupported")
-    chk("ชี้ตัวที่ผิดได้", p.unsupported_files(), ["adult.xp3"])
+    # patch_extra.xp3 ในเคสนี้เป็นของ Steam = คนละ build กับที่แพตช์รองรับเหมือนกัน
+    chk("ชี้ตัวที่ผิดได้ (เฉพาะไฟล์ฝั่ง R18)", sorted(p.unsupported_files()),
+        ["adult.xp3", "patch_extra.xp3"])
     chk("ไม่มี .bak", p.has_backups, False)
     chk("patch.xp3 ไม่ถูกแตะ",
         core.sha256(os.path.join(d, "patch.xp3")),
@@ -192,7 +207,7 @@ def case_rollback():
     res = os.path.join(SANDBOX, "res-corrupt")
     shutil.rmtree(res, ignore_errors=True)
     shutil.copytree(core.resource_dir(), res, ignore=shutil.ignore_patterns("*.zip"))
-    # ทำให้ diff ตัวสุดท้ายเสีย -> ต้องล้มหลังจาก rename ไปแล้วทั้ง 3 ไฟล์
+    # ทำให้ diff ตัวสุดท้ายเสีย -> ต้องล้มหลังจาก rename ไปแล้วทุกไฟล์
     with open(os.path.join(res, "thai-adult.xdelta"), "r+b") as f:
         f.seek(64)
         f.write(b"\xff" * 4096)
