@@ -11,6 +11,8 @@ exactly the idx set it was given, with the same opening quote bracket as the JP.
     python tools/mt.py sync   --csv cn --file 001 [--all]   # direct calls (pilot)
     python tools/mt.py submit --csv cn --file 001 [--all]   # Message Batches, 50% price
     python tools/mt.py collect <batch_id>                   # fetch batch results
+    python tools/mt.py wait <batch_id>...                   # block until batches end
+    python tools/mt.py merge 001 003 ...                    # mt/cn -> th/<prefix>.tsv
     python tools/mt.py cost                                 # spend so far
 
 --csv cn|r18 picks strings_cn.csv (all-ages) or strings_r18.csv.
@@ -119,7 +121,7 @@ def is_marker(r: dict) -> bool:
     return r["speaker_en"] in ("face", "lse") or r["jp"].strip() == "bgm"
 
 
-def chunks(which: str, files: list, retranslate_all: bool):
+def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
     """Yield (custom_id, prefix, context_rows, rows) for every chunk to send."""
     rows = load_rows(which)
     skip = h_files()
@@ -127,7 +129,7 @@ def chunks(which: str, files: list, retranslate_all: bool):
     for r in rows:
         by.setdefault(prefix(r["file"]), []).append(r)
     for pf in sorted(by):
-        if files and pf not in files:
+        if (files and pf not in files) or pf in exclude:
             continue
         if pf in skip:
             print("skip H scenario", pf)
@@ -268,7 +270,7 @@ def call(method: str, path: str, body=None, key=None, raw=False):
 
 def cmd_sync(a):
     key = load_key()
-    jobs = list(chunks(a.csv, a.file, a.all))[:a.limit or None]
+    jobs = list(chunks(a.csv, a.file, a.all, a.exclude))[:a.limit or None]
     print("%d chunks" % len(jobs))
 
     def run(job):
@@ -289,12 +291,13 @@ def cmd_sync(a):
 
 def cmd_submit(a):
     key = load_key()
-    jobs = list(chunks(a.csv, a.file, a.all))
+    jobs = list(chunks(a.csv, a.file, a.all, a.exclude))
     reqs = [{"custom_id": cid, "params": params(ctx, rows)} for cid, pf, ctx, rows in jobs]
     b = call("POST", "/messages/batches", {"requests": reqs}, key)
     os.makedirs(MT, exist_ok=True)
     with open(os.path.join(MT, "batches.jsonl"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps({"id": b["id"], "csv": a.csv, "files": a.file, "all": a.all,
+                             "exclude": a.exclude,
                              "chunks": len(reqs)}) + "\n")
     print("batch", b["id"], "with", len(reqs), "chunks:", b["processing_status"])
 
@@ -307,7 +310,8 @@ def cmd_collect(a):
         return
     meta = next(json.loads(l) for l in open(os.path.join(MT, "batches.jsonl"), encoding="utf-8")
                 if json.loads(l)["id"] == a.batch_id)
-    jobs = {cid: (pf, rows) for cid, pf, ctx, rows in chunks(meta["csv"], meta["files"], meta["all"])}
+    jobs = {cid: (pf, rows) for cid, pf, ctx, rows in chunks(meta["csv"], meta["files"], meta["all"],
+                                                                meta.get("exclude", []))}
     retry = []
     for line in call("GET", "/messages/batches/%s/results" % a.batch_id, key=key, raw=True).splitlines():
         res = json.loads(line)
@@ -326,6 +330,45 @@ def cmd_collect(a):
         print("RETRY", cid, why)
     print("%d chunks accepted, %d to retry" % (len(jobs) - len(retry), len(retry)))
     cmd_cost(a)
+
+
+def cmd_merge(a):
+    """Write thai_work/mt/cn/<prefix>.json into th/<prefix>.tsv (all-ages only).
+
+    th/ is the translators' source of truth; afterwards run `tsv.py merge` to push
+    it into strings_cn.csv and `tsv.py align` to check dialogue/narration shape.
+    """
+    order = {}
+    for r in load_rows("cn"):
+        order.setdefault(prefix(r["file"]), []).append(r["idx"])
+    for pf in a.prefix:
+        new = json.load(open(os.path.join(MT, "cn", pf + ".json"), encoding="utf-8"))
+        tsv = os.path.join(P.TH_DIR, pf + ".tsv")
+        cur = {}
+        if os.path.exists(tsv):
+            for line in open(tsv, encoding="utf-8"):
+                if line.strip():
+                    i, t = line.rstrip("\n").split("\t", 1)
+                    cur[i] = t
+        before = len(cur)
+        cur.update({i: t.replace("\t", " ") for i, t in new.items()})
+        with open(tsv, "w", encoding="utf-8") as fh:
+            for i in order[pf]:
+                if i in cur:
+                    fh.write("%s\t%s\n" % (i, cur[i]))
+        print("%s: %d lines from mt, %d -> %d in th/" % (pf, len(new), before, len(cur)))
+
+
+def cmd_wait(a):
+    """Block until every listed batch has ended (meant for a background shell)."""
+    key = load_key()
+    while True:
+        states = [call("GET", "/messages/batches/" + b, key=key) for b in a.batch_id]
+        print(time.strftime("%H:%M:%S"), [(s["id"][-6:], s["processing_status"], s["request_counts"])
+                                         for s in states], flush=True)
+        if all(s["processing_status"] == "ended" for s in states):
+            return
+        time.sleep(120)
 
 
 def cmd_cost(a=None):
@@ -354,7 +397,11 @@ if __name__ == "__main__":
         s.add_argument("--file", action="append", default=[], help="scenario prefix, e.g. 001")
         s.add_argument("--all", action="store_true", help="retranslate lines that already have Thai")
         s.add_argument("--limit", type=int, default=0, help="send only the first N chunks")
+        s.add_argument("--exclude", action="append", default=[], help="scenario prefix to leave out")
     sub.add_parser("collect").add_argument("batch_id")
+    sub.add_parser("wait").add_argument("batch_id", nargs="+")
+    sub.add_parser("merge").add_argument("prefix", nargs="+")
     sub.add_parser("cost")
     a = ap.parse_args()
-    {"sync": cmd_sync, "submit": cmd_submit, "collect": cmd_collect, "cost": cmd_cost}[a.cmd](a)
+    {"sync": cmd_sync, "submit": cmd_submit, "collect": cmd_collect, "wait": cmd_wait, "merge": cmd_merge,
+     "cost": cmd_cost}[a.cmd](a)

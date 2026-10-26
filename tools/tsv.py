@@ -20,6 +20,7 @@ tsv.py — งานประจำวันกับ thai_work/th/<stem>.tsv (�
 from __future__ import annotations
 
 import csv
+import re
 import os
 import sys
 
@@ -55,7 +56,7 @@ def is_control(row: dict) -> bool:
 
 def kind(s: str) -> str:
     """"D" = บทพูด (ขึ้นต้นด้วยวงเล็บญี่ปุ่น) · "N" = บรรยาย"""
-    s = s.lstrip()
+    s = re.sub(r"^(%\d+;)+", "", s.lstrip())      # %184; = font-size tag, not text
     return "D" if s.startswith("「") or s.startswith("『") else "N"
 
 
