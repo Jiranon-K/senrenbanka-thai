@@ -17,6 +17,7 @@ test_pipeline.py — เทสเครื่องมือฝั่ง tools/ 
 """
 from __future__ import annotations
 
+import json
 import os
 import struct
 import sys
@@ -434,9 +435,9 @@ def test_targets_table():
         [t.var for t in T.TARGETS if not t.var.isascii() or not t.var.isupper()], [])
     chk("ไฟล์ R18 ทุกตัวไม่บังคับ (เครื่องที่ไม่ลง R18 ต้องติดตั้งได้)",
         [t.file for t in T.TARGETS if t.r18 and t.required], [])
-    chk("ทุก target ที่เป็น R18 อยู่ในรายการที่ต้องปิดตอนเลือก all-ages",
-        [t.file for t in T.TARGETS if t.r18 and t.file not in T.DISABLE_ON_ALL_AGES],
-        [])
+    chk("ทุก target ที่เป็น R18 ถูกระบุว่าจะปิดหรือปล่อยไว้ตอนเลือก all-ages",
+        [t.file for t in T.TARGETS if t.r18 and t.file not in
+         T.DISABLE_ON_ALL_AGES + T.KEEP_ON_ALL_AGES], [])
 
     # ชิ้นส่วนที่ generate ลง .bat ต้องพูดถึงทุกไฟล์
     for name, text in (("รายชื่อไฟล์ในซิป", T.bat_required_files()),
@@ -480,6 +481,10 @@ def test_generated_bat_matches_shipped():
         with open(os.path.join(dist, n), encoding="utf-8") as f:
             shipped[n] = f.read()
 
+    # เวอร์ชันของชุดที่ build ไว้ — เดิม hardcode "1.1" จึงตกทุกครั้งที่ออกรุ่นใหม่
+    with open(os.path.join(dist, "manifest.json"), encoding="utf-8") as f:
+        ver = json.load(f)["version"]
+
     hashes = {}
     for t in T.TARGETS:
         o = re.search(r'set "ORIG_%s=(\w+)"' % t.var, shipped["install.bat"])
@@ -488,16 +493,16 @@ def test_generated_bat_matches_shipped():
             hashes[t.file] = (o.group(1), h.group(1))
 
     def fill(body):
-        return (body.replace("__VER__", "1.1")
+        return (body.replace("__VER__", ver)
                     .replace("__DELTAS__", T.bat_required_files())
                     .replace("__ROLLBACK__", T.bat_rollback())
                     .replace("__UNINSTALL_FOUND__", T.bat_uninstall_found())
                     .replace("__UNINSTALL_RESTORE__", T.bat_uninstall_restore()))
 
     made = {
-        "install.bat": (B.BAT_HEAD % ("Installer", "1.1")) + "\n"
+        "install.bat": (B.BAT_HEAD % ("Installer", ver)) + "\n"
                        + T.bat_hash_vars(hashes) + "\n" + fill(B.INSTALL_BODY),
-        "uninstall.bat": (B.BAT_HEAD % ("Uninstaller", "1.1"))
+        "uninstall.bat": (B.BAT_HEAD % ("Uninstaller", ver))
                          + fill(B.UNINSTALL_BODY),
     }
 
