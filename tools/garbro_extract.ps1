@@ -16,7 +16,9 @@ param(
     [Parameter(Mandatory=$true)][string]$Archive,
     [Parameter(Mandatory=$true)][string]$OutDir,
     [string]$Filter = "*",
-    [switch]$ListOnly
+    [switch]$ListOnly,
+    [switch]$ListAll,      # with -ListOnly: print every match, not just the first 5
+    [switch]$KeepPaths     # keep the archive's sub-folders (UI images share file names across folders)
 )
 $ErrorActionPreference = "Stop"
 
@@ -49,13 +51,16 @@ try {
 
     $want = @($entries | Where-Object { $_.Name -like $Filter })
     Write-Host ("matching '{0}': {1} entries" -f $Filter, $want.Count)
-    $want | Select-Object -First 5 | ForEach-Object { Write-Host ("  {0}   ({1:n0} bytes)" -f $_.Name, $_.Size) }
+    $shown = if ($ListAll) { $want } else { $want | Select-Object -First 5 }
+    $shown | ForEach-Object { Write-Host ("  {0}   ({1:n0} bytes)" -f $_.Name, $_.Size) }
     if ($ListOnly) { return }
 
     New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
     $i = 0
     foreach ($e in $want) {
-        $dest = Join-Path $OutDir ([IO.Path]::GetFileName($e.Name))
+        $rel = if ($KeepPaths) { $e.Name } else { [IO.Path]::GetFileName($e.Name) }
+        $dest = Join-Path $OutDir $rel
+        if ($KeepPaths) { New-Item -ItemType Directory -Force -Path (Split-Path $dest) | Out-Null }
         $inp = $arc.OpenEntry($e)
         try {
             $out = [IO.File]::Create($dest)
