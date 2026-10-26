@@ -1,62 +1,72 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-theme.py — โทเคนของระบบดีไซน์ "Modernist" แปลงเป็น Tk
+theme.py — โทเคนสีและขนาดของตัวติดตั้ง หน้าตาแบบ shadcn/ui แปลงเป็น Tk
 
-ที่มา: Claude Design → โปรเจกต์ "Fan-translation mod installer"
-       → `Mod Installer.dc.html` + `_ds/modernist-*/styles.css`
+ที่มา: ค่าสีกลางคือชุด **zinc** ของ Tailwind (ตัวเดียวกับธีมตั้งต้นของ shadcn/ui)
+ส่วนสีส้มเก็บไว้ใช้เฉพาะ action หลัก ขั้นปัจจุบัน และของที่ "ถูกเลือก"
+— ตรงกับหลักของ shadcn ที่ให้สีหลักโผล่น้อยที่สุด
 
-ค่าสีที่ CSS เขียนเป็น `color-mix(in srgb, var(--color-text) 55%, transparent)`
-ถูกคำนวณล่วงหน้าเป็น hex ตรงๆ ที่นี่ (Tk ไม่มี alpha บนพื้นทึบ) โดยผสมกับ
-`--color-bg` (#ffffff) ซึ่งเป็นพื้นหลังจริงของ panel — ได้ผลตาเดียวกัน
+เดิมใช้ระบบ "Modernist" จาก Claude Design (มุมฉาก ไม่มีขอบโค้ง) ชื่อโทเคนยังคง
+ชื่อเดิมไว้ (TEXT_55, HOVER_SOFT, ...) เพื่อไม่ต้องไล่แก้ทุกที่ที่ใช้ ค่าข้างในเปลี่ยน
 
-ระบบนี้ใช้ `--radius: 0px` ทุกที่ ไม่มีเงาในตัว panel ไม่มี gradient
-จึงยกมาเป็น native widget ได้ตรงๆ โดยไม่เสียรายละเอียดอะไรเลย
+shadcn ใช้ alpha หลายจุด (`bg-primary/20` ฯลฯ) — Tk ไม่มี alpha บนพื้นทึบ จึงคำนวณ
+ล่วงหน้าเป็น hex โดยผสมกับพื้นขาว ได้ผลตาเดียวกัน
 
-**ไฟล์นี้มีแต่โทเคน ไม่มีอย่างอื่น** — เดิมมีปลั๊ก Win32 กับตัวเขียนไฟล์ PNG
-ปนอยู่ด้วย รวมเป็น 333 บรรทัด ทำให้คนที่เปิดมาหา "สี" เจอ ctypes แทน
+**ไฟล์นี้มีแต่โทเคน ไม่มีอย่างอื่น**
   * ปลั๊กเข้าระบบปฏิบัติการ -> winui.py
   * หาไฟล์ใน ui/           -> assets.py
+  * วาดรูปทรงมุมโค้ง        -> shape.py
   * เขียน PNG/ICO           -> build/imgtool.py (ทำตอน build เท่านั้น)
 """
 from __future__ import annotations
 
 # ─────────────────────────────────────────────────────────────────── สี
 
-ACCENT      = "#f2802b"
-ACCENT_100  = "#fff4ea"
-ACCENT_300  = "#ffcaa5"
-ACCENT_600  = "#dd6b17"
-ACCENT_700  = "#b8530f"
-ACCENT_800  = "#8d3d09"
+ACCENT      = "#f2802b"      # primary — ส้มเดิมของแพตช์ (เข้ากับภาพในเกม)
+ACCENT_100  = "#fff4ea"      # พื้น badge accent
+ACCENT_300  = "#ffcaa5"      # ขั้นที่ผ่านแล้ว / ring ของช่องกรอก
+ACCENT_600  = "#dd6b17"      # primary:hover
+ACCENT_700  = "#b8530f"      # primary:active
+ACCENT_800  = "#8d3d09"      # ตัวหนังสือบน badge accent
+ACCENT_TRACK = "#fce6d5"     # ราง progress = primary/20 บนขาว
 
-BG          = "#ffffff"
-SURFACE     = "#fffaf5"
-DIVIDER     = "#e2cdbb"
-TEXT        = "#2b211b"
+BG          = "#ffffff"      # --background / --card
+SIDEBAR     = "#fafafa"      # zinc-50  แถบซ้าย
+MUTED       = "#f4f4f5"      # zinc-100 --muted / --accent ของ shadcn
+SURFACE     = "#ffffff"      # พื้นช่องกรอก (shadcn: โปร่ง = พื้นการ์ด)
+DIVIDER     = "#e4e4e7"      # zinc-200 --border / --input
+TEXT        = "#09090b"      # zinc-950 --foreground
 
-TEXT_70     = "#6b645f"      # label ของ field
-TEXT_65     = "#756f6b"      # ตัวหนังสือใน tag-neutral
-TEXT_55     = "#8a8582"      # .text-muted
-TEXT_50     = "#95908d"      # คอลัมน์ขนาดไฟล์
-TEXT_45     = "#a09b98"      # เครดิตมุมล่างซ้าย
-TEXT_42     = "#a6a29f"      # ขั้นที่ยังไม่ถึง
+TEXT_70     = "#27272a"      # label ของ field (font-medium)
+TEXT_65     = "#3f3f46"      # ตัวหนังสือใน badge neutral
+TEXT_55     = "#71717a"      # zinc-500 --muted-foreground
+TEXT_50     = "#71717a"      # คอลัมน์ขนาดไฟล์
+TEXT_45     = "#a1a1aa"      # zinc-400 เครดิตมุมล่างซ้าย
+TEXT_42     = "#a1a1aa"      # ขั้นที่ยังไม่ถึง / แถวที่ติ๊กออก
 
-HOVER_SOFT  = "#f0efef"      # btn-secondary:hover  (text 7%)
-HOVER_PRESS = "#e2e0e0"      # btn-secondary:active (text 14%)
-HOVER_GHOST = "#fef2ea"      # btn-ghost:hover      (accent 10%)
-TAG_NEUTRAL = "#eeeded"      # tag-neutral bg       (text 8%)
+HOVER_SOFT  = "#f4f4f5"      # outline button:hover  (bg-accent)
+HOVER_PRESS = "#e4e4e7"      # outline button:active
+HOVER_GHOST = "#f4f4f5"      # ghost button:hover
+TAG_NEUTRAL = "#f4f4f5"      # badge secondary
 
-BORDER      = "#b5b1af"      # border ของ panel: rgba(43,33,27,.35) บนขาว
+BORDER      = "#d4d4d8"      # zinc-300 กรอบรอบหน้าต่าง (เข้มกว่า border ปกติ ไม่งั้นกลืนกับเดสก์ท็อปขาว)
+CARD_HOVER  = "#d4d4d8"      # ขอบการ์ดที่คลิกได้ตอนเมาส์ชี้
 
-DANGER      = "#b3261e"
-DANGER_100  = "#fdecea"
-DANGER_800  = "#6d1712"
+DANGER      = "#dc2626"      # red-600 --destructive
+DANGER_100  = "#fef2f2"
+DANGER_800  = "#991b1b"
+
+# ─────────────────────────────────────────────────────────────── มุมโค้ง
+
+RADIUS      = 8              # --radius: 0.5rem — การ์ด
+RADIUS_MD   = 6              # ปุ่ม / ช่องกรอก (radius - 2px)
+RADIUS_SM   = 4              # กล่องติ๊ก
 
 # ────────────────────────────────────────────────────────── ฟอนต์ + ขนาด
 
 FAMILY = "Sarabun"
-FAMILY_BOLD = "Sarabun ExtraBold"     # --font-heading-weight: 800
+FAMILY_BOLD = "Sarabun SemiBold"      # shadcn ใช้ font-semibold (600) กับหัวข้อและปุ่ม
 
 scale = 1.0                            # ตั้งค่าจริงใน init()
 

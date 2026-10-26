@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-widgets.py — คอมโพเนนต์จากระบบดีไซน์ Modernist ทำเป็น Tk widget
+widgets.py — คอมโพเนนต์หน้าตาแบบ shadcn/ui ทำเป็น Tk widget
 
 ทุกตัวเป็น widget ของ Windows จริง ไม่มี HTML/เบราว์เซอร์เข้ามาเกี่ยว
-`.btn` ในดีไซน์เป็นสี่เหลี่ยมแบนไม่มีมุมโค้ง จึงยกมาเป็น Label ที่ผูก
-<Enter>/<Leave>/<Button-1> เองได้ตรงเป๊ะ และคุมสี hover/active ได้ครบทุกสถานะ
-(tk.Button ของ Windows ใส่ขอบนูนของระบบมาให้ ซึ่งขัดกับดีไซน์)
+ของที่มีมุมโค้ง (ปุ่ม ป้าย ช่องกรอก การ์ด กล่องติ๊ก แถบคืบหน้า) เป็น Canvas
+ที่แปะรูปจาก shape.py — Canvas ของ Tk วาดโค้งแบบขอบหยัก จึงไม่ใช้รูปทรงของมันเอง
+
+ตัวที่มีข้อความ (Button, Tag) ตอบ config/cget เหมือน Label: `text`,
+`foreground` และ `background` — โดย background หมายถึง **สีของรูปทรง**
+(พื้นของ canvas จริงๆ คือสีของ parent) จึงใช้ _tint ไล่สีได้เหมือนเดิมทุกอย่าง
 
 การเคลื่อนไหวทุกตัวเดินผ่าน anim.py (ตัวจับเวลากลางตัวเดียว) และผูก key ไว้กับ
 id ของ widget เสมอ เพื่อให้ทวีนตัวใหม่ล้มตัวเก่าทิ้ง — ไม่งั้นเมาส์กวาดเข้า-ออก
@@ -15,8 +18,10 @@ id ของ widget เสมอ เพื่อให้ทวีนตัว�
 from __future__ import annotations
 
 import tkinter as tk
+import tkinter.font as tkfont
 
 import anim as A
+import shape
 import theme as T
 
 HOVER = 0.13          # เมาส์เข้า/ออก — สั้นพอที่จะยังรู้สึกว่าปุ่มตอบทันที
@@ -36,29 +41,108 @@ def _blend(fg: str, bg: str, alpha: float) -> str:
     return T.mix(bg, fg, alpha)
 
 
-class Button(tk.Label):
-    """.btn — variant: primary | secondary | ghost"""
+def _canvas_kw(master) -> dict:
+    """Canvas ที่กลืนกับ parent — ไม่มีกรอบ พื้นสีเดียวกับที่วางอยู่"""
+    return dict(bg=master.cget("bg"), highlightthickness=0, bd=0)
+
+
+class _Shape(tk.Canvas):
+    """รูปทรงมุมโค้ง + ข้อความกลาง ที่ตอบ config/cget แบบ Label
+
+    ความกว้างคิดจากข้อความ (padx ซ้ายขวา) สูงตายตัว ข้อความว่าง = ไม่วาดอะไร
+    """
+
+    def __init__(self, master, text, font, fg, fill, height, padx, radius,
+                 border=None, hide_empty=False):
+        super().__init__(master, height=height, **_canvas_kw(master))
+        self._pbg = master.cget("bg")
+        self._text, self._fg, self._fill, self._border = text, fg, fill, border
+        self._font = tkfont.Font(root=master, font=font)
+        self._hgt, self._padx, self._radius = height, padx, radius
+        self._hide_empty = hide_empty
+        self._img = None
+        self._bgitem = self.create_image(0, 0, anchor="nw")
+        self._txt = self.create_text(0, 0, font=font, anchor="center")
+        self._draw()
+
+    def _draw(self):
+        if self._hide_empty and not self._text:
+            tk.Canvas.configure(self, width=0)
+            self.itemconfig(self._bgitem, image="")
+            self.itemconfig(self._txt, text="")
+            self._img = None
+            return
+        w = self._font.measure(self._text) + 2 * self._padx
+        h = self._hgt
+        tk.Canvas.configure(self, width=w)
+        self._img = shape.rrect(self, w, h, self._radius, self._fill, self._pbg, self._border)
+        self.itemconfig(self._bgitem, image=self._img)
+        # ไทยมีวรรณยุกต์ลอยด้านบน กึ่งกลาง bbox จึงต่ำกว่ากึ่งกลางตาอยู่นิด — ยกขึ้น 1px
+        self.coords(self._txt, w / 2, h / 2 - T.S(0.5))
+        self.itemconfig(self._txt, text=self._text, fill=self._fg)
+
+    def configure(self, cnf=None, **kw):
+        if cnf:
+            kw.update(cnf)
+        if not kw:
+            return super().configure()
+        mine = False
+        if "text" in kw:
+            self._text, mine = kw.pop("text"), True
+        for k in ("bg", "background"):
+            if k in kw:
+                self._fill, mine = kw.pop(k), True
+        for k in ("fg", "foreground"):
+            if k in kw:
+                self._fg, mine = kw.pop(k), True
+        if kw:
+            super().configure(**kw)
+        if mine:
+            self._draw()
+
+    config = configure
+
+    def cget(self, key):
+        if key == "text":
+            return self._text
+        if key in ("bg", "background"):
+            return self._fill
+        if key in ("fg", "foreground"):
+            return self._fg
+        return super().cget(key)
+
+    __getitem__ = cget
+
+
+class Button(_Shape):
+    """<Button variant=default|outline|ghost> ของ shadcn — สูง 36 โค้ง 6
+
+    ชื่อ variant คงชื่อเดิมไว้: primary = default, secondary = outline, ghost = ghost
+    """
 
     STYLES = {
         # (fg,        bg,          hover_bg,       active_bg,      border)
         "primary":   (T.BG,        T.ACCENT,       T.ACCENT_600,   T.ACCENT_700,   None),
         "secondary": (T.TEXT,      T.BG,           T.HOVER_SOFT,   T.HOVER_PRESS,  T.DIVIDER),
-        "ghost":     (T.ACCENT,    T.BG,           T.HOVER_GHOST,  T.HOVER_GHOST,  None),
+        "ghost":     (T.TEXT,      T.BG,           T.HOVER_GHOST,  T.HOVER_PRESS,  None),
     }
 
     def __init__(self, master, text="", variant="secondary", command=None, **kw):
         fg, bg, hov, act, border = self.STYLES[variant]
         self._palette = (fg, bg, hov, act)
+        self._border0 = border
         self._variant = variant
         self._command = command
         self._enabled = True
-        padx = T.S(4) if variant == "ghost" else T.S(14)
-        super().__init__(master, text=text, font=T.F(14, bold=True),
-                         fg=fg, bg=bg, padx=padx, pady=T.S(8),
-                         highlightthickness=T.S(1) if border else 0,
-                         highlightbackground=border or bg,
-                         highlightcolor=border or bg,
-                         bd=0, cursor="arrow", **kw)
+        # ghost วางบนพื้นของ parent: ตอนปกติต้องกลืนไปกับพื้นนั้นพอดี
+        if variant == "ghost":
+            bg = master.cget("bg")
+            self._palette = (fg, bg, hov, act)
+        super().__init__(master, text, T.F(14, bold=True), fg, bg,
+                         height=T.S(36), padx=T.S(16), radius=T.S(T.RADIUS_MD),
+                         border=border)
+        if kw:
+            tk.Canvas.configure(self, **kw)
         self.bind("<Enter>", self._on_enter)
         self.bind("<Leave>", self._on_leave)
         self.bind("<Button-1>", self._on_press)
@@ -71,8 +155,12 @@ class Button(tk.Label):
         self._enabled = on
         fg, bg, _, _ = self._palette
         A.cancel(("c", "background", id(self)))
-        # .btn:disabled { opacity: .45 } — Tk ไม่มี alpha จึงผสมสีกับพื้นเอง
-        self.config(fg=fg if on else _blend(fg, bg, 0.45), bg=bg)
+        # disabled:opacity-50 ของ shadcn — Tk ไม่มี alpha จึงผสมทุกสีกับพื้นเอง
+        p = self._pbg
+        self._border = (self._border0 if on or not self._border0
+                        else _blend(self._border0, p, 0.5))
+        self.config(fg=fg if on else _blend(fg, p, 0.5),
+                    bg=bg if on else _blend(bg, p, 0.5))
 
     def _on_enter(self, _):
         if self._enabled:
@@ -100,7 +188,7 @@ class Button(tk.Label):
 class WindowButton(tk.Canvas):
     """ปุ่มย่อ/ปิดบนแถบหัวที่วาดเอง — 46x44 วาดเส้นเอง ไม่ใช้ฟอนต์สัญลักษณ์
 
-    ดีไซน์กำหนด hover ของปุ่มปิดเป็นพื้น accent + เส้นสีกระดาษ
+    hover ของปุ่มปิดเป็นพื้นแดง + เส้นขาว ตามธรรมเนียมของ Windows
     (ฟอนต์สัญลักษณ์ของ Windows ไม่มีบนทุกเครื่อง จึงวาดด้วย Canvas แทน)
     """
 
@@ -141,7 +229,7 @@ class WindowButton(tk.Canvas):
         A.tween(HOVER, step, ease=A.out_quad, key=("wb", id(self)))
 
     def _on_enter(self, _):
-        self._to(T.ACCENT, T.BG) if self._danger else self._to(T.HOVER_SOFT, T.TEXT)
+        self._to(T.DANGER, T.BG) if self._danger else self._to(T.HOVER_SOFT, T.TEXT)
 
     def _on_leave(self, _):
         self._to(T.BG, T.TEXT)
@@ -151,8 +239,11 @@ class WindowButton(tk.Canvas):
             self._command()
 
 
-class Tag(tk.Label):
-    """.tag — accent | neutral | danger"""
+class Tag(_Shape):
+    """<Badge> ของ shadcn — ป้ายทรงแคปซูล: accent | neutral | danger
+
+    ข้อความว่าง = ซ่อนทั้งตัว (ไม่ทิ้งก้อนสีเปล่าไว้กลางจอ)
+    """
 
     STYLES = {
         "accent":  (T.ACCENT_800, T.ACCENT_100),
@@ -162,8 +253,11 @@ class Tag(tk.Label):
 
     def __init__(self, master, text="", variant="neutral", **kw):
         fg, bg = self.STYLES[variant]
-        super().__init__(master, text=text, font=T.F(11), fg=fg, bg=bg,
-                         padx=T.S(10), pady=T.S(3), **kw)
+        h = T.S(22)
+        super().__init__(master, text, T.F(12, bold=True), fg, bg,
+                         height=h, padx=T.S(10), radius=h / 2, hide_empty=True)
+        if kw:
+            tk.Canvas.configure(self, **kw)
 
     def set(self, text, variant):
         fg, bg = self.STYLES[variant]
@@ -177,14 +271,43 @@ class Tag(tk.Label):
             self.config(fg=fg, bg=bg)
 
 
-class Entry(tk.Entry):
-    """.input"""
+class Field(tk.Canvas):
+    """<Input> ของ shadcn — กรอบโค้ง 6 สูง 36 ตอนโฟกัสขอบเป็นสีหลัก
 
-    def __init__(self, master, **kw):
-        super().__init__(master, font=T.F(14), fg=T.TEXT, bg=T.SURFACE,
-                         insertbackground=T.ACCENT, relief="flat",
-                         highlightthickness=T.S(1), highlightbackground=T.DIVIDER,
-                         highlightcolor=T.ACCENT, bd=0, **kw)
+    tk.Entry ทำมุมโค้งไม่ได้ จึงวาดกรอบเป็นรูปแล้ววาง Entry ไร้ขอบไว้ข้างใน
+    ตัว Entry จริงอยู่ที่ `.entry` (textvariable, xview_moveto ฯลฯ ใช้กับตัวนั้น)
+    """
+
+    def __init__(self, master, width: int, **entry_kw):
+        h = T.S(36)
+        super().__init__(master, width=width, height=h, **_canvas_kw(master))
+        self._pbg = master.cget("bg")
+        self._fw, self._fh = width, h
+        self._ring = T.DIVIDER
+        self._img = None
+        self._item = self.create_image(0, 0, anchor="nw")
+        self.entry = tk.Entry(self, font=T.F(14), fg=T.TEXT, bg=T.SURFACE,
+                              insertbackground=T.TEXT, relief="flat",
+                              highlightthickness=0, bd=0,
+                              selectbackground=T.ACCENT_300, selectforeground=T.TEXT,
+                              **entry_kw)
+        pad = T.S(12)
+        self.create_window(pad, h / 2, window=self.entry, anchor="w", width=width - 2 * pad)
+        self._paint(T.DIVIDER)
+        self.entry.bind("<FocusIn>", lambda _e: self._to(T.ACCENT))
+        self.entry.bind("<FocusOut>", lambda _e: self._to(T.DIVIDER))
+        self.bind("<Button-1>", lambda _e: self.entry.focus_set())
+
+    def _paint(self, color):
+        self._ring = color
+        self._img = shape.rrect(self, self._fw, self._fh, T.S(T.RADIUS_MD),
+                                T.SURFACE, self._pbg, color)
+        self.itemconfig(self._item, image=self._img)
+
+    def _to(self, color):
+        c0 = self._ring
+        A.tween(HOVER, lambda v: self._paint(T.mix(c0, color, v)),
+                ease=A.out_quad, key=("field", id(self)))
 
 
 class Rule(tk.Frame):
@@ -211,7 +334,10 @@ class Rule(tk.Frame):
 
 
 class ProgressBar(tk.Canvas):
-    """แถบสูง 2px: พื้น divider, ส่วนที่เดินแล้วเป็น accent
+    """<Progress> ของ shadcn — รางสูง 8 โค้งสุด สีหลัก 20% / ส่วนที่เดินแล้วสีหลัก
+
+    เหมือนต้นฉบับ: ส่วนที่เดินแล้วถูกรางตัดขอบซ้าย ส่วนปลายขวาตัดตรง
+    (สร้างสองรูปเต็มความกว้างไว้ก่อน แล้วคัดลอกเฉพาะช่วงที่เดินแล้วมาทับ)
 
     ค่าที่รับเข้ามาเป็นค่าจริงจาก xdelta3 ซึ่งกระโดดเป็นช่วงๆ (ทีละไฟล์)
     การไล่เข้าหาเป้าทำให้ตาอ่านทิศทางออก โดยไม่ได้โกหกว่าคืบหน้าเกินจริง —
@@ -219,19 +345,30 @@ class ProgressBar(tk.Canvas):
     """
 
     def __init__(self, master, width, on_value=None, **kw):
-        super().__init__(master, width=width, height=T.S(2), bg=T.DIVIDER,
-                         highlightthickness=0, bd=0, **kw)
+        h = T.S(8)
+        super().__init__(master, width=width, height=h, **_canvas_kw(master), **kw)
         # ห้ามใช้ชื่อ self._w — tkinter เก็บ path ของ widget ไว้ในนั้น
         # ทับแล้วทุกคำสั่ง Tcl จะยิงไปที่ชื่อ command ผิด
-        self._px = width
+        self._px, self._ph = width, h
         self._cur = 0.0
         self._on_value = on_value
-        self._fill = self.create_rectangle(0, 0, 0, T.S(2), fill=T.ACCENT, width=0)
+        pbg = master.cget("bg")
+        self._track = shape.rrect(self, width, h, h / 2, T.ACCENT_TRACK, pbg)
+        self._full = shape.rrect(self, width, h, h / 2, T.ACCENT, pbg)
+        self._img = tk.PhotoImage(master=self, width=width, height=h)
+        self.create_image(0, 0, anchor="nw", image=self._img)
+        self._fill_px = -1
+        self._paint(0.0)
 
     def _paint(self, pct):
         self._cur = pct
-        self.coords(self._fill, 0, 0,
-                    self._px * max(0.0, min(1.0, pct / 100.0)), T.S(2))
+        fw = round(self._px * max(0.0, min(1.0, pct / 100.0)))
+        if fw != self._fill_px:
+            self._fill_px = fw
+            self.tk.call(self._img, "copy", self._track)
+            if fw > 0:
+                self.tk.call(self._img, "copy", self._full,
+                             "-from", 0, 0, fw, self._ph, "-to", 0, 0)
         if self._on_value:
             self._on_value(pct)
 
@@ -251,22 +388,40 @@ class ProgressBar(tk.Canvas):
         return self._cur
 
 
-class CheckMark(tk.Canvas):
-    """กล่องติ๊ก 15px: ขอบ accent 1.5px + เว้นขาว + ใจกลาง accent 9x9
+def _trim(pts, u):
+    """จุดของเส้นที่ลากไปแล้ว u ส่วนของความยาวรวม (ไว้วาดเครื่องหมายถูกทีละนิด)"""
+    segs = [((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+            for (x1, y1), (x2, y2) in zip(pts, pts[1:])]
+    want = max(0.0, u) * sum(segs)
+    out = [pts[0]]
+    for (x1, y1), (x2, y2), L in zip(pts, pts[1:], segs):
+        if want >= L:
+            out.append((x2, y2))
+            want -= L
+        else:
+            k = (want / L) if L else 0.0
+            out.append((x1 + (x2 - x1) * k, y1 + (y2 - y1) * k))
+            break
+    return out
 
-    (ในดีไซน์คือ background:accent + box-shadow: inset 0 0 0 3px var(--color-bg))
-    ตอนติ๊ก จุดกลางจะโตเลยขนาดจริงนิดนึงแล้วยุบกลับ (easing out_back)
+
+CHECK = [(0.24, 0.52), (0.42, 0.70), (0.78, 0.30)]      # เครื่องหมายถูก (สัดส่วนของกล่อง)
+
+
+class CheckMark(tk.Canvas):
+    """<Checkbox> ของ shadcn — กล่อง 16 โค้ง 4 ติ๊กแล้วพื้นสีหลัก + เครื่องหมายถูกสีขาว
+
+    _t คือความ "ติ๊กแล้ว" 0..1 (เกิน 1 ได้นิดนึงระหว่าง out_back):
+    สีพื้นไล่จากขาวไปสีหลักก่อน แล้วเครื่องหมายถูกถูกลากตามมา
     """
 
     def __init__(self, master, on=True, command=None, **kw):
-        s = T.S(15)
-        super().__init__(master, width=s, height=s, bg=T.BG,
-                         highlightthickness=0, bd=0, **kw)
+        s = T.S(16)
+        super().__init__(master, width=s, height=s, **_canvas_kw(master), **kw)
         self._s = s
-        b = T.S(1.5)
-        self._box = self.create_rectangle(b / 2, b / 2, s - b / 2, s - b / 2,
-                                          outline=T.DIVIDER, width=b, fill=T.BG)
-        self._dot = self.create_rectangle(0, 0, 0, 0, fill=T.BG, width=0)
+        self._pbg = master.cget("bg")
+        self._img = None
+        self._item = self.create_image(0, 0, anchor="nw")
         self._on = on
         self._t = 1.0 if on else 0.0
         self._paint(self._t)
@@ -276,15 +431,13 @@ class CheckMark(tk.Canvas):
     def _paint(self, t):
         self._t = t
         s = self._s
-        c = s / 2.0
-        half = (s / 2.0 - T.S(3)) * max(0.0, t)
-        self.itemconfig(self._box, outline=T.mix(T.DIVIDER, T.ACCENT, min(1.0, t * 1.6)))
-        if half < 0.4:
-            self.coords(self._dot, 0, 0, 0, 0)
-            self.itemconfig(self._dot, fill=T.BG)
-        else:
-            self.coords(self._dot, c - half, c - half, c + half, c + half)
-            self.itemconfig(self._dot, fill=T.ACCENT)
+        k = max(0.0, min(1.0, t * 1.6))          # สีมาก่อน เครื่องหมายตามทีหลัง
+        u = max(0.0, min(1.0, (t - 0.25) / 0.75))
+        lines = [_trim([(x * s, y * s) for x, y in CHECK], u)] if u > 0 else []
+        self._img = shape.marked(self, s, s, T.S(T.RADIUS_SM), T.mix(T.BG, T.ACCENT, k),
+                                 self._pbg, lines, T.S(2), T.BG,
+                                 border=T.mix(T.BORDER, T.ACCENT, k))
+        self.itemconfig(self._item, image=self._img)
 
     def set(self, on: bool, animate=True):
         self._on = on
@@ -308,63 +461,102 @@ class CheckMark(tk.Canvas):
         return self._on
 
 
-def _trim(pts, u):
-    """จุดของเส้นที่ลากไปแล้ว u ส่วนของความยาวรวม (ไว้วาดเครื่องหมายถูกทีละนิด)"""
-    segs = [((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-            for (x1, y1), (x2, y2) in zip(pts, pts[1:])]
-    want = max(0.0, u) * sum(segs)
-    out = [pts[0]]
-    for (x1, y1), (x2, y2), L in zip(pts, pts[1:], segs):
-        if want >= L:
-            out.append((x2, y2))
-            want -= L
-        else:
-            k = (want / L) if L else 0.0
-            out.append((x1 + (x2 - x1) * k, y1 + (y2 - y1) * k))
-            break
-    return out
-
-
 class Badge(tk.Canvas):
-    """สี่เหลี่ยม 28px มีเครื่องหมายถูก (สำเร็จ) หรือกากบาท (ล้มเหลว)
+    """วงกลม 40px มีเครื่องหมายถูก (สำเร็จ) หรือกากบาท (ล้มเหลว)
 
     เส้นถูกลากทีละนิดเหมือนเขียนด้วยมือ — 380 ms พอให้ตาจับได้ว่ามันเพิ่งเกิดขึ้น
+    cget("bg") ตอบสีของวงกลม (แบบเดียวกับ Button/Tag) ไม่ใช่พื้นของ canvas
     """
 
     def __init__(self, master, **kw):
-        s = T.S(28)
-        super().__init__(master, width=s, height=s, bg=T.ACCENT,
-                         highlightthickness=0, bd=0, **kw)
+        s = T.S(40)
+        super().__init__(master, width=s, height=s, **_canvas_kw(master), **kw)
         self._s = s
+        self._pbg = master.cget("bg")
         self._ok = True
+        self._fill = T.ACCENT
+        self._img = None
+        self._item = self.create_image(0, 0, anchor="nw")
         self.set_ok(True, animate=False)
 
     def _paint(self, u):
-        self.delete("mark")
-        s, w = self._s, T.S(3)
+        s = self._s
         if self._ok:
-            pts = [(s * 0.24, s * 0.52), (s * 0.42, s * 0.70), (s * 0.78, s * 0.30)]
-            p = _trim(pts, u)
-            if len(p) > 1:
-                self.create_line(*[c for xy in p for c in xy], fill=T.BG, width=w,
-                                 capstyle="round", joinstyle="round", tags="mark")
+            lines = [_trim([(x * s, y * s) for x, y in CHECK], u)]
         else:
-            for i, pts in enumerate([[(s * 0.28, s * 0.28), (s * 0.72, s * 0.72)],
-                                     [(s * 0.72, s * 0.28), (s * 0.28, s * 0.72)]]):
+            lines = []
+            for i, pts in enumerate([[(s * 0.33, s * 0.33), (s * 0.67, s * 0.67)],
+                                     [(s * 0.67, s * 0.33), (s * 0.33, s * 0.67)]]):
                 # เส้นที่สองเริ่มตอนเส้นแรกไปได้ราวครึ่งทาง
                 v = max(0.0, min(1.0, (u - i * 0.42) / 0.58))
-                p = _trim(pts, v)
-                if len(p) > 1:
-                    self.create_line(*[c for xy in p for c in xy], fill=T.BG,
-                                     width=w, capstyle="round", tags="mark")
+                if v > 0:
+                    lines.append(_trim(pts, v))
+        lines = [p for p in lines if len(p) > 1]
+        self._img = shape.marked(self, s, s, s / 2, self._fill, self._pbg,
+                                 lines, T.S(3), T.BG)
+        self.itemconfig(self._item, image=self._img)
+        # เส้นจริงอยู่ในรูป — item "mark" ที่ซ่อนไว้นี้บอกว่าวาดไปแล้วกี่เส้น
+        self.delete("mark")
+        for _ in lines:
+            self.create_line(0, 0, 1, 1, state="hidden", tags="mark")
 
     def set_ok(self, ok: bool, animate=True):
         self._ok = ok
-        self.config(bg=T.ACCENT if ok else T.DANGER)
+        self._fill = T.ACCENT if ok else T.DANGER
         if not animate:
             A.cancel(("badge", id(self)))
             return self._paint(1.0)
         A.tween(0.38, self._paint, ease=A.out_cubic, key=("badge", id(self)))
+
+    def cget(self, key):
+        if key in ("bg", "background"):
+            return self._fill
+        return super().cget(key)
+
+    __getitem__ = cget
+
+
+class Card(tk.Canvas):
+    """<Card> ของ shadcn — พื้นขาว ขอบ 1px โค้ง 8
+
+    เนื้อหาใส่ใน `.body` (Frame พื้นขาว) ที่วางเยื้องเข้ามาทุกด้าน
+    ไม่ทับเส้นขอบและมุมโค้งที่วาดเป็นรูปอยู่ข้างใต้ ขนาดการ์ดตายตัว
+    """
+
+    def __init__(self, master, width: int, height: int, padx: int = 16, pady: int = 4):
+        super().__init__(master, width=width, height=height, **_canvas_kw(master))
+        self._pbg = master.cget("bg")
+        self._cw, self._ch = width, height
+        self._border = T.DIVIDER
+        self._img = None
+        self._item = self.create_image(0, 0, anchor="nw")
+        px, py = T.S(padx), T.S(pady)
+        self.body = tk.Frame(self, bg=T.BG)
+        self.create_window(px, py, window=self.body, anchor="nw",
+                           width=width - 2 * px, height=height - 2 * py)
+        self._paint(T.DIVIDER)
+
+    def _paint(self, color):
+        self._border = color
+        self._img = shape.rrect(self, self._cw, self._ch, T.S(T.RADIUS), T.BG,
+                                self._pbg, color)
+        self.itemconfig(self._item, image=self._img)
+
+    def set_border(self, color, animate=True):
+        if not animate:
+            A.cancel(("card", id(self)))
+            return self._paint(color)
+        c0 = self._border
+        if c0 == color:
+            return
+        A.tween(0.18, lambda v: self._paint(T.mix(c0, color, v)),
+                ease=A.out_quad, key=("card", id(self)))
+
+    def pointer_inside(self) -> bool:
+        """<Leave> ยิงตอนเมาส์เข้าไปใน widget ลูกด้วย — เช็กตำแหน่งจริงแทน"""
+        x, y = self.winfo_pointerxy()
+        x0, y0 = self.winfo_rootx(), self.winfo_rooty()
+        return x0 <= x < x0 + self.winfo_width() and y0 <= y < y0 + self.winfo_height()
 
 
 def label(master, text="", size=13, bold=False, fg=T.TEXT, bg=T.BG, wrap=None, **kw):
