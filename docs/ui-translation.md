@@ -1,5 +1,15 @@
 # UI translation — menus, buttons, system text
 
+> **Status 2026-10-26:** image translation was cancelled. All text-based UI is translated
+> and packed into `data.xp3` with `python tools/ui_assets.py pack-text` (10 files,
+> read back byte-identical through GARbro). The translated files live in
+> `thai_work/ui/text/main/` — gitignored, because they keep the game's Japanese comments.
+> 68 flowchart choice labels from sex scenes are left in Chinese on purpose.
+>
+> The size limit described below no longer applies to entries packed with
+> `xp3.Archive.replace_sized`: the cx cipher is a pure XOR, so `tools/xp3_keystream.ps1`
+> gets a keystream of any length from GARbro, and the rebuilt index records the new sizes.
+
 Surveyed 2026-10-26. The patch keeps using the **CN slot** (see `CONTEXT.md`): every asset below is the
 `_cn` variant in `data.xp3`, which the game shows when Language = Chinese (Simplified).
 

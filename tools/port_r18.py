@@ -72,7 +72,7 @@ Workflow
 * บรรทัดที่ align ไม่ติด จะปล่อยว่าง → ในเกมจะเห็นเป็นภาษาจีนเดิม (ไม่พัง ไม่ค้าง)
 * pack ใช้ keystream method เดิม (ks = origEnc XOR origPlain) — ไม่ต้องรู้คีย์
 """
-import os, sys, csv, json, glob, shutil, subprocess, difflib
+import os, sys, csv, json, glob, re, shutil, subprocess, difflib
 
 sys.stdout.reconfigure(encoding="utf-8")
 csv.field_size_limit(10 ** 9)
@@ -207,6 +207,23 @@ def cmd_align():
         stats.append((name, got, total))
         flag = "" if got == total else "   <-- ต้องแปลเพิ่ม %d" % (total - got)
         print(f"  {name:<48} {got:5}/{total:<5} ({(got/total*100 if total else 100):5.1f}%){flag}")
+
+    # Lines with no all-ages counterpart are translated separately (mt.py) and kept in
+    # th_r18/<prefix>.tsv; overlay them so re-running align never drops them.
+    over = {}
+    for t in glob.glob(os.path.join(P.TH_R18_DIR, "*.tsv")):
+        pf = os.path.basename(t)[:-4]
+        for line in open(t, encoding="utf-8"):
+            if line.strip():
+                i, th = line.rstrip("\n").split("\t", 1)
+                over[(pf, i)] = th
+    kept = 0
+    for row in rows:
+        pf = re.match(r"^\d+[a-z]?", row[0]).group(0)
+        if not row[6].strip() and (pf, str(row[1])) in over:
+            row[6], row[7] = over[(pf, str(row[1]))], "TH_R18"
+            kept += 1
+    print("overlay th_r18/: %d lines" % kept)
 
     with open(P.CSV_R18, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
