@@ -9,9 +9,10 @@ app.py — หน้าต่างติดตั้งแพตช์แปล
 เป็นโปรแกรมหน้าต่างจริงๆ: widget ของ Windows ล้วน มีปุ่มบน taskbar
 ไม่มีเบราว์เซอร์ ไม่มี HTTP server ไม่เปิดพอร์ต ไม่ต้องพึ่ง WebView2
 
-หน้าตายกมาจาก Claude Design — โปรเจกต์ "Fan-translation mod installer",
-ไฟล์ `Mod Installer.dc.html`, ระบบดีไซน์ **Modernist**
-(โทเคนอยู่ใน theme.py, คอมโพเนนต์อยู่ใน widgets.py, เปลือกหน้าต่างอยู่ใน window.py)
+หน้าตาแบบ shadcn/ui (zinc + มุมโค้ง) — โครงหน้าจอเดิมมาจาก Claude Design
+โปรเจกต์ "Fan-translation mod installer"
+(โทเคนอยู่ใน theme.py, คอมโพเนนต์อยู่ใน widgets.py, รูปทรงโค้งอยู่ใน shape.py,
+เปลือกหน้าต่างอยู่ใน window.py)
 
 ตรรกะทั้งหมดอยู่ใน core.py — ไฟล์นี้เป็นแค่หน้าจอกับการเดินสถานะ
 """
@@ -57,6 +58,15 @@ FOOTER = {
     "error":      ("ลองใหม่", "ปิด",     "",                        False),
 }
 
+
+# การ์ดในหน้ารายการ: บรรทัดอธิบายใต้ชื่อ (ชื่อมาจาก manifest ของแต่ละรุ่น)
+COMP_DESC = {
+    "patch.xp3": "บทพูดเนื้อเรื่องหลักทุกเส้นทาง",
+    "data.xp3":  "ฟอนต์ไทยและไฟล์ระบบของเกม",
+    "adult.xp3": "ให้ฉากของแพตช์ R18 เป็นภาษาไทยด้วย",
+}
+CARD_H = 62              # ความสูงการ์ดหนึ่งใบ
+CARD_GAP = 8
 
 # บอกให้ครบว่า "ใครทำ" กับ "ไม่ใช่ของใคร" ในบรรทัดเดียว โดยไม่ใส่ชื่อคนแปล
 CREDIT = "งานแปลโดยแฟนเกม · ไม่ใช่ฉบับทางการ"
@@ -184,16 +194,18 @@ class Installer:
         body.grid_rowconfigure(0, weight=1)
 
         # ── แถบซ้าย: 4 ขั้น + เครดิต
-        rail = tk.Frame(body, bg=T.BG, width=T.S(212))
+        # แถบข้างแบบ <Sidebar> ของ shadcn: พื้น zinc-50 + เส้นขอบขวา 1px
+        rail = tk.Frame(body, bg=T.SIDEBAR, width=T.S(212))
         rail.grid(row=0, column=0, sticky="nsw")
         rail.grid_propagate(False)
+        tk.Frame(rail, bg=T.DIVIDER, width=1).place(relx=1.0, x=-1, y=0, relheight=1.0)
         self.w_steps = []
         for i, name in enumerate(STEPS):
-            row = tk.Frame(rail, bg=T.BG)
+            row = tk.Frame(rail, bg=T.SIDEBAR)
             row.place(x=T.S(26), y=T.S(26 + i * 28))
             rule = W.Rule(row)
             rule.pack(side="left")
-            lab = W.label(row, name, 13, fg=T.TEXT_42)
+            lab = W.label(row, name, 13, fg=T.TEXT_42, bg=T.SIDEBAR)
             lab.pack(side="left", padx=(T.S(12), 0))
             self.w_steps.append((rule, lab))
 
@@ -241,7 +253,7 @@ class Installer:
         # ไม่ใช่เนื้อหา จึงควรพ้นทางสายตาที่กำลังไล่อ่านขั้นตอนอยู่
         # วางบน body ไม่ใช่ใน rail: rail กว้างตายตัว 212 px ถ้าเครื่องไหน
         # เรนเดอร์ฟอนต์กว้างกว่านี้ ข้อความจะโดนตัดหาย
-        self.w_credit = W.label(body, CREDIT, 11, fg=T.TEXT_45)
+        self.w_credit = W.label(body, CREDIT, 11, fg=T.TEXT_45, bg=T.SIDEBAR)
         self.w_credit.place(x=T.S(26), rely=1.0, y=-T.S(16), anchor="sw")
 
         self.win.backdrop(r, (BG_X, BG_Y, BG_W, BG_H))
@@ -261,8 +273,9 @@ class Installer:
         row.pack(anchor="w", fill="x")
         self.var_path = tk.StringVar()
         self.var_path.trace_add("write", self._on_path_typed)
-        self.w_path = W.Entry(row, textvariable=self.var_path, width=38)
-        self.w_path.pack(side="left", ipady=T.S(6))
+        self.w_field = W.Field(row, T.S(CONTENT_W - 88), textvariable=self.var_path)
+        self.w_field.pack(side="left")
+        self.w_path = self.w_field.entry
         W.Button(row, "เลือก…", "secondary", self.on_browse).pack(
             side="left", padx=(T.S(8), 0))
 
@@ -320,14 +333,11 @@ class Installer:
         self.w_err_title.pack(anchor="w")
         self.w_err_sub = W.label(f, "", 13, fg=T.TEXT_55, wrap=CONTENT_W)
         self.w_err_sub.pack(anchor="w", pady=(T.S(6), 0))
-        # กล่อง traceback: 420x132 ตามดีไซน์ (max-height:132px) ไม่ยืดเต็มจอ
-        self.w_err_box = tk.Frame(f, bg=T.BG, width=T.S(CONTENT_W), height=T.S(132))
-        self.w_err_box.pack_propagate(False)
-        self.w_err_detail = tk.Text(self.w_err_box, font=T.F(11.5), fg=T.TEXT_55,
-                                    bg=T.SURFACE, relief="flat", wrap="word",
-                                    highlightthickness=T.S(1),
-                                    highlightbackground=T.DIVIDER, bd=0,
-                                    padx=T.S(10), pady=T.S(8))
+        # กล่อง traceback: การ์ด 420x132 (max-height:132px) ไม่ยืดเต็มจอ
+        self.w_err_box = W.Card(f, T.S(CONTENT_W), T.S(132), padx=12, pady=8)
+        self.w_err_detail = tk.Text(self.w_err_box.body, font=T.F(11.5), fg=T.TEXT_55,
+                                    bg=T.BG, relief="flat", wrap="word",
+                                    highlightthickness=0, bd=0, padx=0, pady=0)
         self.w_err_detail.pack(fill="both", expand=True)
         return f
 
@@ -558,56 +568,80 @@ class Installer:
         for w in self.w_comps.winfo_children():
             w.destroy()
         p = self.plan
+        boxes = []
 
-        def row_frame():
-            f = tk.Frame(self.w_comps, bg=T.BG, width=T.S(CONTENT_W), height=T.S(33))
-            f.pack(anchor="w")
-            f.pack_propagate(False)
-            return f
+        def card(t, title, on, badge, variant, command=None):
+            """การ์ดหนึ่งใบ: [กล่องติ๊ก] ชื่อ + ป้าย / คำอธิบาย ....... ขนาด / ชื่อไฟล์"""
+            c = W.Card(self.w_comps, T.S(CONTENT_W), T.S(CARD_H))
+            c.pack(anchor="w", pady=(0, T.S(CARD_GAP)))
+            b = c.body
+            box = W.CheckMark(b, on=on, command=command)
+            box.pack(side="left")
+            boxes.append(box)
+            right = tk.Frame(b, bg=T.BG)
+            right.pack(side="right")
+            size = W.label(right, mb(t.size), 12, fg=T.TEXT_50)
+            size.pack(anchor="e")
+            fname = W.label(right, t.name, 11, fg=T.TEXT_45)
+            fname.pack(anchor="e")
+            mid = tk.Frame(b, bg=T.BG)
+            mid.pack(side="left", padx=(T.S(14), 0))
+            top = tk.Frame(mid, bg=T.BG)
+            top.pack(anchor="w")
+            lab = W.label(top, title, 14, bold=True)
+            lab.pack(side="left")
+            W.Tag(top, badge, variant).pack(side="left", padx=(T.S(8), 0))
+            desc = W.label(mid, COMP_DESC.get(t.name, ""), 12, fg=T.TEXT_55)
+            desc.pack(anchor="w")
+            return c, box, lab, size, desc, (b, right, fname, mid, top)
 
         for t in p.targets:
             if not t.present or t.name == "adult.xp3":
                 continue
-            row = row_frame()
-            W.CheckMark(row, on=True).pack(side="left")
-            W.label(row, "%s — %s" % (t.label, t.name), 13.5).pack(
-                side="left", padx=(T.S(12), 0))
-            W.label(row, mb(t.size), 12, fg=T.TEXT_50).pack(side="right")
-
-        boxes = [w for r in self.w_comps.winfo_children()
-                 for w in r.winfo_children() if isinstance(w, W.CheckMark)]
+            card(t, t.label, True, "จำเป็น", "neutral")
 
         self.w_r18_row = None
         if p.r18_available:
             adult = next(t for t in p.targets if t.name == "adult.xp3")
-            row = row_frame()
-            box = W.CheckMark(row, on=p.include_r18, command=self.toggle_r18)
-            box.pack(side="left")
-            lab = W.label(row, "ฉาก R18 — adult.xp3", 13.5)
-            lab.pack(side="left", padx=(T.S(12), 0))
-            size = W.label(row, mb(adult.size), 12, fg=T.TEXT_50)
-            size.pack(side="right")
-            for w in (lab, row):
+            c, box, lab, size, desc, parts = card(
+                adult, "ฉาก R18", p.include_r18, "ตัวเลือก", "accent",
+                command=self.toggle_r18)
+            # ทั้งใบคือที่กดติ๊ก (เหมือน <Label> ที่ครอบ checkbox ในเว็บ)
+            for w in (c, lab, size, desc) + parts:
                 w.bind("<Button-1>", lambda _e: self.toggle_r18())
-            self.w_r18_row = (box, lab, size)
-            boxes.append(box)
+            c.bind("<Enter>", lambda _e: self._hover_r18(True))
+            c.bind("<Leave>", lambda _e: self._hover_r18(c.pointer_inside()))
+            self.w_r18_row = (box, lab, size, desc, c)
         # ติ๊กไล่กันทีละตัว (stagger ของ anime.js) — ตาไล่อ่านรายการทันพอดี
         A.stagger(boxes, lambda _i, b, d: b.pop_in(d), gap=0.055, start=0.14)
         self._render_r18_state()
 
+    def _r18_border(self, hover=False) -> str:
+        """ขอบการ์ด R18: เลือกไว้ = สีหลัก · ไม่เลือก = ปกติ (เมาส์ชี้ = เข้มขึ้นนิด)"""
+        if self.plan.include_r18 and not self.r18_locked:
+            return T.ACCENT
+        return T.CARD_HOVER if hover and not self.r18_locked else T.DIVIDER
+
+    def _hover_r18(self, on):
+        if self.w_r18_row:
+            self.w_r18_row[4].set_border(self._r18_border(on))
+
     def _render_r18_state(self):
         p = self.plan
         if self.w_r18_row:
-            box, lab, size = self.w_r18_row
+            box, lab, size, desc, c = self.w_r18_row
             box.set(p.include_r18)
             fg = T.TEXT if p.include_r18 else T.TEXT_42
             fg2 = T.TEXT_50 if p.include_r18 else T.TEXT_42
+            fg3 = T.TEXT_55 if p.include_r18 else T.TEXT_42
             # ทวีนเปลี่ยนหน้าไล่สีจาก _fg0 อยู่ ต้องจบมันก่อนแล้วอัปเดตสีเป้าหมาย
             # ไม่งั้นแถวจะสว่างกลับเองตอนทวีนเดินถึงเฟรมสุดท้าย
             A.finish("screen")
-            lab._fg0, size._fg0 = fg, fg2
+            lab._fg0, size._fg0, desc._fg0 = fg, fg2, fg3
             W._tint(lab, "foreground", fg, dur=0.18, tag="r18")
             W._tint(size, "foreground", fg2, dur=0.18, tag="r18")
+            W._tint(desc, "foreground", fg3, dur=0.18, tag="r18")
+            c.set_border(self._r18_border())
 
         if not p.r18_available:
             self.w_comps_foot.config(

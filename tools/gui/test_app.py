@@ -690,7 +690,7 @@ def test_modules():
 
     # เครื่องมือตอน build ต้องไม่ถูก import จากตัวแอป
     app_side = ("app.py", "core.py", "theme.py", "widgets.py", "anim.py",
-                "winui.py", "assets.py")
+                "winui.py", "assets.py", "shape.py")
     leaked = []
     for f in app_side:
         with open(os.path.join(here, f), encoding="utf-8") as fh:
