@@ -537,8 +537,9 @@ class Installer:
         p = self.plan
         if status == "unsupported":
             bad = p.unsupported_files()
-            if bad == ["adult.xp3"]:
-                # เฉพาะ adult.xp3 ที่ build ไม่ตรง — patch.xp3/data.xp3 ยังแปะได้
+            r18_names = {t.name for t in p.targets if t.r18}
+            if bad and set(bad) <= r18_names:
+                # เฉพาะไฟล์ฝั่ง R18 ที่ build ไม่ตรง — patch.xp3/data.xp3 ยังแปะได้
                 # จึงยังลงเวอร์ชัน all-ages ได้ ดีกว่าบอกว่า "ลงไม่ได้" แล้วจบ
                 p.include_r18 = False
                 self.r18_locked = True
@@ -596,7 +597,7 @@ class Installer:
             return c, box, lab, size, desc, (b, right, fname, mid, top)
 
         for t in p.targets:
-            if not t.present or t.name == "adult.xp3":
+            if not t.present or t.r18:      # ไฟล์ R18 รวมอยู่ในการ์ด "ฉาก R18" ใบเดียว
                 continue
             card(t, t.label, True, "จำเป็น", "neutral")
 

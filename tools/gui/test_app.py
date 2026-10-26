@@ -588,7 +588,10 @@ def test_flow(inst):
     inst.show("components")
     settle(inst)
     rows = [w for w in inst.w_comps.winfo_children()]
-    chk("หน้ารายการแสดงครบทุกไฟล์ที่มี", len(rows), len(inst.plan.active))
+    # ไฟล์ฝั่ง R18 (adult.xp3 + patch_extra.xp3) รวมเป็นการ์ด "ฉาก R18" ใบเดียว
+    act = inst.plan.active
+    chk("หน้ารายการแสดงครบทุกไฟล์ที่มี", len(rows),
+        len([t for t in act if not t.r18]) + (1 if any(t.r18 for t in act) else 0))
     chk("ปุ่มหลักเขียนว่า 'ติดตั้ง'", inst.b_primary.cget("text"), "ติดตั้ง")
     chk("หน้าเดิมถูกเอาออกจากผัง", inst.screens["locate"].winfo_manager(), "")
 

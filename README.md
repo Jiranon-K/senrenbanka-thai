@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v1.1-f2802b?style=for-the-badge" alt="v1.1">
+  <img src="https://img.shields.io/badge/version-v1.2-f2802b?style=for-the-badge" alt="v1.2">
   <img src="https://img.shields.io/badge/script-86%2F86%20chapters-2f9e44?style=for-the-badge" alt="86/86">
   <img src="https://img.shields.io/badge/supports-R18%20patch-6741d9?style=for-the-badge" alt="R18">
   <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-2b6cb0?style=for-the-badge" alt="Windows">
@@ -26,7 +26,7 @@
 
 | | |
 |:--:|---|
-| **1** | โหลด `senrenbanka-thai-patch-v1.1.zip` จากหน้า [Releases](../../releases/latest) แล้วแตกไฟล์ไว้ที่ไหนก็ได้ — **ไม่ต้อง**แตกทับโฟลเดอร์เกม |
+| **1** | โหลด `senrenbanka-thai-patch-v1.2.zip` จากหน้า [Releases](../../releases/latest) แล้วแตกไฟล์ไว้ที่ไหนก็ได้ — **ไม่ต้อง**แตกทับโฟลเดอร์เกม |
 | **2** | ดับเบิลคลิก `SenrenBanka-Thai-Patch.exe` แล้วกดถัดไป มันหาโฟลเดอร์เกมให้เอง |
 | **3** | เปิดเกม → **Config** → **Language** → เลือก **Chinese (Simplified)** → ได้ภาษาไทยทันที |
 
@@ -48,8 +48,8 @@
 | **ฉากเพิ่มเติม** (แพตช์ R18) | 🟩🟩🟩🟩⬜ **82.0%** · 45,806/55,846 บรรทัด | ที่เหลือเกือบทั้งหมดเป็นบทพูดในฉาก H — ขึ้นเป็นภาษาจีนเดิม เกมไม่พัง |
 | **เมนู / ระบบ** (ข้อความ) | 🟩🟩🟩🟩🟩 กล่องข้อความระบบ · ผังเรื่อง · หน้า Help · ชื่อเพลง | ปุ่มและหัวข้อที่เป็น**รูปภาพ**ยังเป็นภาษาจีน |
 
-> ตัวเลขนี้คือสถานะใน repo (2026-10-26) — งานแปลใหม่, แก้บรรทัดที่เลื่อน และข้อความเมนู
-> จะเข้าไปในชุดติดตั้งรุ่นถัดไป ([สรุปการตรวจ](docs/audit-2026-10.md))
+> v1.2 แก้บทพูดที่เลื่อนไม่ตรงกับเสียงพากย์ ตัดคำหยาบ และเพิ่มข้อความเมนูภาษาไทย
+> ([สรุปการตรวจ](docs/audit-2026-10.md)) — อัปเดตจาก v1.1 ต้องกด "ถอดแพตช์" ก่อนแล้วค่อยลงใหม่
 
 รายบทดูได้ที่ [PROGRESS.md](thai_work/PROGRESS.md) และ [PROGRESS_R18.md](thai_work/PROGRESS_R18.md)
 
@@ -153,7 +153,7 @@ thai_work/       คำแปลไทยทั้งหมด + progress tracke
 **ทำชุดติดตั้งเอง**
 
 ```powershell
-python tools/build_release.py --version 1.1 --gui
+python tools/build_release.py --version 1.2 --gui
 ```
 
 **เทส**

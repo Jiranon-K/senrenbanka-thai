@@ -52,12 +52,22 @@ TARGETS = [
            "ฟอนต์ + ข้อความเมนู", required=True, r18=False, var="DATA"),
     Target("adult.xp3", "adult.xp3.orig", "thai-adult.xdelta",
            "บทพูดฝั่ง R18", required=False, r18=True, var="ADULT"),
+    # แพตช์ R18 วาง patch_extra.xp3 ของตัวเอง (173 MB) ซึ่งมีสคริปต์ 92 บทชุดเดียวกับ
+    # adult.xp3 — เจอ 2026-10-26 ว่าเกมอ่านสคริปต์จากไฟล์นี้ ต้องแปะทั้งคู่
+    # เครื่อง Steam ล้วนก็มี patch_extra.xp3 (53 MB คนละไฟล์) จึงแปะเฉพาะโหมด R18
+    Target("patch_extra.xp3", "patch_extra.xp3.orig", "thai-patchextra.xdelta",
+           "บทพูดฝั่ง R18 (ชุดสำรอง)", required=False, r18=True, var="PEXTRA"),
 ]
 
 # ไฟล์ที่แพตช์ R18 เอามาวาง และต้องถูก "ปิด" (เปลี่ยนชื่อเป็น .off ไม่ใช่ลบ)
 # เมื่อผู้เล่นเลือกเวอร์ชัน all-ages — adult2.xp3 ไม่มี diff ของตัวเอง แต่ก็
 # ต้องปิดด้วย ไม่งั้นมันทับบทพูดอยู่ดี
 DISABLE_ON_ALL_AGES = ["adult.xp3", "adult2.xp3"]
+
+# ไฟล์ R18 ที่ "ไม่ปิด" ตอนเลือก all-ages: Steam เองก็มีไฟล์ชื่อนี้ เปลี่ยนชื่อทิ้ง
+# เกมจะพัง และวัดไว้แล้ว (R18_COMPAT.md) ว่าเมื่อไม่มี adult.xp3 เกมใช้บทจาก
+# patch.xp3 ครบ 86/86 บท ไฟล์นี้จึงปล่อยไว้ตามเดิมได้
+KEEP_ON_ALL_AGES = ["patch_extra.xp3"]
 
 
 def by_file(name: str) -> Target | None:
