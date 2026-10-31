@@ -36,8 +36,8 @@ import corpus
 # ระบบเลข idx ของฝั่ง all-ages — ตัวเดียวกับที่ strings_cn.csv กับ thai_work/th/
 # ถูกนับไว้ **ห้ามสลับเป็น scenario.R18** ไม่งั้นคำแปล 45,182 บรรทัดเลื่อนทั้งเกม
 # โดยไม่มี error อะไรเลย (อ่านหัวไฟล์ tools/scenario.py)
-LAYOUT = scenario.ALL_AGES
 CORPUS = corpus.ALL_AGES_CORPUS
+LAYOUT = CORPUS.layout
 CN = scenario.CN
 
 def cmd_decompile():

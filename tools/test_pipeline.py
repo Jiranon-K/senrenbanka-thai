@@ -378,6 +378,21 @@ def test_layouts_differ():
     chk("ช่องที่คำแปลไทยไปอยู่คือช่องที่ 2", scenario.CN, 2)
 
 
+def test_corpus_layouts():
+    print("=" * 70)
+    print("corpus — แต่ละสายต้องผูกกับ layout ของตัวเอง (RULES.md R1)")
+    import corpus
+    import pipeline_cn
+    import port_r18
+    chk("ALL_AGES_CORPUS ใช้ scenario.ALL_AGES",
+        corpus.ALL_AGES_CORPUS.layout is scenario.ALL_AGES, True)
+    chk("R18_CORPUS ใช้ scenario.R18", corpus.R18_CORPUS.layout is scenario.R18, True)
+    chk("ALL_AGES_CORPUS อ่าน/เขียน strings_cn.csv", corpus.ALL_AGES_CORPUS.csv, P.CSV_CN)
+    chk("R18_CORPUS อ่าน/เขียน strings_r18.csv", corpus.R18_CORPUS.csv, P.CSV_R18)
+    chk("pipeline_cn.py ใช้ ALL_AGES_CORPUS", pipeline_cn.CORPUS is corpus.ALL_AGES_CORPUS, True)
+    chk("port_r18.py ใช้ R18_CORPUS", port_r18.CORPUS is corpus.R18_CORPUS, True)
+
+
 def test_walk_order():
     print("=" * 70)
     print("scenario — ลำดับที่เดิน = ลำดับที่ idx ถูกนับไว้ใน CSV")
@@ -574,6 +589,7 @@ def test_freemote():
 
 def main():
     test_layouts_differ()
+    test_corpus_layouts()
     test_walk_order()
     test_json_files()
     test_targets_table()

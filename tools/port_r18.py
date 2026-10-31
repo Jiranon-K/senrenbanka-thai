@@ -72,7 +72,7 @@ Workflow
 * บรรทัดที่ align ไม่ติด จะปล่อยว่าง → ในเกมจะเห็นเป็นภาษาจีนเดิม (ไม่พัง ไม่ค้าง)
 * pack ใช้ keystream method เดิม (ks = origEnc XOR origPlain) — ไม่ต้องรู้คีย์
 """
-import os, sys, csv, json, glob, re, difflib
+import os, sys, csv, json, glob, difflib
 
 sys.stdout.reconfigure(encoding="utf-8")
 csv.field_size_limit(10 ** 9)
@@ -86,8 +86,8 @@ import tsv
 # ระบบเลข idx ของฝั่ง R18 — รับ 5 ช่อง (มีเกาหลีเพิ่มเข้ามา) และเข้มกว่าฝั่ง
 # all-ages ตรงที่ทุกสมาชิกต้องเป็นข้อความ **คนละระบบเลขกับ scenario.ALL_AGES**
 # ห้ามสลับ (อ่านหัวไฟล์ tools/scenario.py)
-LAYOUT = scenario.R18
 CORPUS = corpus.R18_CORPUS
+LAYOUT = CORPUS.layout
 CN = scenario.CN
 
 json_files = scenario.json_files
