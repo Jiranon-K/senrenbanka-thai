@@ -2,7 +2,8 @@
 
 > Produced by `to-spec` from the 2026-10-31 session on image menus (screenshots of the
 > System Config pages, `docs/ui-translation.md`, `thai_work/ui/ui_manifest.csv`).
-> Status: approved 2026-10-31
+> Status: approved 2026-10-31. AC4 amended during the pilot: "CN box + 2 px" left no room for
+> Thai marks above and below, so the limit became the free area around the CN text.
 
 ## Problem
 
@@ -67,7 +68,7 @@ of the same game.
 | AC1 | the rebuilt local `data.xp3`, game set to Chinese (Simplified) | open System Config → 画面显示 | no Han character is visible inside the game window except the game logo "千恋＊万花" |
 | AC2 | the same page | hover, then click, each option button and tab | each state shows Thai in that state's colour; none falls back to Chinese |
 | AC3 | every file in `thai_work/ui/th/sys_base/` and `th/sys_page0/` | a size check runs against `todo/` | width, height and RGBA mode match the CN original exactly; any mismatch fails with the file name |
-| AC4 | every Thai label | its drawn text bounds are measured | the bounds, including tone marks above and vowels below, sit inside the CN text's original box plus 2 px; any overflow fails with the layer name |
+| AC4 | every Thai label | its drawn text bounds are measured | the bounds, including tone marks above and vowels below, sit inside the free area around the CN text (button: pill interior; tab: right of the icon; heading: the CN line ±30 % of its height); any overflow is reported as OVERFLOW with the layer name |
 | AC5 | the rebuilt `data.xp3` | its entries are diffed against a build without the Thai images | only the two `.pimg` entries differ; the 3 fonts and 10 text files are byte-identical |
 | AC6 | the two rebuilt sheets | each layer is decompiled back | layers without a Thai file are byte-identical to the original TLG5 data |
 | AC7 | a missing, mis-sized or corrupt Thai PNG, or a sheet that will not rebuild | the build runs | it exits non-zero, names the file, and leaves the installed `data.xp3` untouched |

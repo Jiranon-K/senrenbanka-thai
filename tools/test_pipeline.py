@@ -507,7 +507,8 @@ class _Done:
 
 def _fake_run(code=0, write=True, build_name=".pure.scn"):
     def run(args, cwd=None, capture_output=True):
-        exe, src = os.path.basename(args[0]), args[1]
+        exe, src = os.path.basename(args[0]), args[-1]
+        run.calls.append(list(args))
         if write and code == 0:
             stem = os.path.splitext(src)[0]
             if exe == "dec":
@@ -517,6 +518,7 @@ def _fake_run(code=0, write=True, build_name=".pure.scn"):
                 base = os.path.basename(src)[:-5]
                 open(os.path.join(cwd, base + build_name), "wb").write(b"PSB")
         return _Done(code, b"boom" if code else b"")
+    run.calls = []
     return run
 
 
@@ -542,6 +544,107 @@ def test_freemote():
                     call(); chk("%s: %s ต้อง raise" % (label, what), "ไม่ raise", "raise")
                 except freemote.FreeMoteError:
                     chk("%s: %s ต้อง raise" % (label, what), "raise", "raise")
+
+
+def test_freemote_pimg():
+    print("=" * 70)
+    print("freemote — raw pimg decompile/build")
+    with tempfile.TemporaryDirectory() as d:
+        src = os.path.join(d, "sys_page0_cn.pimg"); open(src, "wb").write(b"x")
+        run = _fake_run(build_name=".pure.pimg")
+        fm = freemote.FreeMote("dec", "bld", run=run)
+        js = fm.decompile(src, raw=True)
+        chk("raw=True ส่ง -raw ให้ PsbDecompile", run.calls[0][1:], ["-raw", os.path.abspath(src)])
+        out = fm.build(js, os.path.join(d, "out"), ext=".pimg")
+        chk("build .pure.pimg -> .pimg", out, os.path.join(d, "out", "sys_page0_cn.pimg"))
+
+
+def _has_pil(label):
+    try:
+        import PIL  # noqa: F401
+        return True
+    except ImportError:
+        skip(label, "ไม่มี Pillow")
+        return False
+
+
+def test_ui_images():
+    print("=" * 70)
+    print("ui images — ภาพไทยที่จะแพ็กต้องตรงกับต้นฉบับ CN")
+    if not _has_pil("ui images"):
+        return
+    from PIL import Image
+    import ui_assets as U
+    with tempfile.TemporaryDirectory() as d:
+        th, todo = os.path.join(d, "th"), os.path.join(d, "todo")
+        for root in (th, todo):
+            os.makedirs(os.path.join(root, "s"))
+        Image.new("RGBA", (40, 20)).save(os.path.join(todo, "s", "11_a_defo.png"))
+        Image.new("RGBA", (40, 20)).save(os.path.join(todo, "s", "12_b_defo.png"))
+        old = U.TH, U.TODO
+        U.TH, U.TODO = th, todo
+        try:
+            Image.new("RGBA", (40, 20)).save(os.path.join(th, "s", "11_a_defo.png"))
+            chk("ภาพขนาดตรง RGBA ผ่าน", U.thai_layers("s"), {"11": os.path.join(th, "s", "11_a_defo.png")})
+            chk("image_sheets เห็นชีต s", U.image_sheets(), ["s"])
+            for label, make in (("ขนาดไม่ตรง", lambda p: Image.new("RGBA", (41, 20)).save(p)),
+                                ("ไม่ใช่ RGBA", lambda p: Image.new("RGB", (40, 20)).save(p))):
+                make(os.path.join(th, "s", "12_b_defo.png"))
+                try:
+                    U.thai_layers("s"); chk("%s ต้องหยุด" % label, "ผ่าน", "หยุด")
+                except SystemExit as e:
+                    chk("%s ต้องหยุดและบอกชื่อไฟล์" % label, "12_b_defo.png" in str(e), True)
+            os.remove(os.path.join(th, "s", "12_b_defo.png"))
+            Image.new("RGBA", (40, 20)).save(os.path.join(th, "s", "99_x_defo.png"))
+            try:
+                U.thai_layers("s"); chk("ไม่มีต้นฉบับ CN ต้องหยุด", "ผ่าน", "หยุด")
+            except SystemExit as e:
+                chk("ไม่มีต้นฉบับ CN ต้องหยุดและบอกชื่อไฟล์", "99_x_defo.png" in str(e), True)
+        finally:
+            U.TH, U.TODO = old
+
+
+def test_ui_labels():
+    print("=" * 70)
+    print("ui labels — ตารางคำแปลเมนูภาพ")
+    if not _has_pil("ui labels"):
+        return
+    import csv as _csv
+    import ui_render as R
+    with open(R.LABELS, encoding="utf-8") as f:
+        rows = list(_csv.DictReader(f, delimiter="	"))
+    chk("ทุกแถวมีครบ 5 ช่อง", [r for r in rows if None in r.values() or "" in r.values()], [])
+    chk("kind อยู่ใน STYLE", sorted({r["kind"] for r in rows} - set(R.STYLE)), [])
+    chk("ไม่มี (sheet, layer) ซ้ำ", len({(r["sheet"], r["layer"]) for r in rows}), len(rows))
+    chk("คำแปลเป็นภาษาไทย", [r["layer"] for r in rows
+                             if not any("฀" <= c <= "๿" for c in r["thai"])], [])
+
+
+def test_ui_render_helpers():
+    print("=" * 70)
+    print("ui render — period / fill / text_boxes")
+    if not _has_pil("ui render"):
+        return
+    from PIL import Image, ImageDraw
+    import ui_render as R
+    strip = Image.new("RGBA", (120, 10))
+    d = ImageDraw.Draw(strip)
+    for x in range(0, 120, 12):
+        d.rectangle((x, 0, x + 5, 9), fill=(200, 0, 0, 255))
+    chk("period จับลายซ้ำทุก 12 px", R.period(strip), 12)
+    img = strip.copy()
+    ImageDraw.Draw(img).rectangle((10, 0, 40, 9), fill=(0, 0, 255, 255))
+    out = R.fill(img, (10, 0, 41, 10), (48, 120))
+    chk("fill คืนลายเดิมในกล่อง", out.tobytes() == strip.tobytes(), True)
+    try:
+        R.fill(img, (10, 0, 41, 10), (48, 50)); chk("donor แคบต้อง raise", "ไม่ raise", "raise")
+    except R.RenderError:
+        chk("donor แคบต้อง raise", "raise", "raise")
+    m = Image.new("L", (200, 40))
+    ImageDraw.Draw(m).rectangle((10, 10, 30, 20), fill=255)
+    ImageDraw.Draw(m).rectangle((120, 12, 150, 22), fill=255)
+    ImageDraw.Draw(m).line((0, 39, 199, 39), fill=255)
+    chk("text_boxes แยกสองก้อนและตัดเส้นกรอบ", R.text_boxes(m), [(10, 10, 31, 21), (120, 12, 151, 23)])
 
 
 def test_ui_text_shadowing():
@@ -589,6 +692,10 @@ def main():
     test_xp3_real_archive()
     test_ui_text_shadowing()
     test_freemote()
+    test_freemote_pimg()
+    test_ui_images()
+    test_ui_labels()
+    test_ui_render_helpers()
 
     print("=" * 70)
     if skipped:
