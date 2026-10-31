@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os, sys
-sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
-import targets as T
-import xp3
 
 VAR = P.FONT_VARIANTS
 SHS = os.path.join(P.EXTRACT_DATA, "font")
@@ -16,24 +13,18 @@ EDITS = {
 }
 
 
-def main():
-    t = T.by_file("data.xp3")
-    dst = P.game_file(t.file)
-    orig = P.game_file(t.orig)
-    assert os.path.exists(orig), "%s missing" % t.orig
-
-    ar = xp3.Archive.read(orig)
+def apply_fonts(ar):
+    before = ar.replaced
     for name, (vfile, pfile) in EDITS.items():
         entry = ar.find(name)
         assert entry is not None, f"ไม่พบ {name} ใน data.xp3"
         with open(os.path.join(VAR, vfile), "rb") as f: variant = f.read()
         with open(os.path.join(SHS, pfile), "rb") as f: plain = f.read()
         assert ar.replace(entry, variant, plain), f"{vfile} ใหญ่เกินช่องเดิม"
-
-    assert ar.replaced == 3, f"matched {ar.replaced}/3 SC fonts"
-    ar.save(dst)
-    print(f"data.xp3 rebuilt: 3 SC fonts -> merged Sarabun, "
-          f"size={os.path.getsize(dst)}")
+    assert ar.replaced - before == 3, f"matched {ar.replaced - before}/3 SC fonts"
 
 
-main()
+if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8")
+    import ui_assets
+    ui_assets.build_data()

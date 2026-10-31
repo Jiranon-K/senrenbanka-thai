@@ -353,6 +353,14 @@ def test_corpus_layouts():
     chk("pipeline_cn.py ใช้ ALL_AGES_CORPUS", pipeline_cn.CORPUS is corpus.ALL_AGES_CORPUS, True)
     chk("port_r18.py ใช้ R18_CORPUS", port_r18.CORPUS is corpus.R18_CORPUS, True)
 
+    with tempfile.TemporaryDirectory() as d:
+        for name, want in (("patch.xp3", "patch.xp3.bak"), ("adult.xp3", "adult.xp3.orig"),
+                           ("scn.xp3", "scn.xp3.orig")):
+            p = os.path.join(d, name)
+            open(p, "wb").write(b"x")
+            chk("pack อ่านต้นฉบับของ %s จากชื่อใน targets.py" % name,
+                os.path.basename(corpus.pristine(p, name)), want)
+
 
 def test_walk_order():
     print("=" * 70)

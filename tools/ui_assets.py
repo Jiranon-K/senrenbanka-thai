@@ -162,16 +162,16 @@ def garbro_extract(archive: str, name: str, out_dir: str) -> str:
     return os.path.join(out_dir, name.replace("/", os.sep))
 
 
-def cmd_pack_text(out: str | None = None, verify: bool = True):
-    import xp3
-    files = sorted(os.path.relpath(f, TEXT).replace(os.sep, "/")
-                   for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
-    if not files:
-        sys.exit("nothing under " + TEXT)
-    target = out or P.game_file("data.xp3")
-    base = xp3.backup_once(P.game_file("data.xp3"))
-    plain = {n: open(os.path.join(TEXT, n), "rb").read() for n in files}
+def text_files() -> list[str]:
+    return sorted(os.path.relpath(f, TEXT).replace(os.sep, "/")
+                  for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
 
+
+def _apply_text(ar, base: str, files: list[str]) -> dict:
+    plain = {}
+    for n in files:
+        with open(os.path.join(TEXT, n), "rb") as f:
+            plain[n] = f.read()
     os.makedirs(KS, exist_ok=True)
     req = os.path.join(KS, "req.tsv")
     with open(req, "w", encoding="utf-8") as fh:
@@ -182,28 +182,54 @@ def cmd_pack_text(out: str | None = None, verify: bool = True):
                         "-List", req, "-OutDir", KS], capture_output=True, text=True)
     if r.returncode:
         sys.exit(r.stdout + r.stderr)
-    manifest = [l.rstrip("\r\n").split("\t") for l in open(os.path.join(KS, "manifest.tsv"), encoding="utf-8-sig")
-                if l.strip()]
+    with open(os.path.join(KS, "manifest.tsv"), encoding="utf-8-sig") as f:
+        manifest = [l.rstrip("\r\n").split("\t") for l in f if l.strip()]
 
-    ar = xp3.Archive.read(base)
     by_offset = {e.offset: e for e in ar.entries}
     for i, name, offset in manifest:
         e = by_offset[int(offset)]
-        ks = open(os.path.join(KS, i + ".ks"), "rb").read()
+        with open(os.path.join(KS, i + ".ks"), "rb") as f:
+            ks = f.read()
         old = e.stored
         new = ar.replace_sized(e, plain[name], ks)
         print("  %-32s %7d -> %7d bytes stored%s" % (name, old, new, " (zlib)" if e.compressed else ""))
-    ar.save(target)
-    print("wrote %s (%d entries replaced)" % (target, ar.replaced))
+    return plain
 
-    if verify:
+
+def build_data(out: str | None = None, verify: bool = True):
+    import xp3
+    import targets as T
+    import rebuild_fonts
+    t = T.by_file("data.xp3")
+    base = P.game_file(t.orig)
+    if not os.path.exists(base):
+        sys.exit("missing pristine %s" % t.orig)
+    target = out or P.game_file(t.file)
+
+    ar = xp3.Archive.read(base)
+    rebuild_fonts.apply_fonts(ar)
+    files = text_files()
+    plain = _apply_text(ar, base, files) if files else {}
+    ar.save(target)
+    print("wrote %s from %s (3 fonts + %d text files)" % (target, t.orig, len(files)))
+
+    if verify and files:
         chk = os.path.join(UI, "verify")
         shutil.rmtree(chk, ignore_errors=True)
-        bad = [n for n in files
-               if open(garbro_extract(target, n, chk), "rb").read() != plain[n]]
+        bad = []
+        for n in files:
+            with open(garbro_extract(target, n, chk), "rb") as f:
+                if f.read() != plain[n]:
+                    bad.append(n)
         print("verify: %d/%d files read back byte-identical" % (len(files) - len(bad), len(files)))
         if bad:
             sys.exit("MISMATCH: " + ", ".join(bad))
+
+
+def cmd_pack_text(out: str | None = None, verify: bool = True):
+    if not text_files():
+        sys.exit("nothing under " + TEXT)
+    build_data(out, verify)
 
 
 if __name__ == "__main__":
