@@ -1,21 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-QC for translated scenarios. Run after `import`, before `pack`.
-  qc.py <substr|all> [all-ages|r18]        (default: all-ages)
-Checks (on the post-import json + strings CSV of the chosen corpus):
-  1 untranslated  : CN slot still has Han/kana  (=> □ or original Chinese on screen)
-  2 missing glyph : char in CN slot not in Sarabun-merged.ttf cmap  (=> □)
-  3 tag preserve  : control codes (%NN; [..] \\n ${..} 【】) count en vs th mismatch
-  4 overflow      : len(th)/len(en) > 1.7  (may overflow textbox)
-  5 glossary      : en has glossary key but th missing its value
-Exit 1 if any untranslated or missing-glyph (hard errors).
-
-เดิมไฟล์นี้มีตัวเดินบล็อกเป็นของตัวเอง ซึ่งรับแค่ 4 ช่องภาษา แปลว่าตอนเอามา
-ตรวจฝั่ง R18 (ที่มี 5 ช่อง) มันข้ามบทพูดทั้งหมดไปเงียบๆ แล้วรายงานว่าผ่าน
-ทั้งที่ยังไม่ได้ตรวจอะไรเลย — ตอนนี้ใช้ layout ตัวเดียวกับ pipeline โดยเลือก
-ตามคลังที่กำลังตรวจ (ดู tools/scenario.py)
-"""
 import os, sys, csv, json, re
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -64,7 +48,6 @@ def main():
         else: print("  [1] untranslated: 0 ✓")
         if miss: print(f"  [2] MISSING GLYPH: {[(c,hex(ord(c)),n) for c,n in miss.items()]}"); hard+=1
         else: print("  [2] missing glyph: 0 ✓")
-    # CSV-based checks (tag/overflow/glossary)
     if os.path.exists(csv_path):
         rows=[r for r in csv.DictReader(open(csv_path,encoding="utf-8-sig"))
               if (sub=="all" or sub in r["file"]) and r["th"].strip()]

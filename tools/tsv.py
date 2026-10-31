@@ -36,34 +36,34 @@ def _rows(prefix: str) -> list[dict]:
         return [r for r in csv.DictReader(f) if r["file"].startswith(prefix)]
 
 
-def _read_th(prefix: str) -> dict[str, str]:
-    """อ่าน th/<prefix>.tsv -> {idx: คำแปล}"""
+def read_th(path: str) -> dict[str, str]:
     out: dict[str, str] = {}
-    with open(os.path.join(P.TH_DIR, prefix + ".tsv"), encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
-            line = line.rstrip("\n")
-            if not line:
-                continue
-            i, t = line.split("\t", 1)
-            out[i] = t
+            if line.strip():
+                i, t = line.rstrip("\n").split("\t", 1)
+                out[i] = t
     return out
 
 
+def _read_th(prefix: str) -> dict[str, str]:
+    return read_th(os.path.join(P.TH_DIR, prefix + ".tsv"))
+
+
+def prefix(name: str) -> str:
+    return re.match(r"^\d+[a-z]?", name).group(0)
+
+
 def is_control(row: dict) -> bool:
-    """แถวคำสั่ง/เอฟเฟกต์ — ไม่มีตัวอักษร CJK เลยแปลว่าไม่ใช่บทพูด"""
     return not any(ord(c) > 0x3000 for c in row["jp"])
 
 
 def kind(s: str) -> str:
-    """"D" = บทพูด (ขึ้นต้นด้วยวงเล็บญี่ปุ่น) · "N" = บรรยาย"""
-    s = re.sub(r"^(%\d+;)+", "", s.lstrip())      # %184; = font-size tag, not text
+    s = re.sub(r"^(%\d+;)+", "", s.lstrip())
     return "D" if s.startswith("「") or s.startswith("『") else "N"
 
 
-# ────────────────────────────────────────────────────────────── คำสั่ง
-
 def cmd_dump(prefix: str) -> int:
-    """เขียน th/<prefix>.src.tsv (idx, ผู้พูด, jp, en) ตัดแถวคำสั่งออก"""
     rows = _rows(prefix)
     control = [r for r in rows if is_control(r)]
     text = [r for r in rows if not is_control(r)]
@@ -85,7 +85,6 @@ def cmd_dump(prefix: str) -> int:
 
 
 def cmd_merge(prefix: str) -> int:
-    """เอา th/<prefix>.tsv กลับเข้าคอลัมน์ th ของ strings_cn.csv"""
     th = _read_th(prefix)
     with open(P.CSV_CN, encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
@@ -110,11 +109,6 @@ def cmd_merge(prefix: str) -> int:
 
 
 def cmd_align(prefix: str) -> int:
-    """เตือน idx ที่โครงสร้างวงเล็บของคำแปลไม่ตรงกับต้นฉบับ
-
-    บทพูดที่กลายเป็นบรรยาย (หรือกลับกัน) มักแปลว่าเลื่อนบรรทัดกันไปแล้ว
-    ซึ่งในเกมจะเห็นเป็นคำแปลไปโผล่ผิดคน — จับตอนนี้ถูกกว่าจับตอนเล่น
-    """
     th = _read_th(prefix)
     bad = []
     for r in _rows(prefix):
