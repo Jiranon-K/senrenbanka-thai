@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v1.3-f2802b?style=for-the-badge" alt="v1.3">
+  <img src="https://img.shields.io/badge/version-v1.3.1-f2802b?style=for-the-badge" alt="v1.3.1">
   <img src="https://img.shields.io/badge/script-86%2F86%20chapters-2f9e44?style=for-the-badge" alt="86/86">
   <img src="https://img.shields.io/badge/supports-R18%20patch-6741d9?style=for-the-badge" alt="R18">
   <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-2b6cb0?style=for-the-badge" alt="Windows">
@@ -15,6 +15,11 @@
 <p align="center">
   <a href="../../releases/latest"><b>⬇️ ดาวน์โหลดแพตช์ล่าสุด</b></a>
 </p>
+
+> [!NOTE]
+> **คำแปลทั้งหมดแปลด้วย AI** (Claude ของ Anthropic) ทั้งบทพูดและเมนู แล้วตรวจด้วยสคริปต์
+> (บรรทัดเลื่อน · ข้อความหาย · ตัวอักษรขาด · ล้นกล่อง) — สำนวนอาจแข็งหรือแปลผิดบางจุด
+> เจอตรงไหนแปลก แจ้งได้ที่ [Issues](../../issues) พร้อมภาพหน้าจอ
 
 <p align="center">
   <img src="docs/screenshots/title.webp" alt="หน้าไตเติลภาษาไทย" width="820">
@@ -26,7 +31,7 @@
 
 | | |
 |:--:|---|
-| **1** | โหลด `senrenbanka-thai-patch-v1.3.zip` จากหน้า [Releases](../../releases/latest) แล้วแตกไฟล์ไว้ที่ไหนก็ได้ — **ไม่ต้อง**แตกทับโฟลเดอร์เกม |
+| **1** | โหลด `senrenbanka-thai-patch-v1.3.1.zip` จากหน้า [Releases](../../releases/latest) แล้วแตกไฟล์ไว้ที่ไหนก็ได้ — **ไม่ต้อง**แตกทับโฟลเดอร์เกม |
 | **2** | ดับเบิลคลิก `SenrenBanka-Thai-Patch.exe` แล้วกดถัดไป มันหาโฟลเดอร์เกมให้เอง |
 | **3** | เปิดเกม → **Config** → **Language** → เลือก **Chinese (Simplified)** → ได้ภาษาไทยทันที |
 
@@ -52,7 +57,7 @@
 | **ฉากเพิ่มเติม** (แพตช์ R18) | 🟩🟩🟩🟩⬜ **82.0%** · 45,806/55,846 บรรทัด | ที่เหลือเกือบทั้งหมดเป็นบทพูดในฉาก H — ขึ้นเป็นภาษาจีนเดิม เกมไม่พัง |
 | **เมนู / ระบบ** | 🟩🟩🟩🟩🟩 **100%** · ข้อความ + ปุ่มและหัวข้อที่เป็นรูปภาพ (917 จุด) | หน้าไตเติล ตั้งค่า บันทึก/โหลด ผังเรื่อง เอ็กซ์ตร้า ฯลฯ — โลโก้เกมคงไว้ตามเดิม |
 
-> v1.3 แปลปุ่มและหัวข้อที่เป็นรูปภาพทั้งเกม และคำอธิบายในหน้าตั้งค่า — อัปเดตจากรุ่นเก่าต้องกด "ถอดแพตช์" ก่อนแล้วค่อยลงใหม่
+> v1.3.1 ปุ่มเลือกภาษามุมขวาบนของหน้าไตเติลขึ้นเป็น "ภาษาไทย" · v1.3 แปลปุ่มและหัวข้อที่เป็นรูปภาพทั้งเกม — อัปเดตจากรุ่นเก่าต้องกด "ถอดแพตช์" ก่อนแล้วค่อยลงใหม่
 > (v1.2: แก้บทพูดที่เลื่อน ตัดคำหยาบ · [สรุปการตรวจ](docs/audit-2026-10.md))
 
 รายบทดูได้ที่ [PROGRESS.md](thai_work/PROGRESS.md) และ [PROGRESS_R18.md](thai_work/PROGRESS_R18.md)
@@ -167,7 +172,7 @@ thai_work/       คำแปลไทยทั้งหมด + progress tracke
 **ทำชุดติดตั้งเอง**
 
 ```powershell
-python tools/build_release.py --version 1.3 --gui
+python tools/build_release.py --version 1.3.1 --gui
 ```
 
 **เทส**
@@ -200,6 +205,6 @@ bash   tools/test_installer.sh <ชุดติดตั้ง>
 
 - เกม บท และภาพทั้งหมด — ลิขสิทธิ์ **Yuzusoft / NekoNyan**
 - โค้ดเครื่องมือ (`tools/`) — [MIT](LICENSE)
-- คำแปลไทย (`thai_work/`) — งานแปลแฟน เพื่อการศึกษา/ใช้ส่วนตัว
+- คำแปลไทย (`thai_work/`) — แปลด้วย AI (Claude) ผ่าน `tools/mt.py` แล้วตรวจด้วยสคริปต์ · งานแฟน เพื่อการศึกษา/ใช้ส่วนตัว
 - ฟอนต์ **Sarabun** (ตัวติดตั้ง) — OFL, `OFL.txt` อยู่ข้างไฟล์
 - ฟอนต์ในเกมสร้างจาก **Source Han Sans SC** ตาม OFL — ชื่อ reserved ห้าม redistribute, build เองเท่านั้น
