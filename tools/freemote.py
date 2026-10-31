@@ -25,10 +25,10 @@ class FreeMote:
                 _text(p.stdout), _text(p.stderr)))
         return p
 
-    def decompile(self, src: str, out_dir: str | None = None) -> str:
+    def decompile(self, src: str, out_dir: str | None = None, raw: bool = False) -> str:
         src = os.path.abspath(src)
         stem = os.path.splitext(src)[0]
-        self._call([self.decompile_exe, src])
+        self._call([self.decompile_exe] + (["-raw"] if raw else []) + [src])
         js = stem + ".json"
         if not os.path.exists(js):
             raise FreeMoteError("PsbDecompile wrote no json for " + src)
@@ -46,7 +46,7 @@ class FreeMote:
         base = os.path.basename(js)[:-5]
         self._call([self.build_exe, js], cwd=out_dir)
         dst = os.path.join(out_dir, base + ext)
-        for cand in (base + ".pure.scn", base + ".psb"):
+        for cand in (base + ".pure" + ext, base + ".pure.scn", base + ".psb"):
             made = os.path.join(out_dir, cand)
             if os.path.exists(made):
                 shutil.move(made, dst)

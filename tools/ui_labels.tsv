@@ -1,0 +1,36 @@
+sheet	layer	kind	cn	thai
+sys_base	bg#1	title	系统设定	ตั้งค่าระบบ
+sys_base	tab_image	tab	画面显示	การแสดงผล
+sys_base	tab_game1~1	tab	游戏设置1	ตั้งค่าเกม 1
+sys_base	tab_game1~2	tab	游戏设置2	ตั้งค่าเกม 2
+sys_base	tab_txt	tab	文本	ข้อความ
+sys_base	tab_sound	tab	音频	เสียง
+sys_base	tab_dialog	tab	确认	การยืนยัน
+sys_base	tab_mouse	tab	鼠标	เมาส์
+sys_base	tab_keyboard	tab	键盘	คีย์บอร์ด
+sys_base	back	button	回到游戏	กลับสู่เกม
+sys_base	title	button	回到标题界面	กลับหน้าไตเติล
+sys_base	reset	button	恢复默认设置	คืนค่าเริ่มต้น
+sys_page0	content_bg#1	heading	显示模式	โหมดแสดงผล
+sys_page0	content_bg#2	heading	画面比例	อัตราส่วนภาพ
+sys_page0	content_bg#3	heading	画面效果	เอฟเฟกต์ภาพ
+sys_page0	content_bg#4	heading	动画效果	เอฟเฟกต์แอนิเมชัน
+sys_page0	content_bg#5	heading	ESC键功能	การทำงานของปุ่ม ESC
+sys_page0	content_bg#6	heading	老板键功能	การทำงานของปุ่มบอส
+sys_page0	content_bg#7	heading	让游戏画面始终位于最前	แสดงหน้าต่างเกมไว้บนสุดเสมอ
+sys_page0	content_bg#8	heading	功能区域开关	แสดง/ซ่อนส่วนต่าง ๆ บนหน้าจอ
+sys_page0	content_bg#9	heading	章节标题显示时间	เวลาแสดงชื่อบท
+sys_page0	content_bg#10	heading	背景音乐曲名显示时间	เวลาแสดงชื่อเพลง BGM
+sys_page0	content_bg#11	heading	显示说话人表情	แสดงใบหน้าผู้พูด
+sys_page0	window	button	窗口	หน้าต่าง
+sys_page0	fullscreen	button	全屏	เต็มจอ
+sys_page0	rclick	button	鼠标右键	คลิกขวา
+sys_page0	scramble	button	老板键	ปุ่มบอส
+sys_page0	min	button	最小化	ย่อหน้าต่าง
+sys_page0	graphic01	button	图片1	ภาพ 1
+sys_page0	graphic02	button	图片2	ภาพ 2
+sys_page0	userselect	button	用户指定	กำหนดเอง
+sys_page0	Progresicon	button	状态图标	ไอคอนสถานะ
+sys_page0	Progresmeter	button	进度条	แถบความคืบหน้า
+sys_page0	windowmenu	button	窗口菜单	เมนูหน้าต่าง
+sys_page0	touchui	button	触控按钮	ปุ่มสัมผัส

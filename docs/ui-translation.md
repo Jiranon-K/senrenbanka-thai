@@ -1,5 +1,24 @@
 # UI translation — menus, buttons, system text
 
+> **Status 2026-10-31 — image pilot:** System Config → Image page (`sys_base`, `sys_page0`,
+> 70 layers) is drawn in Thai by `python tools/ui_render.py sys_base sys_page0` and packed by
+> `python tools/ui_assets.py pack-text`, which now also rebuilds every sheet that has a folder in
+> `thai_work/ui/th/`. Spec: `docs/agent/specs/ui-image-pilot-system-config.md`.
+>
+> How `ui_render.py` works: the CN text is located by comparing the CN layer with its JP and EN
+> twins (CN must differ from both, and from a 9 px median of itself, so text shared by two
+> languages or semi-transparent pills does not fool it). The background is rebuilt by tiling a
+> text-free strip from the same rows, using the strip's own repeat period so the checker pattern
+> stays aligned; tab text on transparency is simply cleared. Thai is shaped with harfbuzz and
+> rasterized with FreeType (Pillow here has no libraqm, so it would stack ั + ้ wrongly).
+> Headings and the title use Noto Serif Thai (OFL, `thai_work/fonts/ui/`, downloaded from
+> google/fonts); buttons and tabs use Sarabun SemiBold. Wording lives in `tools/ui_labels.tsv`.
+>
+> Verified in game 2026-10-31: the engine loads FreeMote-rebuilt sheets, including layers rebuilt
+> from PNG (stored as TLG0-wrapped TLG5). `build_data` needs `thai_work/fonts/variants/*.ttf` and
+> `thai_work/dataxp3/font/*.otf`; both can be re-extracted from the shipped `data.xp3` and from
+> `data.xp3.bak` with `garbro_extract.ps1 -Filter "font/SourceHanSansSC-*"`.
+
 > **Status 2026-10-26:** image translation was cancelled. All text-based UI is translated
 > and packed into `data.xp3` with `python tools/ui_assets.py pack-text` (10 files,
 > read back byte-identical through GARbro). The translated files live in

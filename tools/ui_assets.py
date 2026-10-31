@@ -175,10 +175,14 @@ def _apply_text(ar, base: str, files: dict[str, str]) -> dict:
     for n, src in files.items():
         with open(os.path.join(TEXT, src), "rb") as f:
             plain[n] = f.read()
+    return _apply_plain(ar, base, plain)
+
+
+def _apply_plain(ar, base: str, plain: dict[str, bytes]) -> dict:
     os.makedirs(KS, exist_ok=True)
     req = os.path.join(KS, "req.tsv")
     with open(req, "w", encoding="utf-8") as fh:
-        for n in files:
+        for n in plain:
             fh.write("%s\t%d\n" % (n, len(plain[n])))
     r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
                         os.path.join(P.TOOLS, "xp3_keystream.ps1"), "-Archive", base,
@@ -199,6 +203,63 @@ def _apply_text(ar, base: str, files: dict[str, str]) -> dict:
     return plain
 
 
+TH = os.path.join(UI, "th")
+SHEET_ENTRY = "uipsd/cn/%s_cn.pimg"
+
+
+def image_sheets() -> list[str]:
+    return sorted(d for d in os.listdir(TH) if os.path.isdir(os.path.join(TH, d))
+                  and not d.startswith("_")) if os.path.isdir(TH) else []
+
+
+def thai_layers(sheet: str) -> dict[str, str]:
+    from PIL import Image
+    out, bad = {}, []
+    for png in sorted(glob.glob(os.path.join(TH, sheet, "*.png"))):
+        name = os.path.basename(png)
+        ref = os.path.join(TODO, sheet, name)
+        if not os.path.exists(ref):
+            bad.append("%s: no CN original in todo/%s" % (name, sheet))
+            continue
+        with Image.open(png) as a, Image.open(ref) as b:
+            if a.size != b.size or a.mode != "RGBA":
+                bad.append("%s: %s %s, want %s RGBA" % (name, a.size, a.mode, b.size))
+                continue
+        out[name.split("_", 1)[0]] = png
+    if bad:
+        sys.exit("%s: bad Thai layers\n  " % sheet + "\n  ".join(bad))
+    return out
+
+
+def build_sheet(base: str, sheet: str) -> bytes:
+    entry = SHEET_ENTRY % sheet
+    work = os.path.join(UI, "build", sheet)
+    shutil.rmtree(work, ignore_errors=True)
+    src = garbro_extract(base, entry, os.path.join(work, "src"))
+    if not os.path.exists(src):
+        sys.exit("could not extract %s from %s" % (entry, base))
+    pimg = os.path.join(work, os.path.basename(src))
+    shutil.copyfile(src, pimg)
+    js = freemote.default().decompile(pimg, raw=True)
+    resx = os.path.splitext(js)[0] + ".resx.json"
+    meta = json.load(open(resx, encoding="utf-8"))
+    res = meta["Resources"]
+    layers_ = thai_layers(sheet)
+    missing = [lid for lid in layers_ if lid not in res]
+    if missing:
+        sys.exit("%s: layer ids not in sheet: %s" % (sheet, ", ".join(missing)))
+    for lid, png in layers_.items():
+        rel = os.path.splitext(res[lid])[0] + ".png"
+        shutil.copyfile(png, os.path.join(work, rel))
+        res[lid] = rel
+    with open(resx, "w", encoding="utf-8") as fh:
+        json.dump(meta, fh, ensure_ascii=False, indent=2)
+    built = freemote.default().build(js, os.path.join(work, "out"), ext=".pimg")
+    print("  %-32s %d Thai layers" % (entry, len(layers_)))
+    with open(built, "rb") as f:
+        return f.read()
+
+
 def build_data(out: str | None = None, verify: bool = True):
     import xp3
     import targets as T
@@ -212,11 +273,20 @@ def build_data(out: str | None = None, verify: bool = True):
     ar = xp3.Archive.read(base)
     rebuild_fonts.apply_fonts(ar)
     files = text_files()
-    plain = _apply_text(ar, base, {n: n for n in files}) if files else {}
+    sheets = image_sheets()
+    plain = {}
+    for n in files:
+        with open(os.path.join(TEXT, n), "rb") as f:
+            plain[n] = f.read()
+    for sheet in sheets:
+        plain[SHEET_ENTRY % sheet] = build_sheet(base, sheet)
+    if plain:
+        _apply_plain(ar, base, plain)
     ar.save(target)
-    print("wrote %s from %s (3 fonts + %d text files)" % (target, t.orig, len(files)))
+    print("wrote %s from %s (3 fonts + %d text files + %d image sheets)"
+          % (target, t.orig, len(files), len(sheets)))
 
-    if verify and files:
+    if verify and plain:
         verify_text(target, plain)
 
 

@@ -142,6 +142,7 @@ tools/
   mt.py          แปลด้วย Claude API (Message Batches) ผูกกับ idx + ตรวจบรรทัดเลื่อน
   hfilter.py     คัดบรรทัดฉาก H ออกจาก R18 ก่อนส่ง mt.py
   ui_assets.py   ข้อความเมนู/ระบบใน data.xp3 : pack-text (ดู docs/ui-translation.md)
+  ui_render.py   วาดไทยทับเมนูภาพ ตามตาราง ui_labels.tsv -> thai_work/ui/th/ (pip: uharfbuzz freetype-py)
   qc.py          ตรวจก่อน pack — ไม่แปล / ไม่มี glyph / tag หาย / ล้นกล่อง
   track.py       สแกนความคืบหน้า -> scenarios.json + PROGRESS.md
   build_release.py  ทำชุดติดตั้ง (diff -> ตรวจย้อนกลับ -> .bat -> zip)
