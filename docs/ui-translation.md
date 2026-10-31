@@ -6,6 +6,10 @@
 > `thai_work/ui/text/main/` — gitignored, because they keep the game's Japanese comments.
 > 68 flowchart choice labels from sex scenes are left in Chinese on purpose.
 >
+> `patch.xp3` carries its own copy of `help_sys_cn.txt` (identical to the CN original in
+> `data.xp3`) and the game reads it first. `pipeline_cn.py pack patch.xp3` therefore packs the
+> Thai `main/help_sys_cn.txt` into `patch.xp3` too (`ui_assets.SHADOWED`, rule R16).
+>
 > The size limit described below no longer applies to entries packed with
 > `xp3.Archive.replace_sized`: the cx cipher is a pure XOR, so `tools/xp3_keystream.ps1`
 > gets a keystream of any length from GARbro, and the rebuilt index records the new sizes.
