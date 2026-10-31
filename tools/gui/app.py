@@ -1,21 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-app.py — หน้าต่างติดตั้งแพตช์แปลไทย (Windows native, tkinter)
-
-    python tools/gui/app.py
-    python tools/gui/build/build_gui.py --out <โฟลเดอร์ชุดติดตั้ง>
-
-เป็นโปรแกรมหน้าต่างจริงๆ: widget ของ Windows ล้วน มีปุ่มบน taskbar
-ไม่มีเบราว์เซอร์ ไม่มี HTTP server ไม่เปิดพอร์ต ไม่ต้องพึ่ง WebView2
-
-หน้าตาแบบ shadcn/ui (zinc + มุมโค้ง) — โครงหน้าจอเดิมมาจาก Claude Design
-โปรเจกต์ "Fan-translation mod installer"
-(โทเคนอยู่ใน theme.py, คอมโพเนนต์อยู่ใน widgets.py, รูปทรงโค้งอยู่ใน shape.py,
-เปลือกหน้าต่างอยู่ใน window.py)
-
-ตรรกะทั้งหมดอยู่ใน core.py — ไฟล์นี้เป็นแค่หน้าจอกับการเดินสถานะ
-"""
 from __future__ import annotations
 
 import os
@@ -37,19 +21,13 @@ import window                                                 # noqa: E402
 
 WIN_W, WIN_H = 880, 600
 STEPS = ["หาโฟลเดอร์เกม", "รายการติดตั้ง", "ติดตั้ง", "เสร็จสิ้น"]
-CONTENT_W = 420          # max-width ของคอลัมน์เนื้อหาในไฟล์ดีไซน์
+CONTENT_W = 420
 STEP_OF = {"locate": 0, "components": 1, "working": 2, "done": 3, "error": 3}
 
-# แผงภาพด้านขวา — กินพื้นที่ที่ว่างอยู่แล้วพอดี ไม่ทับอะไรเลย:
-#   แนวนอน  เริ่มที่ 212 (แถบซ้าย) + 30 (ระยะขอบ) + 420 (คอลัมน์เนื้อหา) = 662
-#   แนวตั้ง  ใต้แถบหัว (44) ถึงเหนือแถวปุ่ม (600 - 74 = 526)
-# ตัวภาพ bg.png กว้าง 280 แต่ 24% ทางซ้ายใสสนิท จึงวางชิดขวาแล้วให้ส่วนที่
-# เกินออกไปทางซ้ายถูก canvas ตัดทิ้ง — ขอบซ้ายที่เห็นจึงจางเป็นศูนย์พอดี
-LOGO_PX = 20             # เครื่องหมายมุมบนซ้าย (ดีไซน์เดิมเป็นสี่เหลี่ยม 18 px)
+LOGO_PX = 20
 BG_X, BG_Y = 662, 44
 BG_W, BG_H = 880 - 662, 600 - 74 - 44
 
-# ปุ่มท้ายจอเปลี่ยนความหมายตามหน้า — ตารางเดียวจบ อ่านง่ายกว่ากระจาย if
 FOOTER = {
     "locate":     ("ถัดไป",   "ปิด",     "",                        False),
     "components": ("ติดตั้ง", "ปิด",     "",                        True),
@@ -59,20 +37,16 @@ FOOTER = {
 }
 
 
-# การ์ดในหน้ารายการ: บรรทัดอธิบายใต้ชื่อ (ชื่อมาจาก manifest ของแต่ละรุ่น)
 COMP_DESC = {
     "patch.xp3": "บทพูดเนื้อเรื่องหลักทุกเส้นทาง",
     "data.xp3":  "ฟอนต์ไทยและไฟล์ระบบของเกม",
     "adult.xp3": "ให้ฉากของแพตช์ R18 เป็นภาษาไทยด้วย",
 }
-CARD_H = 62              # ความสูงการ์ดหนึ่งใบ
+CARD_H = 62
 CARD_GAP = 8
 
-# บอกให้ครบว่า "ใครทำ" กับ "ไม่ใช่ของใคร" ในบรรทัดเดียว โดยไม่ใส่ชื่อคนแปล
 CREDIT = "งานแปลโดยแฟนเกม · ไม่ใช่ฉบับทางการ"
 
-# core.Step -> ข้อความในแถบสถานะ ("%s" = ชื่อไฟล์)
-# core ไม่รู้จักภาษาไทยสักคำ คำที่ผู้ใช้อ่านอยู่ที่นี่ที่เดียว
 STEP_TEXT = {
     core.Step.HASH:    "ตรวจ %s",
     core.Step.BACKUP:  "สำรองไฟล์ต้นฉบับ",
@@ -91,11 +65,6 @@ def mb(n: int) -> str:
 
 
 class Installer:
-    """เรื่องราวของการติดตั้ง — หาโฟลเดอร์เกม ตรวจ แปะ เสร็จ/ล้ม
-
-    เปลือกหน้าต่าง (สร้าง Tk, ถอดแถบหัว, ลาก, เข้า/ออก, โลโก้, แผงภาพ)
-    อยู่ใน window.py ทั้งหมด ไฟล์นี้เรียกผ่าน self.win
-    """
 
     def __init__(self):
         self.win = window.Window("Senren Banka — แพตช์แปลไทย", (WIN_W, WIN_H),
@@ -105,13 +74,13 @@ class Installer:
         self.q: queue.Queue = queue.Queue()
         self.cancel = threading.Event()
         self.plan: core.Plan | None = None
-        self.manifest: dict | None = None      # manifest.json ของชุดติดตั้ง
-        self.game_dirs: list[str] = []         # โฟลเดอร์เกมที่หาเจอ
-        self.screen = None         # ยังไม่มีหน้าไหนถูกแสดง -> หน้าแรกได้อนิเมชันด้วย
+        self.manifest: dict | None = None
+        self.game_dirs: list[str] = []
+        self.screen = None
         self.job: str | None = None
         self.busy = False
         self.installed = False
-        self.r18_locked = False    # adult.xp3 เป็น build ที่ไม่รองรับ -> ลงได้แค่ all-ages
+        self.r18_locked = False
         self.w_r18_row = None
         self._debounce = None
 
@@ -122,7 +91,6 @@ class Installer:
         self.root.after(1, self.win.appear)
 
     def _pump(self):
-        """งานจาก worker thread เข้ามาทาง queue — Tk แตะได้จาก thread เดียวเท่านั้น"""
         while True:
             try:
                 fn = self.q.get_nowait()
@@ -138,7 +106,6 @@ class Installer:
         self.q.put(fn)
 
     def work(self, fn):
-        """รันงานหนักบน thread แยก ไม่ให้หน้าต่างค้าง"""
         def wrap():
             try:
                 fn()
@@ -154,10 +121,7 @@ class Installer:
         self.busy = True
         threading.Thread(target=wrap, daemon=True).start()
 
-    # ------------------------------------------------------------ โครงจอ
     def _build(self):
-        # กรอบ 1px รอบหน้าต่าง — ในดีไซน์คือ border: 1px solid rgba(43,33,27,.35)
-        # จำเป็นเมื่อไม่มีแถบหัวของระบบ ไม่งั้นหน้าต่างจะกลืนกับพื้นหลังสีขาว
         r = tk.Frame(self.root, bg=T.BG, highlightthickness=1,
                      highlightbackground=T.BORDER, highlightcolor=T.BORDER)
         r.pack(fill="both", expand=True)
@@ -165,7 +129,6 @@ class Installer:
         r.grid_rowconfigure(1, weight=1)
         r.grid_columnconfigure(0, weight=1)
 
-        # ── แถบหัวที่วาดเอง: เครื่องหมาย + ชื่อ + เวอร์ชัน + ย่อ/ปิด
         head = tk.Frame(r, bg=T.BG, height=T.S(44))
         head.grid(row=0, column=0, sticky="ew")
         head.grid_propagate(False)
@@ -185,7 +148,6 @@ class Installer:
         self.b_min.pack(side="left")
         self.b_close.pack(side="left")
 
-        # ลากหน้าต่างจากแถบหัว (เว้นปุ่ม) เหมือนแถบหัวของระบบ
         self.win.drag_from(head, mark, title, self.w_version)
 
         body = tk.Frame(r, bg=T.BG)
@@ -193,8 +155,6 @@ class Installer:
         body.grid_columnconfigure(1, weight=1)
         body.grid_rowconfigure(0, weight=1)
 
-        # ── แถบซ้าย: 4 ขั้น + เครดิต
-        # แถบข้างแบบ <Sidebar> ของ shadcn: พื้น zinc-50 + เส้นขอบขวา 1px
         rail = tk.Frame(body, bg=T.SIDEBAR, width=T.S(212))
         rail.grid(row=0, column=0, sticky="nsw")
         rail.grid_propagate(False)
@@ -227,13 +187,10 @@ class Installer:
             "done": self._screen_done(content),
             "error": self._screen_error(content),
         }
-        # ใช้ place ไม่ใช่ grid: อนิเมชันเลื่อนขึ้นตอนเปลี่ยนหน้าขยับแค่ลูกตัวเอง
-        # ถ้าใช้ grid แล้วขยับ pady ทุกเฟรม Tk จะคำนวณผังทั้งหน้าต่างใหม่ทุกเฟรม
         for f in self.screens.values():
             f.place(x=0, y=0, relwidth=1.0, relheight=1.0)
             f.place_forget()
 
-        # ── ท้ายจอ
         foot = tk.Frame(main, bg=T.BG, height=T.S(74))
         foot.grid(row=1, column=0, sticky="ew")
         foot.grid_propagate(False)
@@ -249,10 +206,6 @@ class Installer:
         self.b_cancel.pack(side="left", padx=(0, T.S(8)))
         self.b_primary.pack(side="left")
 
-        # เครดิตอยู่ล่างสุดของหน้าต่าง ไม่ใช่ลอยกลางแถบซ้าย — มันเป็นข้อความกำกับ
-        # ไม่ใช่เนื้อหา จึงควรพ้นทางสายตาที่กำลังไล่อ่านขั้นตอนอยู่
-        # วางบน body ไม่ใช่ใน rail: rail กว้างตายตัว 212 px ถ้าเครื่องไหน
-        # เรนเดอร์ฟอนต์กว้างกว่านี้ ข้อความจะโดนตัดหาย
         self.w_credit = W.label(body, CREDIT, 11, fg=T.TEXT_45, bg=T.SIDEBAR)
         self.w_credit.place(x=T.S(26), rely=1.0, y=-T.S(16), anchor="sw")
 
@@ -261,7 +214,6 @@ class Installer:
         self.root.protocol("WM_DELETE_WINDOW", self.on_cancel)
         self.root.bind("<Escape>", lambda _e: self.on_cancel())
 
-    # ------------------------------------------------------------- แต่ละหน้า
     def _screen_locate(self, parent):
         f = tk.Frame(parent, bg=T.BG)
         W.label(f, "เลือกโฟลเดอร์เกม", 20, bold=True).pack(anchor="w")
@@ -306,7 +258,6 @@ class Installer:
         self.w_stage.pack(anchor="w", pady=(T.S(6), T.S(30)))
         self.w_pct = W.label(f, "0%", 38, bold=True)
         self.w_pct.pack(anchor="w", pady=(0, T.S(12)))
-        # ตัวเลขเดินตามแถบเสมอ (แถบเป็นเจ้าของค่า) จะได้ไม่มีทางขัดกันเอง
         self.w_bar = W.ProgressBar(f, width=T.S(420), on_value=self._show_pct)
         self.w_bar.pack(anchor="w")
         return f
@@ -333,7 +284,6 @@ class Installer:
         self.w_err_title.pack(anchor="w")
         self.w_err_sub = W.label(f, "", 13, fg=T.TEXT_55, wrap=CONTENT_W)
         self.w_err_sub.pack(anchor="w", pady=(T.S(6), 0))
-        # กล่อง traceback: การ์ด 420x132 (max-height:132px) ไม่ยืดเต็มจอ
         self.w_err_box = W.Card(f, T.S(CONTENT_W), T.S(132), padx=12, pady=8)
         self.w_err_detail = tk.Text(self.w_err_box.body, font=T.F(11.5), fg=T.TEXT_55,
                                     bg=T.BG, relief="flat", wrap="word",
@@ -341,7 +291,6 @@ class Installer:
         self.w_err_detail.pack(fill="both", expand=True)
         return f
 
-    # ------------------------------------------------------------ เดินสถานะ
     def show(self, screen):
         first = self.screen != screen
         self.screen = screen
@@ -352,7 +301,7 @@ class Installer:
         f.place(x=0, y=0, relwidth=1.0, relheight=1.0)
         if first:
             self._enter(f)
-            self.win.slide_backdrop(T.S(14), 0.55)      # ขยับตามนิดหน่อย ให้รู้สึกเป็นชั้นเดียวกัน
+            self.win.slide_backdrop(T.S(14), 0.55)
 
         idx = STEP_OF[screen]
         for i, (rule, lab) in enumerate(self.w_steps):
@@ -365,7 +314,6 @@ class Installer:
         self._render_footer()
 
     def _enter(self, f):
-        """หน้าใหม่เลื่อนขึ้น 14px พร้อมไล่สีตัวหนังสือขึ้นมาจากพื้น"""
         rise = T.S(14)
 
         def step(v):
@@ -384,7 +332,7 @@ class Installer:
 
         show_back = back
         if self.screen == "done" and self.installed:
-            show_back, label = True, "ถอดแพตช์"       # ดีไซน์มีปุ่ม ghost ช่องนี้อยู่แล้ว
+            show_back, label = True, "ถอดแพตช์"
         else:
             label = "ย้อนกลับ"
         self.b_back.config(text=label)
@@ -399,11 +347,6 @@ class Installer:
             self.w_stage.config(text=stage)
 
     def step_text(self, step: core.Step) -> str:
-        """core.Step -> ข้อความไทยที่ผู้ใช้เห็น
-
-        ข้อความทุกบรรทัดที่โผล่ในแถบสถานะอยู่ในตาราง STEP_TEXT ตัวเดียว
-        แก้คำหรือเพิ่มภาษาได้โดยไม่ต้องแตะ core.py เลย
-        """
         text = STEP_TEXT.get(step.kind, step.kind)
         if "%s" not in text:
             return text
@@ -412,7 +355,7 @@ class Installer:
             t = next((t for t in (self.plan.targets if self.plan else [])
                       if t.name == name), None)
             if t:
-                name += " — " + t.label      # "patch.xp3 — บทพูด (all-ages)"
+                name += " — " + t.label
         return text % name
 
     def fail(self, title, sub, detail=""):
@@ -446,7 +389,6 @@ class Installer:
         self.show("locate")
         self.refresh_detect()
 
-    # ------------------------------------------------------------- ขั้นที่ 1
     def boot(self):
         try:
             self.manifest = core.load_manifest()
@@ -459,7 +401,7 @@ class Installer:
         dirs = self.game_dirs
         if dirs:
             self.var_path.set(dirs[0])
-            self.w_path.xview_moveto(1.0)      # path ยาวกว่าช่อง — โชว์หางไว้
+            self.w_path.xview_moveto(1.0)
             self.w_locate_sub.config(
                 text="พบเกม 1 ชุด ยืนยันโฟลเดอร์เพื่อไปต่อ" if len(dirs) == 1
                 else "พบเกม %d ชุด เลือกชุดที่ต้องการ" % len(dirs))
@@ -513,7 +455,6 @@ class Installer:
             self.w_path.xview_moveto(1.0)
             self.refresh_detect()
 
-    # ------------------------------------------------------------ ตรวจ/ติดตั้ง
     def begin_verify(self):
         self.job = "verify"
         self.cancel.clear()
@@ -539,8 +480,6 @@ class Installer:
             bad = p.unsupported_files()
             r18_names = {t.name for t in p.targets if t.r18}
             if bad and set(bad) <= r18_names:
-                # เฉพาะไฟล์ฝั่ง R18 ที่ build ไม่ตรง — patch.xp3/data.xp3 ยังแปะได้
-                # จึงยังลงเวอร์ชัน all-ages ได้ ดีกว่าบอกว่า "ลงไม่ได้" แล้วจบ
                 p.include_r18 = False
                 self.r18_locked = True
                 self.render_components()
@@ -562,17 +501,12 @@ class Installer:
             self.show("components")
 
     def render_components(self):
-        """แถวรายการ + ตัวเลือกเดียวที่เลือกได้จริง: จะเอาฉาก R18 ด้วยไหม
-
-        ไฟล์บทพูดกับฟอนต์ล็อกไว้ ติ๊กออกไม่ได้ — ไม่ใช่ตัวเลือก แต่เป็นของที่ต้องมี
-        """
         for w in self.w_comps.winfo_children():
             w.destroy()
         p = self.plan
         boxes = []
 
         def card(t, title, on, badge, variant, command=None):
-            """การ์ดหนึ่งใบ: [กล่องติ๊ก] ชื่อ + ป้าย / คำอธิบาย ....... ขนาด / ชื่อไฟล์"""
             c = W.Card(self.w_comps, T.S(CONTENT_W), T.S(CARD_H))
             c.pack(anchor="w", pady=(0, T.S(CARD_GAP)))
             b = c.body
@@ -597,7 +531,7 @@ class Installer:
             return c, box, lab, size, desc, (b, right, fname, mid, top)
 
         for t in p.targets:
-            if not t.present or t.r18:      # ไฟล์ R18 รวมอยู่ในการ์ด "ฉาก R18" ใบเดียว
+            if not t.present or t.r18:
                 continue
             card(t, t.label, True, "จำเป็น", "neutral")
 
@@ -607,18 +541,15 @@ class Installer:
             c, box, lab, size, desc, parts = card(
                 adult, "ฉาก R18", p.include_r18, "ตัวเลือก", "accent",
                 command=self.toggle_r18)
-            # ทั้งใบคือที่กดติ๊ก (เหมือน <Label> ที่ครอบ checkbox ในเว็บ)
             for w in (c, lab, size, desc) + parts:
                 w.bind("<Button-1>", lambda _e: self.toggle_r18())
             c.bind("<Enter>", lambda _e: self._hover_r18(True))
             c.bind("<Leave>", lambda _e: self._hover_r18(c.pointer_inside()))
             self.w_r18_row = (box, lab, size, desc, c)
-        # ติ๊กไล่กันทีละตัว (stagger ของ anime.js) — ตาไล่อ่านรายการทันพอดี
         A.stagger(boxes, lambda _i, b, d: b.pop_in(d), gap=0.055, start=0.14)
         self._render_r18_state()
 
     def _r18_border(self, hover=False) -> str:
-        """ขอบการ์ด R18: เลือกไว้ = สีหลัก · ไม่เลือก = ปกติ (เมาส์ชี้ = เข้มขึ้นนิด)"""
         if self.plan.include_r18 and not self.r18_locked:
             return T.ACCENT
         return T.CARD_HOVER if hover and not self.r18_locked else T.DIVIDER
@@ -635,8 +566,6 @@ class Installer:
             fg = T.TEXT if p.include_r18 else T.TEXT_42
             fg2 = T.TEXT_50 if p.include_r18 else T.TEXT_42
             fg3 = T.TEXT_55 if p.include_r18 else T.TEXT_42
-            # ทวีนเปลี่ยนหน้าไล่สีจาก _fg0 อยู่ ต้องจบมันก่อนแล้วอัปเดตสีเป้าหมาย
-            # ไม่งั้นแถวจะสว่างกลับเองตอนทวีนเดินถึงเฟรมสุดท้าย
             A.finish("screen")
             lab._fg0, size._fg0, desc._fg0 = fg, fg2, fg3
             W._tint(lab, "foreground", fg, dur=0.18, tag="r18")
@@ -665,7 +594,7 @@ class Installer:
         if not p or not p.r18_available or self.r18_locked:
             return
         p.include_r18 = not p.include_r18
-        p.verified = True          # โหมด all-ages ไม่ต้องแฮช adult.xp3
+        p.verified = True
         self._render_r18_state()
 
     def begin_install(self):
@@ -706,7 +635,6 @@ class Installer:
         self.work(job)
         self._render_footer()
 
-    # ---------------------------------------------------------------- ปุ่ม
     def on_cancel(self):
         if self.busy:
             self.cancel.set()
@@ -769,8 +697,6 @@ if __name__ == "__main__":
     try:
         main()
     except BaseException:
-        # build เป็น --windowed จึงไม่มี console: ถ้าไม่เขียนลงไฟล์
-        # ผู้เล่นจะเห็นแค่ "ดับเบิลคลิกแล้วไม่มีอะไรเกิดขึ้น"
         log = os.path.join(_log_dir(), "installer-error.log")
         try:
             with open(log, "w", encoding="utf-8") as f:

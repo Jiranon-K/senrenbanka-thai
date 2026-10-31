@@ -1,28 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-targets.py — ตารางไฟล์ที่แพตช์แตะ **ที่เดียวในโปรเจกต์**
-
-เดิมตารางนี้อยู่ 5 ที่ และเพิ่ม archive สักไฟล์ต้องแก้ครบทุกที่ ใน 2 ภาษา:
-
-    1. TARGETS (tuple 5 ช่อง) ใน build_release.py
-    2. บล็อก set ที่ hardcode ชื่อตัวแปร ORIG_/THAI_ x PATCH/DATA/ADULT
-    3. รายชื่อไฟล์ใน INSTALL_BODY (for %%F in (...)) + บล็อก rollback
-    4. UNINSTALL_BODY
-    5. core.Plan.R18_FILES — ซึ่งมี adult2.xp3 ที่ไม่มีในข้อ 1 เลย
-
-ลืมที่ใดที่หนึ่ง = `.bat` กับ GUI ทำคนละอย่างกัน ซึ่งเป็นบั๊กประเภทที่ผู้เล่น
-เจอแต่คนพัฒนาไม่เจอ (คนพัฒนารัน GUI ผู้เล่นดับเบิลคลิก .bat)
-
-ตอนนี้ทุกอย่างงอกออกจากตารางนี้: manifest.json ที่ตัวติดตั้ง GUI อ่าน และ
-ชิ้นส่วนของ install.bat/uninstall.bat ที่เป็นรายการซ้ำๆ ต่อไฟล์
-
-**ส่วนที่ยังไม่ได้ generate**: ลำดับขั้นตอนใน .bat (เช็ค -> สำรอง -> แปะ)
-ยังเขียนไว้ตรงๆ เพราะมีเงื่อนไขเฉพาะของ R18 ที่ไม่เหมือนไฟล์อื่น และมี
-tools/test_installer.sh คุมอยู่แล้ว 6 เคส — แต่ build_release.py จะ assert
-ว่า .bat พูดถึงทุกไฟล์ในตารางนี้ครบ ถ้าเพิ่ม target แล้วลืมแก้ .bat จะ
-**build ไม่ผ่าน** แทนที่จะปล่อยแพตช์ครึ่งเดียวออกไป
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -30,15 +7,14 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Target:
-    """archive หนึ่งไฟล์ที่แพตช์ไทยเขียนทับ"""
 
-    file: str          # ชื่อไฟล์ในโฟลเดอร์เกม        patch.xp3
-    orig: str          # ต้นฉบับที่เอามาทำ diff        patch.xp3.bak
-    delta: str         # ไฟล์ diff ในชุดติดตั้ง        thai-patch.xdelta
-    label: str         # ป้ายไทยที่ผู้ใช้เห็น
-    required: bool     # ไม่มีไฟล์นี้ = ไม่ใช่โฟลเดอร์เกม
-    r18: bool          # ไฟล์นี้มากับแพตช์ R18
-    var: str           # ชื่อตัวแปรใน .bat  ->  ORIG_PATCH / THAI_PATCH
+    file: str
+    orig: str
+    delta: str
+    label: str
+    required: bool
+    r18: bool
+    var: str
 
     @property
     def bak(self) -> str:
@@ -52,21 +28,12 @@ TARGETS = [
            "ฟอนต์ + ข้อความเมนู", required=True, r18=False, var="DATA"),
     Target("adult.xp3", "adult.xp3.orig", "thai-adult.xdelta",
            "บทพูดฝั่ง R18", required=False, r18=True, var="ADULT"),
-    # แพตช์ R18 วาง patch_extra.xp3 ของตัวเอง (173 MB) ซึ่งมีสคริปต์ 92 บทชุดเดียวกับ
-    # adult.xp3 — เจอ 2026-10-26 ว่าเกมอ่านสคริปต์จากไฟล์นี้ ต้องแปะทั้งคู่
-    # เครื่อง Steam ล้วนก็มี patch_extra.xp3 (53 MB คนละไฟล์) จึงแปะเฉพาะโหมด R18
     Target("patch_extra.xp3", "patch_extra.xp3.orig", "thai-patchextra.xdelta",
            "บทพูดฝั่ง R18 (ชุดสำรอง)", required=False, r18=True, var="PEXTRA"),
 ]
 
-# ไฟล์ที่แพตช์ R18 เอามาวาง และต้องถูก "ปิด" (เปลี่ยนชื่อเป็น .off ไม่ใช่ลบ)
-# เมื่อผู้เล่นเลือกเวอร์ชัน all-ages — adult2.xp3 ไม่มี diff ของตัวเอง แต่ก็
-# ต้องปิดด้วย ไม่งั้นมันทับบทพูดอยู่ดี
 DISABLE_ON_ALL_AGES = ["adult.xp3", "adult2.xp3"]
 
-# ไฟล์ R18 ที่ "ไม่ปิด" ตอนเลือก all-ages: Steam เองก็มีไฟล์ชื่อนี้ เปลี่ยนชื่อทิ้ง
-# เกมจะพัง และวัดไว้แล้ว (R18_COMPAT.md) ว่าเมื่อไม่มี adult.xp3 เกมใช้บทจาก
-# patch.xp3 ครบ 86/86 บท ไฟล์นี้จึงปล่อยไว้ตามเดิมได้
 KEEP_ON_ALL_AGES = ["patch_extra.xp3"]
 
 
@@ -74,19 +41,11 @@ def by_file(name: str) -> Target | None:
     return next((t for t in TARGETS if t.file == name), None)
 
 
-# ────────────────────────────────────────── ชิ้นส่วนที่ generate ลง .bat
-
 def bat_required_files() -> str:
-    """รายชื่อไฟล์ที่ต้องมีในซิป — ใส่ใน for %%F in (...)"""
     return " ".join(["xdelta3.exe"] + [t.delta for t in TARGETS])
 
 
 def bat_hash_vars(hashes: dict) -> str:
-    """บล็อก set "ORIG_x=..." / "THAI_x=..." สำหรับทุก target
-
-    hashes = {ชื่อไฟล์: (sha ต้นฉบับ, sha หลังแปะไทย)}
-    ไฟล์ที่ไม่ได้ build รอบนี้จะได้ศูนย์ 64 ตัว ซึ่งไม่มีทางตรงกับของจริง
-    """
     zero = "0" * 64
     lines = []
     for t in TARGETS:
@@ -102,7 +61,6 @@ def _restore_line(t: Target, tail: str = "") -> str:
 
 
 def bat_rollback() -> str:
-    """คืนไฟล์ทุกตัวที่อาจถูก rename ไปแล้ว — ใช้ทั้งใน install และ uninstall"""
     return "\n".join(_restore_line(t) for t in TARGETS)
 
 
@@ -118,7 +76,6 @@ def bat_uninstall_restore() -> str:
 
 
 def check_bat_mentions_every_target(text: str, what: str):
-    """กันลืม: เพิ่ม target แล้วไม่ได้แก้ .bat ต้อง build ไม่ผ่าน"""
     missing = [t.file for t in TARGETS if t.file not in text]
     if missing:
         raise SystemExit(

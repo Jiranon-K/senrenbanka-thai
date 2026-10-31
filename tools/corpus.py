@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-corpus.py — decompile / import / recompile / pack ที่ทั้งสองสายใช้ร่วมกัน
-
-เดิมสี่คำสั่งนี้ถูกก็อปไว้ใน `pipeline_cn.py` กับ `port_r18.py` ต่างกันแค่ที่อยู่
-กับ layout ตอนนี้ต่างกันแค่ค่า `Corpus` ที่ส่งเข้ามา:
-
-    ALL_AGES_CORPUS  -> scenario.ALL_AGES (pipeline_cn.py)
-    R18_CORPUS       -> scenario.R18      (port_r18.py)
-
-**สองค่านี้ห้ามสลับกัน** — ระบบเลข idx ต่างกัน (อ่านหัวไฟล์ tools/scenario.py)
-"""
 from __future__ import annotations
 
 import csv
@@ -41,7 +30,6 @@ R18_CORPUS = Corpus("r18", P.JSON_R18, P.PSB_R18, P.CSV_R18, scenario.R18)
 
 
 def split_rows(rows) -> tuple[dict, dict]:
-    """แถว CSV -> ({file: {idx: row}}, {file: {choice n: row}}) — idx `chN` คือ choice"""
     blk, cho = {}, {}
     for r in rows:
         i = r["idx"]
@@ -61,11 +49,10 @@ def decompile(c: Corpus, srcdir: str, fm: freemote.FreeMote | None = None) -> in
 
 
 def apply(c: Corpus, sub: str | None = None) -> tuple[int, int]:
-    """th ใน CSV -> CN slot ใน json คืน (บรรทัด, ตัวเลือก)"""
     with open(c.csv, encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
     for r in rows:
-        r["th"] = r["th"].replace("～", "〜")   # FF5E -> 301C (มี glyph ในฟอนต์)
+        r["th"] = r["th"].replace("～", "〜")
     blk, cho = split_rows(rows)
 
     tot = ctot = 0
@@ -110,7 +97,6 @@ def recompile(c: Corpus, sub: str | None = None, fm: freemote.FreeMote | None = 
 
 
 def pack(c: Corpus, name: str, extract: str):
-    """เขียนสคริปต์ที่ recompile แล้วกลับเข้า archive (ดู tools/xp3.py)"""
     archive = P.game_file(name)
     ar = xp3.Archive.read(xp3.backup_once(archive))
 
@@ -118,7 +104,7 @@ def pack(c: Corpus, name: str, extract: str):
     skipped = []
     for entry, plain in ar.match_by_size(extract).items():
         myscn = mine.get(os.path.basename(plain))
-        if not myscn:                                  # บทนี้ยังไม่ได้แปล/ยังไม่ recompile
+        if not myscn:
             continue
         with open(plain, "rb") as f:
             orig = f.read()

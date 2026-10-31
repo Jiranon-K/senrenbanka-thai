@@ -1,31 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-mt.py — machine-translate scenario lines JP/EN -> Thai with Claude, one line per idx.
-
-The released patch has 1,744 lines whose Thai belongs to a different JP line
-(docs/audit-2026-10.md). This tool cannot produce that defect: every request
-asks for a JSON list keyed by `idx`, and a chunk is rejected unless it returns
-exactly the idx set it was given, with the same opening quote bracket as the JP.
-
-    python tools/mt.py sync   --csv cn --file 001 [--all]   # direct calls (pilot)
-    python tools/mt.py submit --csv cn --file 001 [--all]   # Message Batches, 50% price
-    python tools/mt.py collect <batch_id>                   # fetch batch results
-    python tools/mt.py wait <batch_id>...                   # block until batches end
-    python tools/mt.py merge 001 003 ...                    # mt/cn -> th/<prefix>.tsv
-    python tools/mt.py cost                                 # spend so far
-
---csv cn|r18 picks strings_cn.csv (all-ages) or strings_r18.csv.
-Without --all only lines whose `th` is empty are sent; --all retranslates every line.
-H scenarios (scenarios.json is_h) are never sent.
-
-Output: thai_work/mt/<csv>/<prefix>.json  {idx: thai}. Nothing in th/ or the
-CSVs is touched — review first, then merge.
-
-The key is read from REPO/.env (ANTHROPIC_API_KEY=...), never from the process
-environment, so Claude Code keeps using the subscription. Plain urllib on purpose:
-the SDK's native dependency (jiter) is blocked by Windows Application Control here.
-"""
 import os, sys, csv, json, re, time, argparse, urllib.request, urllib.error
 import functools
 from concurrent.futures import ThreadPoolExecutor
@@ -38,14 +12,13 @@ API = "https://api.anthropic.com/v1"
 VERSION = "2026-10-21"
 MODEL = "claude-sonnet-5-5"
 EFFORT = "medium"
-CHUNK = 40          # lines per request
-CONTEXT = 6         # preceding lines shown as context only
-# USD per 1M tokens for MODEL; the Batches API halves all of them
+CHUNK = 40
+CONTEXT = 6
 PRICE = {"input": 2.00, "cache_write": 2.50, "cache_read": 0.20, "output": 10.00}
 
 MT = os.path.join(P.WORK, "mt")
 USAGE_LOG = os.path.join(MT, "usage.jsonl")
-HFLAGS = os.path.join(MT, "hflags_r18.json")    # written by hfilter.py
+HFLAGS = os.path.join(MT, "hflags_r18.json")
 CSVS = {"cn": P.CSV_CN, "r18": P.CSV_R18}
 
 STYLE = """You translate the Japanese visual novel "Senren＊Banka" (Yuzusoft) into natural, fluent Thai
@@ -83,8 +56,6 @@ Register — match the original, never coarser
 Use the preceding-context lines only to understand who is speaking; do not translate them."""
 
 
-# ─────────────────────────────────────────────────────────────── data
-
 def load_key() -> str:
     env = os.path.join(P.REPO, ".env")
     for line in open(env, encoding="utf-8-sig"):
@@ -121,15 +92,10 @@ WORDS = re.compile(r"[぀-ヿ一-鿿A-Za-zＡ-Ｚａ-ｚ]")
 
 
 def is_marker(r: dict) -> bool:
-    """Engine rows the CSV carries alongside dialogue: 'bgm', 'layer', 'ch_effect0'...
-
-    Same rule as tsv.is_control — no character above U+3000 means it isn't text.
-    """
     return r["speaker_en"] in ("face", "lse") or tsv_mod.is_control(r)
 
 
 def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
-    """Yield (custom_id, prefix, context_rows, rows) for every chunk to send."""
     rows = load_rows(which)
     skip = h_files()
     by = {}
@@ -145,9 +111,6 @@ def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
             continue
         lines = by[pf]
         if which == "r18":
-            # R18 chapters interleave story and sex scenes. Only lines hfilter.py has
-            # cleared are sent — neither translated nor shown as context — and a
-            # chapter it hasn't classified is not sent at all.
             if pf not in hflags:
                 print("skip %s: not classified by hfilter.py" % pf)
                 continue
@@ -158,7 +121,7 @@ def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
                 continue
             if WORDS.search(r["jp"]):
                 todo.append(i)
-            else:                                   # 「………」 and the like: nothing to translate
+            else:
                 copied[r["idx"]] = re.sub(r"^(%\d+;)+", "", r["jp"].strip())
         if copied:
             save(which, pf, copied)
@@ -195,8 +158,6 @@ def params(ctx, rows) -> dict:
             "messages": [{"role": "user", "content": user_message(ctx, rows)}]}
 
 
-# ─────────────────────────────────────────────────────────────── checks
-
 OPEN, CLOSE = "「『（(", "」』）)"
 
 
@@ -211,7 +172,6 @@ def closer(s: str) -> str:
 
 
 def validate(rows: list, out: dict) -> list:
-    """Problems that make a chunk unusable. Empty list = accept."""
     want = [r["idx"] for r in rows]
     got = [l["idx"] for l in out.get("lines", [])]
     if sorted(got) != sorted(want):
@@ -223,13 +183,10 @@ def validate(rows: list, out: dict) -> list:
         t = th[r["idx"]]
         if not t.strip():
             bad.append("%s empty" % r["idx"])
-        elif KANA_HAN.search(t):                      # the Thai font has no kana/kanji
+        elif KANA_HAN.search(t):
             bad.append("%s kana/kanji left: %r" % (r["idx"], t[:30]))
-        # the literal two-character escape \n is a line break, not Latin text
         elif re.search(r"[฀-๿][A-Za-z]|[A-Za-z][฀-๿]", t.replace("\\n", " ")):
             bad.append("%s latin inside a thai word: %r" % (r["idx"], t[:30]))
-        # Only whole-line quotes (dialogue) must keep their brackets; a 『quote』 inside
-        # narration may legitimately move when Thai reorders the sentence.
         elif (opener(r["jp"]) and closer(r["jp"])
               and (opener(r["jp"]) != opener(t) or closer(r["jp"]) != closer(t))):
             bad.append("%s brackets %r%r vs %r%r" % (r["idx"], opener(r["jp"]), closer(r["jp"]),
@@ -256,21 +213,18 @@ def text_of(msg: dict) -> str:
     return next((b["text"] for b in msg.get("content", []) if b.get("type") == "text"), "")
 
 
-# Characters the patched game font is known to draw beyond Thai/ASCII
-# (tools/build_thai_font.py merges these CJK marks into Sarabun).
 KEEP_WIDE = set("【】「」『』、。・〜～♪！？（）―…")
-KANA_HAN = re.compile(r"[぀-ヺー-ヿ一-鿿]")   # ・ (U+30FB) is in the font
+KANA_HAN = re.compile(r"[぀-ヺー-ヿ一-鿿]")
 THAI_DIGITS = str.maketrans("๐๑๒๓๔๕๖๗๘๙", "0123456789")
 
 
 def normalize(t: str) -> str:
-    """Map characters with no glyph in the Thai font to ones that have one."""
     out = []
     for c in t.translate(THAI_DIGITS):
         if c == "　":
             c = " "
         elif 0xFF01 <= ord(c) <= 0xFF5E and c not in KEEP_WIDE:
-            c = chr(ord(c) - 0xFEE0)                  # fullwidth ASCII -> ASCII
+            c = chr(ord(c) - 0xFEE0)
         out.append(c)
     return "".join(out)
 
@@ -290,8 +244,6 @@ def accept(which, pf, rows, msg) -> list:
     return problems
 
 
-# ─────────────────────────────────────────────────────────────── http
-
 def call(method: str, path: str, body=None, key=None, raw=False):
     req = urllib.request.Request(API + path, method=method,
                                  data=json.dumps(body).encode() if body is not None else None,
@@ -308,8 +260,6 @@ def call(method: str, path: str, body=None, key=None, raw=False):
                 continue
             raise SystemExit("HTTP %d: %s" % (e.code, e.read().decode()[:500]))
 
-
-# ─────────────────────────────────────────────────────────────── commands
 
 def cmd_sync(a):
     key = load_key()
@@ -376,14 +326,9 @@ def cmd_collect(a):
 
 
 def cmd_merge(a):
-    """Write thai_work/mt/cn/<prefix>.json into th/<prefix>.tsv (all-ages only).
-
-    th/ is the translators' source of truth; afterwards run `tsv.py merge` to push
-    it into strings_cn.csv and `tsv.py align` to check dialogue/narration shape.
-    """
     order = {}
     for r in load_rows("cn"):
-        if not is_marker(r):                          # control rows never carry Thai
+        if not is_marker(r):
             order.setdefault(prefix(r["file"]), []).append(r["idx"])
     for pf in a.prefix:
         new = json.load(open(os.path.join(MT, "cn", pf + ".json"), encoding="utf-8"))
@@ -399,7 +344,6 @@ def cmd_merge(a):
 
 
 def cmd_merge_r18(a):
-    """mt/r18/<prefix>.json -> th_r18/<prefix>.tsv (tracked), then into strings_r18.csv."""
     os.makedirs(P.TH_R18_DIR, exist_ok=True)
     rows = load_rows("r18")
     for pf in a.prefix:
@@ -421,7 +365,6 @@ def cmd_merge_r18(a):
 
 
 def cmd_wait(a):
-    """Block until every listed batch has ended (meant for a background shell)."""
     key = load_key()
     while True:
         states = [call("GET", "/messages/batches/" + b, key=key) for b in a.batch_id]

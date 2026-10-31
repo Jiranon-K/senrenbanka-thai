@@ -1,20 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-widgets.py — คอมโพเนนต์หน้าตาแบบ shadcn/ui ทำเป็น Tk widget
-
-ทุกตัวเป็น widget ของ Windows จริง ไม่มี HTML/เบราว์เซอร์เข้ามาเกี่ยว
-ของที่มีมุมโค้ง (ปุ่ม ป้าย ช่องกรอก การ์ด กล่องติ๊ก แถบคืบหน้า) เป็น Canvas
-ที่แปะรูปจาก shape.py — Canvas ของ Tk วาดโค้งแบบขอบหยัก จึงไม่ใช้รูปทรงของมันเอง
-
-ตัวที่มีข้อความ (Button, Tag) ตอบ config/cget เหมือน Label: `text`,
-`foreground` และ `background` — โดย background หมายถึง **สีของรูปทรง**
-(พื้นของ canvas จริงๆ คือสีของ parent) จึงใช้ _tint ไล่สีได้เหมือนเดิมทุกอย่าง
-
-การเคลื่อนไหวทุกตัวเดินผ่าน anim.py (ตัวจับเวลากลางตัวเดียว) และผูก key ไว้กับ
-id ของ widget เสมอ เพื่อให้ทวีนตัวใหม่ล้มตัวเก่าทิ้ง — ไม่งั้นเมาส์กวาดเข้า-ออก
-เร็วๆ จะมีทวีนสองตัวแย่งกันเขียนสีเดียวกัน แล้วสีค้างผิด
-"""
 from __future__ import annotations
 
 import tkinter as tk
@@ -24,12 +9,11 @@ import anim as A
 import shape
 import theme as T
 
-HOVER = 0.13          # เมาส์เข้า/ออก — สั้นพอที่จะยังรู้สึกว่าปุ่มตอบทันที
-POP = 0.26            # กล่องติ๊ก
+HOVER = 0.13
+POP = 0.26
 
 
 def _tint(w, option, target, dur=HOVER, ease=A.out_quad, tag="c"):
-    """ไล่สีของ option หนึ่งไปหาเป้า (background / foreground)"""
     start = w.cget(option)
     if start == target:
         return
@@ -42,15 +26,10 @@ def _blend(fg: str, bg: str, alpha: float) -> str:
 
 
 def _canvas_kw(master) -> dict:
-    """Canvas ที่กลืนกับ parent — ไม่มีกรอบ พื้นสีเดียวกับที่วางอยู่"""
     return dict(bg=master.cget("bg"), highlightthickness=0, bd=0)
 
 
 class _Shape(tk.Canvas):
-    """รูปทรงมุมโค้ง + ข้อความกลาง ที่ตอบ config/cget แบบ Label
-
-    ความกว้างคิดจากข้อความ (padx ซ้ายขวา) สูงตายตัว ข้อความว่าง = ไม่วาดอะไร
-    """
 
     def __init__(self, master, text, font, fg, fill, height, padx, radius,
                  border=None, hide_empty=False):
@@ -77,7 +56,6 @@ class _Shape(tk.Canvas):
         tk.Canvas.configure(self, width=w)
         self._img = shape.rrect(self, w, h, self._radius, self._fill, self._pbg, self._border)
         self.itemconfig(self._bgitem, image=self._img)
-        # ไทยมีวรรณยุกต์ลอยด้านบน กึ่งกลาง bbox จึงต่ำกว่ากึ่งกลางตาอยู่นิด — ยกขึ้น 1px
         self.coords(self._txt, w / 2, h / 2 - T.S(0.5))
         self.itemconfig(self._txt, text=self._text, fill=self._fg)
 
@@ -115,13 +93,8 @@ class _Shape(tk.Canvas):
 
 
 class Button(_Shape):
-    """<Button variant=default|outline|ghost> ของ shadcn — สูง 36 โค้ง 6
-
-    ชื่อ variant คงชื่อเดิมไว้: primary = default, secondary = outline, ghost = ghost
-    """
 
     STYLES = {
-        # (fg,        bg,          hover_bg,       active_bg,      border)
         "primary":   (T.BG,        T.ACCENT,       T.ACCENT_600,   T.ACCENT_700,   None),
         "secondary": (T.TEXT,      T.BG,           T.HOVER_SOFT,   T.HOVER_PRESS,  T.DIVIDER),
         "ghost":     (T.TEXT,      T.BG,           T.HOVER_GHOST,  T.HOVER_PRESS,  None),
@@ -134,7 +107,6 @@ class Button(_Shape):
         self._variant = variant
         self._command = command
         self._enabled = True
-        # ghost วางบนพื้นของ parent: ตอนปกติต้องกลืนไปกับพื้นนั้นพอดี
         if variant == "ghost":
             bg = master.cget("bg")
             self._palette = (fg, bg, hov, act)
@@ -152,7 +124,6 @@ class Button(_Shape):
         self._enabled = on
         fg, bg, _, _ = self._palette
         A.cancel(("c", "background", id(self)))
-        # disabled:opacity-50 ของ shadcn — Tk ไม่มี alpha จึงผสมทุกสีกับพื้นเอง
         p = self._pbg
         self._border = (self._border0 if on or not self._border0
                         else _blend(self._border0, p, 0.5))
@@ -168,7 +139,6 @@ class Button(_Shape):
             _tint(self, "background", self._palette[1])
 
     def _on_press(self, _):
-        # ตอนกดต้องเปลี่ยนทันที ไม่ทวีน — หน่วงตรงนี้คือความรู้สึก "ปุ่มหนืด"
         if self._enabled:
             A.cancel(("c", "background", id(self)))
             self.config(bg=self._palette[3])
@@ -183,11 +153,6 @@ class Button(_Shape):
 
 
 class WindowButton(tk.Canvas):
-    """ปุ่มย่อ/ปิดบนแถบหัวที่วาดเอง — 46x44 วาดเส้นเอง ไม่ใช้ฟอนต์สัญลักษณ์
-
-    hover ของปุ่มปิดเป็นพื้นแดง + เส้นขาว ตามธรรมเนียมของ Windows
-    (ฟอนต์สัญลักษณ์ของ Windows ไม่มีบนทุกเครื่อง จึงวาดด้วย Canvas แทน)
-    """
 
     def __init__(self, master, kind="close", command=None, danger=False, **kw):
         w, h = T.S(46), T.S(44)
@@ -237,10 +202,6 @@ class WindowButton(tk.Canvas):
 
 
 class Tag(_Shape):
-    """<Badge> ของ shadcn — ป้ายทรงแคปซูล: accent | neutral | danger
-
-    ข้อความว่าง = ซ่อนทั้งตัว (ไม่ทิ้งก้อนสีเปล่าไว้กลางจอ)
-    """
 
     STYLES = {
         "accent":  (T.ACCENT_800, T.ACCENT_100),
@@ -261,7 +222,6 @@ class Tag(_Shape):
         changed = text != self.cget("text")
         self.config(text=text)
         if changed:
-            # ข้อความเปลี่ยน = ผลตรวจเปลี่ยน ไล่สีเข้าหากันแทนการกระพริบ
             _tint(self, "background", bg, dur=0.2, tag="tag")
             _tint(self, "foreground", fg, dur=0.2, tag="tag")
         else:
@@ -269,11 +229,6 @@ class Tag(_Shape):
 
 
 class Field(tk.Canvas):
-    """<Input> ของ shadcn — กรอบโค้ง 6 สูง 36 ตอนโฟกัสขอบเป็นสีหลัก
-
-    tk.Entry ทำมุมโค้งไม่ได้ จึงวาดกรอบเป็นรูปแล้ววาง Entry ไร้ขอบไว้ข้างใน
-    ตัว Entry จริงอยู่ที่ `.entry` (textvariable, xview_moveto ฯลฯ ใช้กับตัวนั้น)
-    """
 
     def __init__(self, master, width: int, **entry_kw):
         h = T.S(36)
@@ -308,7 +263,6 @@ class Field(tk.Canvas):
 
 
 class Rule(tk.Frame):
-    """ขีดหน้าชื่อขั้นในแถบซ้าย — ขั้นที่กำลังทำจะยืดออกและเปลี่ยนเป็นสี accent"""
 
     W = 14
     W_ON = 22
@@ -331,21 +285,10 @@ class Rule(tk.Frame):
 
 
 class ProgressBar(tk.Canvas):
-    """<Progress> ของ shadcn — รางสูง 8 โค้งสุด สีหลัก 20% / ส่วนที่เดินแล้วสีหลัก
-
-    เหมือนต้นฉบับ: ส่วนที่เดินแล้วถูกรางตัดขอบซ้าย ส่วนปลายขวาตัดตรง
-    (สร้างสองรูปเต็มความกว้างไว้ก่อน แล้วคัดลอกเฉพาะช่วงที่เดินแล้วมาทับ)
-
-    ค่าที่รับเข้ามาเป็นค่าจริงจาก xdelta3 ซึ่งกระโดดเป็นช่วงๆ (ทีละไฟล์)
-    การไล่เข้าหาเป้าทำให้ตาอ่านทิศทางออก โดยไม่ได้โกหกว่าคืบหน้าเกินจริง —
-    ปลายทางยังเป็นตัวเลขเดียวกับที่ core รายงานเสมอ
-    """
 
     def __init__(self, master, width, on_value=None, **kw):
         h = T.S(8)
         super().__init__(master, width=width, height=h, **_canvas_kw(master), **kw)
-        # ห้ามใช้ชื่อ self._w — tkinter เก็บ path ของ widget ไว้ในนั้น
-        # ทับแล้วทุกคำสั่ง Tcl จะยิงไปที่ชื่อ command ผิด
         self._px, self._ph = width, h
         self._cur = 0.0
         self._on_value = on_value
@@ -386,7 +329,6 @@ class ProgressBar(tk.Canvas):
 
 
 def _trim(pts, u):
-    """จุดของเส้นที่ลากไปแล้ว u ส่วนของความยาวรวม (ไว้วาดเครื่องหมายถูกทีละนิด)"""
     segs = [((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
             for (x1, y1), (x2, y2) in zip(pts, pts[1:])]
     want = max(0.0, u) * sum(segs)
@@ -402,15 +344,10 @@ def _trim(pts, u):
     return out
 
 
-CHECK = [(0.24, 0.52), (0.42, 0.70), (0.78, 0.30)]      # เครื่องหมายถูก (สัดส่วนของกล่อง)
+CHECK = [(0.24, 0.52), (0.42, 0.70), (0.78, 0.30)]
 
 
 class CheckMark(tk.Canvas):
-    """<Checkbox> ของ shadcn — กล่อง 16 โค้ง 4 ติ๊กแล้วพื้นสีหลัก + เครื่องหมายถูกสีขาว
-
-    _t คือความ "ติ๊กแล้ว" 0..1 (เกิน 1 ได้นิดนึงระหว่าง out_back):
-    สีพื้นไล่จากขาวไปสีหลักก่อน แล้วเครื่องหมายถูกถูกลากตามมา
-    """
 
     def __init__(self, master, on=True, command=None, **kw):
         s = T.S(16)
@@ -428,7 +365,7 @@ class CheckMark(tk.Canvas):
     def _paint(self, t):
         self._t = t
         s = self._s
-        k = max(0.0, min(1.0, t * 1.6))          # สีมาก่อน เครื่องหมายตามทีหลัง
+        k = max(0.0, min(1.0, t * 1.6))
         u = max(0.0, min(1.0, (t - 0.25) / 0.75))
         lines = [_trim([(x * s, y * s) for x, y in CHECK], u)] if u > 0 else []
         self._img = shape.marked(self, s, s, T.S(T.RADIUS_SM), T.mix(T.BG, T.ACCENT, k),
@@ -448,18 +385,12 @@ class CheckMark(tk.Canvas):
                 ease=A.out_back if on else A.out_cubic, key=("chk", id(self)))
 
     def pop_in(self, delay=0.0):
-        """ใช้ตอนแถวรายการปรากฏขึ้นครั้งแรก"""
         b = self._t
         A.tween(POP, lambda v: self._paint(b * v), ease=A.out_back,
                 delay=delay, key=("chk", id(self)))
 
 
 class Badge(tk.Canvas):
-    """วงกลม 40px มีเครื่องหมายถูก (สำเร็จ) หรือกากบาท (ล้มเหลว)
-
-    เส้นถูกลากทีละนิดเหมือนเขียนด้วยมือ — 380 ms พอให้ตาจับได้ว่ามันเพิ่งเกิดขึ้น
-    cget("bg") ตอบสีของวงกลม (แบบเดียวกับ Button/Tag) ไม่ใช่พื้นของ canvas
-    """
 
     def __init__(self, master, **kw):
         s = T.S(40)
@@ -480,7 +411,6 @@ class Badge(tk.Canvas):
             lines = []
             for i, pts in enumerate([[(s * 0.33, s * 0.33), (s * 0.67, s * 0.67)],
                                      [(s * 0.67, s * 0.33), (s * 0.33, s * 0.67)]]):
-                # เส้นที่สองเริ่มตอนเส้นแรกไปได้ราวครึ่งทาง
                 v = max(0.0, min(1.0, (u - i * 0.42) / 0.58))
                 if v > 0:
                     lines.append(_trim(pts, v))
@@ -488,7 +418,6 @@ class Badge(tk.Canvas):
         self._img = shape.marked(self, s, s, s / 2, self._fill, self._pbg,
                                  lines, T.S(3), T.BG)
         self.itemconfig(self._item, image=self._img)
-        # เส้นจริงอยู่ในรูป — item "mark" ที่ซ่อนไว้นี้บอกว่าวาดไปแล้วกี่เส้น
         self.delete("mark")
         for _ in lines:
             self.create_line(0, 0, 1, 1, state="hidden", tags="mark")
@@ -510,11 +439,6 @@ class Badge(tk.Canvas):
 
 
 class Card(tk.Canvas):
-    """<Card> ของ shadcn — พื้นขาว ขอบ 1px โค้ง 8
-
-    เนื้อหาใส่ใน `.body` (Frame พื้นขาว) ที่วางเยื้องเข้ามาทุกด้าน
-    ไม่ทับเส้นขอบและมุมโค้งที่วาดเป็นรูปอยู่ข้างใต้ ขนาดการ์ดตายตัว
-    """
 
     def __init__(self, master, width: int, height: int, padx: int = 16, pady: int = 4):
         super().__init__(master, width=width, height=height, **_canvas_kw(master))
@@ -546,7 +470,6 @@ class Card(tk.Canvas):
                 ease=A.out_quad, key=("card", id(self)))
 
     def pointer_inside(self) -> bool:
-        """<Leave> ยิงตอนเมาส์เข้าไปใน widget ลูกด้วย — เช็กตำแหน่งจริงแทน"""
         x, y = self.winfo_pointerxy()
         x0, y0 = self.winfo_rootx(), self.winfo_rooty()
         return x0 <= x < x0 + self.winfo_width() and y0 <= y < y0 + self.winfo_height()
@@ -556,16 +479,11 @@ def label(master, text="", size=13, bold=False, fg=T.TEXT, bg=T.BG, wrap=None, *
     w = tk.Label(master, text=text, font=T.F(size, bold), fg=fg, bg=bg,
                  justify="left", anchor="w",
                  wraplength=(T.S(wrap) if wrap else 0), **kw)
-    w._fg0 = fg          # สีจริงของมัน — ไว้ให้อนิเมชันเปลี่ยนหน้าจอคืนค่าให้ถูก
+    w._fg0 = fg
     return w
 
 
 def tint_tree(w, t: float, bg=T.BG):
-    """ไล่สีตัวหนังสือทั้งกิ่ง จากสีพื้น (t=0) ไปสีจริง (t=1)
-
-    Tk ไม่มี alpha ต่อ widget จะเฟดทั้งเฟรมตรงๆ ไม่ได้ — แต่พื้นหลังเป็นสีเดียว
-    ทั้งจอ การไล่สีตัวหนังสือเข้าหาสีพื้นจึงให้ผลตาเหมือนกันเป๊ะ
-    """
     if isinstance(w, tk.Label):
         base = getattr(w, "_fg0", None)
         if base:

@@ -1,60 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""
-build_release.py — สร้างชุดติดตั้งสำหรับผู้เล่นทั่วไป (xdelta) แบบครบวงจร
-
-ทำอะไร
-------
-1. หาโฟลเดอร์เกม (ไต่ขึ้นไปหา SenrenBanka.exe)
-2. สร้าง binary diff ของทุก archive ที่แพตช์ไทยแตะ:
-       patch.xp3.bak  -> patch.xp3    (บทพูด all-ages)
-       data.xp3.bak   -> data.xp3     (ฟอนต์ Sarabun)
-       adult.xp3.orig -> adult.xp3    (บทพูดฝั่ง R18)  <-- ใหม่ใน v1.1
-3. **ตรวจย้อนกลับทุกไฟล์**: decode diff แล้วเทียบ SHA256 กับของจริง
-   (ไม่ผ่าน = ไม่ปล่อย ไม่มีข้อยกเว้น)
-4. เขียน install.bat / uninstall.bat / README.txt / checksums.txt
-   โดยฝัง SHA256 ที่คำนวณได้จริงลงไปในตัวสคริปต์
-5. zip ออกมาเป็น senrenbanka-thai-patch-v<version>.zip
-
-ทำไม installer ถึงหน้าตาแบบนี้
-------------------------------
-* **ซิปเดียวจบ ตรวจโหมดเอง** — มี adult.xp3 อยู่ = ผู้เล่นลงแพตช์ R18 แล้ว
-  ก็แปะ thai-adult.xdelta ให้ด้วย; ไม่มีก็ข้าม. แยกสองซิปแล้วคนโหลดผิดตัว
-  จะได้ไทยครึ่งๆ กลางๆ ซึ่งเป็นบั๊กที่ debug ยากที่สุด
-* **สำรองด้วยการ "เปลี่ยนชื่อ" ไม่ใช่ "ก็อปปี้"** — v1.0 ก็อปปี้ patch+data
-  ก่อนแปะ = เขียนดิสก์เกินไป 1.3 GB; v1.1 มี adult.xp3 อีก 855 MB
-  move บน volume เดียวกันเป็น O(1) → ใช้พื้นที่แค่เท่าไฟล์ผลลัพธ์ และเร็วกว่ามาก
-* **เช็ค SHA256 ก่อนแตะไฟล์** — xdelta จะ error เองถ้าเวอร์ชันไม่ตรง แต่สาย
-  เกินไปและข้อความอ่านไม่รู้เรื่อง เช็คก่อนทำให้แยกได้ว่า
-  "ลงไปแล้ว" / "Steam อัปเดตเกม" / "แพตช์ R18 คนละ build"
-* **ถ้าแปะ adult.xp3 ไม่ได้ = ล้มทั้งชุด** ไม่ยอมแปะครึ่งเดียว เพราะ adult.xp3
-  ทับ patch.xp3 อยู่ (ดู R18_COMPAT.md) → แปะครึ่งเดียวเกมจะขึ้นภาษาจีนเงียบๆ
-
-หมายเหตุเรื่อง encoding ของ .bat
---------------------------------
-`.bat` ที่มีข้อความไทยต้องเป็น **UTF-8 ไม่มี BOM + CRLF** และมี `chcp 65001` บนสุด
-
-BOM ทำให้บรรทัดแรกกลายเป็น `<BOM>@echo off` ซึ่ง cmd.exe อ่านไม่ออก → ขึ้น
-`'@echo' is not recognized` แล้ว echo ก็ไม่ถูกปิด ผู้เล่นเห็นทุกคำสั่งวิ่งผ่านจอ
-(v1.0 เป็นแบบนี้) วัดจริงด้วยเมทริกซ์ codepage เริ่มต้น x BOM:
-
-    CP เริ่มต้น   ไม่มี BOM                 มี BOM
-    437           ok / ไทยขึ้น / echo off    parse error + echo ไม่ปิด
-    874 (ไทย)     ok / ไทยขึ้น / echo off    parse error + echo ไม่ปิด
-    1252          ok / ไทยขึ้น / echo off    parse error + echo ไม่ปิด
-    65001         ok / ไทยขึ้น / echo off    ok (บังเอิญรอด)
-
-cmd.exe อ่าน batch ทีละบรรทัดโดย decode ด้วย codepage *ปัจจุบัน* → `chcp 65001`
-บรรทัดที่ 3 ทำให้บรรทัดหลังจากนั้นถูกอ่านเป็น UTF-8 อยู่แล้ว ไม่ต้องพึ่ง BOM
-(บรรทัดก่อน chcp ต้องเป็น ASCII ล้วน — ซึ่งเป็นแบบนั้นอยู่แล้ว)
-
-`README.txt` / `checksums.txt` **คง BOM ไว้** เพราะเปิดด้วย Notepad
-
-วิธีใช้
--------
-    python tools/build_release.py --version 1.1
-    python tools/build_release.py --version 1.1 --reuse      # ไม่ encode ใหม่
-"""
 import os, sys, argparse, hashlib, json, shutil, subprocess, zipfile
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -86,8 +31,6 @@ def run(*cmd):
         sys.exit("คำสั่งล้มเหลว: %s\n%s" % (" ".join(cmd),
                                             r.stderr.decode("utf-8", "replace")))
 
-
-# ------------------------------------------------------------------ templates
 
 BAT_HEAD = """@echo off
 setlocal enabledelayedexpansion
@@ -394,7 +337,6 @@ __COVERAGE__
 
 
 def write_text(path, text, crlf=True, bom=True):
-    """.bat ต้อง **ไม่มี** BOM (ดูหมายเหตุ encoding ด้านบน) แต่ต้องเป็น CRLF เสมอ"""
     data = text.replace("\r\n", "\n")
     if crlf:
         data = data.replace("\n", "\r\n")
@@ -433,11 +375,6 @@ def main():
             print("[skip]   %-20s ไม่มี %s -> ข้าม" % (t.delta, t.orig))
             continue
 
-        # ไฟล์ที่แพตช์แล้วต้องไม่โตกว่าต้นฉบับ — ของใหม่ถูก pad ให้เท่าช่องเดิม
-        # เสมอ ผังจึงยาวเท่ากัน (ต่างกันได้ไม่กี่ร้อยไบต์จากช่องว่างที่ Yuzu
-        # เผื่อไว้ กับขนาด index หลัง zlib) โตขึ้นเป็น MB = แพ็กด้วยโค้ดรุ่นที่
-        # ยังอ่าน segm ผิดช่องและก็อป payload ที่ใช้ร่วมกันแยกทุกตัว —
-        # ปล่อยออกไปคือส่ง 33 MB ที่ไม่มีประโยชน์ไปลงเครื่องผู้เล่นทุกคน
         grew = os.path.getsize(pt) - os.path.getsize(po)
         if grew > (1 << 20):
             sys.exit("%s โตกว่า %s อยู่ %.1f MB — แพ็กใหม่ก่อนปล่อย"
@@ -448,7 +385,6 @@ def main():
             print("[encode] %-20s %s" % (t.delta, t.label))
             run(xd, "-e", "-f", "-9", "-B", "1073741824", "-s", po, pt, delta)
 
-        # ตรวจย้อนกลับ: decode แล้วต้องได้ไฟล์เดิมเป๊ะ ไม่ผ่าน = ไม่ปล่อย
         tmp = delta + ".roundtrip"
         run(xd, "-d", "-f", "-s", po, delta, tmp)
         h_orig, h_thai, h_rt = sha256(po), sha256(pt), sha256(tmp)
@@ -463,15 +399,11 @@ def main():
 
     shutil.copy2(xd, os.path.join(out, "xdelta3.exe"))
 
-    # manifest.json — ตาราง target + แฮชจริง ที่ตัวติดตั้ง GUI อ่าน
-    # ทั้งไฟล์นี้และ .bat งอกจาก tools/targets.py ตัวเดียวกัน
     manifest = {
         "version": a.version,
         "product": "Senren Banka — แพตช์แปลไทย",
         "repo": "https://github.com/Jiranon-K/senrenbanka-thai",
         "coverage": a.coverage,
-        # ไฟล์ R18 ที่ต้อง "ปิด" เมื่อผู้เล่นเลือก all-ages — เดิม core.py
-        # hardcode ไว้เอง ทำให้ไม่มีใครยืนยันได้ว่าตรงกับตารางนี้ไหม
         "disable_on_all_ages": T.DISABLE_ON_ALL_AGES,
         "targets": [
             {
@@ -497,22 +429,17 @@ def main():
                     .replace("__UNINSTALL_FOUND__", T.bat_uninstall_found())
                     .replace("__UNINSTALL_RESTORE__", T.bat_uninstall_restore()))
 
-    # เพิ่ม target แล้วลืมแก้ .bat = build ไม่ผ่าน ดีกว่าปล่อยแพตช์ครึ่งเดียว
-    # ต้องตรวจ **ข้อความที่เติมค่าแล้ว** — ชื่อไฟล์ทั้งหมดงอกมาจาก targets.py
-    # ตอน fill() ในตัว template มีแต่ placeholder ตรวจตัว template จึงตกเสมอ
     install_bat = (BAT_HEAD % ("Installer", a.version)) + "\n" \
         + T.bat_hash_vars(hashes) + "\n" + fill(INSTALL_BODY)
     uninstall_bat = (BAT_HEAD % ("Uninstaller", a.version)) + fill(UNINSTALL_BODY)
     T.check_bat_mentions_every_target(install_bat, "install.bat")
     T.check_bat_mentions_every_target(uninstall_bat, "uninstall.bat")
 
-    # bom=False สำคัญมาก — ดู "หมายเหตุเรื่อง encoding ของ .bat" ด้านบน
     write_text(os.path.join(out, "install.bat"), install_bat, bom=False)
     write_text(os.path.join(out, "uninstall.bat"), uninstall_bat, bom=False)
     write_text(os.path.join(out, "README.txt"),
                README.replace("__VER__", a.version).replace("__COVERAGE__", a.coverage))
 
-    # GUI สร้างทีหลังสุด เพราะต้องให้ manifest.json มีอยู่ก่อน แล้วค่อยนับ checksum
     if a.gui:
         print("\n[gui] build ตัวติดตั้งแบบ GUI")
         run(sys.executable, os.path.join(P.REPO, "tools", "gui", "build", "build_gui.py"),

@@ -27,7 +27,7 @@ import mt
 MODEL = "claude-haiku-5-5"
 CHUNK = 60
 GAP = 3
-MARGIN = 6      # lines kept out on each side of a scene: lead-ins and afterglow the labels miss
+MARGIN = 6
 FLAGS = mt.HFLAGS
 RAW = FLAGS.replace(".json", ".raw.json")
 
@@ -63,19 +63,12 @@ def label(key: str, rows: list) -> set:
     msg = mt.call("POST", "/messages", body, key)
     mt.log_usage("hfilter", msg.get("usage", {}), False)
     if msg.get("stop_reason") != "end_turn":
-        # refusal or truncation: treat the whole chunk as sexual rather than guess
         return {r["idx"] for r in rows}
     want = {r["idx"] for r in rows}
     return {i for i in json.loads(mt.text_of(msg))["sexual_idx"] if i in want}
 
 
 def smooth(rows: list, flagged: set) -> set:
-    """Fill gaps of <= GAP lines between flagged lines (scenes are contiguous), then
-    widen every flagged run by MARGIN lines on both sides.
-
-    Checked on 317: unwidened, the run ended right before "Sorry, I dirtied your
-    uniform..." — aftermath the per-line labels didn't catch.
-    """
     pos = [k for k, r in enumerate(rows) if r["idx"] in flagged]
     keep = set(pos)
     for a, b in zip(pos, pos[1:]):
@@ -88,7 +81,6 @@ def smooth(rows: list, flagged: set) -> set:
 
 
 def cmd_resmooth(prefixes: list):
-    """Re-apply smooth() to stored raw labels without calling the model again."""
     raw = json.load(open(RAW, encoding="utf-8"))
     flags = json.load(open(FLAGS, encoding="utf-8"))
     for pf in prefixes:

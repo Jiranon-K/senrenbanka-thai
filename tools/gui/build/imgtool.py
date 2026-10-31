@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-imgtool.py — งานภาพที่ทำ **ตอน build เท่านั้น** (ตัวแอปไม่ได้ import ไฟล์นี้)
-
-ถอดรหัส/ย่อขยายภาพด้วย GDI+ ผ่าน ctypes — มีอยู่ในทุกเครื่อง Windows ไม่ต้องลง
-อะไรเพิ่ม และคุณภาพการย่อขยายดีกว่าเขียน bicubic เองใน Python มาก (เร็วกว่าด้วย)
-
-ทำไมไม่ใช้ Pillow: `.exe` จะโตขึ้นหลาย MB เพื่องานที่ทำครั้งเดียวตอน build
-ส่วนตัวแอปเองอ่าน PNG ด้วย Tk ได้อยู่แล้ว
-
-ใช้โดย make_bg.py (แผงพื้นหลัง) และ make_logo.py (โลโก้ + ไอคอน)
-"""
 from __future__ import annotations
 
 import ctypes
@@ -51,7 +40,6 @@ def _ck(status, what):
 
 
 class Gdip:
-    """ครอบ GDI+ ให้เรียกง่ายและปิดทรัพยากรครบ — ใช้เป็น context manager"""
 
     def __enter__(self):
         self._token = ctypes.c_void_p()
@@ -79,7 +67,6 @@ class Gdip:
         return bmp
 
     def draw(self, dst, dw, dh, src, box):
-        """วาด src (ครอปตาม box = x,y,w,h) ลงเต็ม dst"""
         gfx = ctypes.c_void_p()
         _ck(gdip.GdipGetImageGraphicsContext(dst, ctypes.byref(gfx)), "graphics")
         gdip.GdipSetInterpolationMode(gfx, INTERP_HQ_BICUBIC)
@@ -92,7 +79,6 @@ class Gdip:
         gdip.GdipDeleteGraphics(gfx)
 
     def pixels(self, bmp, w, h):
-        """คืน bytearray แบบ BGRA เรียงบรรทัดบนลงล่าง"""
         data = _BitmapData()
         rect = _Rect(0, 0, w, h)
         _ck(gdip.GdipBitmapLockBits(bmp, ctypes.byref(rect), LOCK_READ,
@@ -105,7 +91,6 @@ class Gdip:
         return out
 
     def render(self, box, w, h, blur=1.0):
-        """ครอป -> ย่อขยายเป็น w x h -> คืน BGRA (blur > 1 = ย่อแล้วขยายกลับ)"""
         if blur > 1.01:
             mw, mh = max(2, round(w / blur)), max(2, round(h / blur))
             small = self.blank(mw, mh)
@@ -129,15 +114,12 @@ def dispose(img):
     gdip.GdipDisposeImage(img)
 
 
-# ────────────────────────────────────────────────────────────── ตัวช่วย
-
 def smoothstep(t: float) -> float:
     t = 0.0 if t < 0 else 1.0 if t > 1 else t
     return t * t * (3 - 2 * t)
 
 
 def cover_box(sw, sh, tw, th, focus, zoom=1.0):
-    """กรอบครอปที่เต็มกรอบเป้าหมายพอดี (แบบ CSS object-fit: cover)"""
     scale = max(tw / sw, th / sh) * zoom
     cw, ch = min(sw, tw / scale), min(sh, th / scale)
     return (round((sw - cw) * focus[0]), round((sh - ch) * focus[1]),
@@ -145,7 +127,6 @@ def cover_box(sw, sh, tw, th, focus, zoom=1.0):
 
 
 def bgra_to_rgba(buf, w, h, opaque=True):
-    """สลับช่องสี BGRA -> RGBA (GDI+ คืนมาแบบ BGRA เสมอ)"""
     out = bytearray(len(buf))
     for i in range(0, len(buf), 4):
         out[i] = buf[i + 2]
@@ -158,7 +139,7 @@ def bgra_to_rgba(buf, w, h, opaque=True):
 def png_rgba(w, h, buf) -> bytes:
     raw = bytearray()
     for y in range(h):
-        raw.append(0)                                  # filter type 0
+        raw.append(0)
         raw += buf[y * w * 4:(y + 1) * w * 4]
 
     def chunk(tag, data):
@@ -177,11 +158,6 @@ def write_png_rgba(path, w, h, buf):
 
 
 def write_ico(path, images):
-    """images = [(ขนาด, ไบต์ของ PNG), ...]
-
-    ตั้งแต่ Vista เป็นต้นมา Windows อ่านไอคอนที่เก็บเป็น PNG ข้างในได้
-    จึงไม่ต้องเขียน BMP + AND mask เอง (และได้ขอบโปร่งใสฟรี)
-    """
     offset = 6 + 16 * len(images)
     entries, blobs = b"", b""
     for size, data in images:
@@ -194,13 +170,6 @@ def write_ico(path, images):
 
 
 def write_placeholder_icon(path, accent="#f2802b"):
-    """ไอคอน**สำรอง**: สี่เหลี่ยมส้มบนกระดาษขาว ตามเครื่องหมายในไฟล์ดีไซน์
-
-    ใช้เมื่อยังไม่ได้รัน make_logo.py (เช่น build จาก source เปล่าๆ)
-
-    เดิมอยู่ใน theme.py ของตัวแอป พร้อมตัวเขียน PNG อีกฉบับหนึ่งของโปรเจกต์
-    ทั้งที่เป็นงานตอน build ล้วนๆ ตัวแอปไม่เคยต้องเขียนไฟล์ .ico เลย
-    """
     r, g, b = (int(accent[i:i + 2], 16) for i in (1, 3, 5))
     sizes = (16, 32, 48, 64, 128, 256)
     images = []

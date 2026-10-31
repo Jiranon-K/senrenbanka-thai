@@ -23,11 +23,6 @@ def is_h(name):
     return any(k in name for k in H_KEYWORDS)
 
 def counts(stem):
-    """blocks + choices from decompiled json (None if not decompiled).
-
-    ใช้ layout ตัวเดียวกับ pipeline_cn.py เพื่อให้เลขในตารางตรงกับจำนวนแถวใน
-    strings_cn.csv จริงๆ (เดิมมีตัวเดินของตัวเองที่หลวมกว่า เลยนับไม่ตรงกัน)
-    """
     jf = os.path.join(P.JSON_CN, stem + ".json")
     if not os.path.exists(jf): return None, None
     d = json.load(open(jf, encoding="utf-8"))
@@ -35,7 +30,6 @@ def counts(stem):
             sum(1 for _ in scenario.ALL_AGES.choices(d)))
 
 def translated_counts():
-    """per json-file: (filled, total) th from strings_cn.csv"""
     res={}
     if not os.path.exists(P.CSV_CN): return res
     for r in csv.DictReader(open(P.CSV_CN, encoding="utf-8-sig")):
@@ -48,7 +42,7 @@ def cmd_scan():
     tc = translated_counts()
     scenarios=[]
     for fp in sorted(glob.glob(os.path.join(P.EXTRACT_SCN, "*.ks.scn"))):
-        scn = os.path.basename(fp); stem = scn[:-4]              # *.ks
+        scn = os.path.basename(fp); stem = scn[:-4]
         jname = stem + ".json"
         nb, nc = counts(stem)
         filled, total = tc.get(jname, [0, 0])
@@ -101,7 +95,7 @@ def cmd_set():
     prog = json.load(open(P.PROGRESS, encoding="utf-8"))
     hits = [k for k in prog if scn in k]
     if len(hits) == 1:
-        scn = hits[0]                      # substring match (e.g. "005" -> full stem)
+        scn = hits[0]
     elif len(hits) > 1:
         sys.exit(f"ambiguous '{scn}': {hits}")
     prog.setdefault(scn, {})[field] = val
