@@ -1,0 +1,469 @@
+sheet	layer	kind	cn	thai
+sys_base	bg#1	title	系统设定	ตั้งค่าระบบ
+sys_base	tab_image	tab	画面显示	การแสดงผล
+sys_base	tab_game1~1	tab	游戏设置1	ตั้งค่าเกม 1
+sys_base	tab_game1~2	tab	游戏设置2	ตั้งค่าเกม 2
+sys_base	tab_txt	tab	文本	ข้อความ
+sys_base	tab_sound	tab	音频	เสียง
+sys_base	tab_dialog	tab	确认	การยืนยัน
+sys_base	tab_mouse	tab	鼠标	เมาส์
+sys_base	tab_keyboard	tab	键盘	คีย์บอร์ด
+sys_base	back	button	回到游戏	กลับสู่เกม
+sys_base	title	button	回到标题界面	กลับหน้าไตเติล
+sys_base	reset	button	恢复默认设置	คืนค่าเริ่มต้น
+sys_page0	content_bg#1	heading	显示模式	โหมดแสดงผล
+sys_page0	content_bg#2	heading	画面比例	อัตราส่วนภาพ
+sys_page0	content_bg#3	heading	画面效果	เอฟเฟกต์ภาพ
+sys_page0	content_bg#4	heading	动画效果	เอฟเฟกต์แอนิเมชัน
+sys_page0	content_bg#5	heading	ESC键功能	การทำงานของปุ่ม ESC
+sys_page0	content_bg#6	heading	老板键功能	การทำงานของปุ่มบอส
+sys_page0	content_bg#7	heading	让游戏画面始终位于最前	แสดงหน้าต่างเกมไว้บนสุดเสมอ
+sys_page0	content_bg#8	heading	功能区域开关	แสดง/ซ่อนส่วนต่าง ๆ บนหน้าจอ
+sys_page0	content_bg#9	heading	章节标题显示时间	เวลาแสดงชื่อบท
+sys_page0	content_bg#10	heading	背景音乐曲名显示时间	เวลาแสดงชื่อเพลง BGM
+sys_page0	content_bg#11	heading	显示说话人表情	แสดงใบหน้าผู้พูด
+sys_page0	window	button	窗口	หน้าต่าง
+sys_page0	fullscreen	button	全屏	เต็มจอ
+sys_page0	rclick	button	鼠标右键	คลิกขวา
+sys_page0	scramble	button	老板键	ปุ่มบอส
+sys_page0	min	button	最小化	ย่อหน้าต่าง
+sys_page0	graphic01	button	图片1	ภาพ 1
+sys_page0	graphic02	button	图片2	ภาพ 2
+sys_page0	userselect	button	用户指定	กำหนดเอง
+sys_page0	Progresicon	button	状态图标	ไอคอนสถานะ
+sys_page0	Progresmeter	button	进度条	แถบความคืบหน้า
+sys_page0	windowmenu	button	窗口菜单	เมนูหน้าต่าง
+sys_page0	touchui	button	触控按钮	ปุ่มสัมผัส
+title	newgame~1	gold	新游戏	เริ่มเกมใหม่
+title	newgame~2	gold	新游戏	เริ่มเกมใหม่
+title	dataload~1	gold	读取存档	โหลดเกม
+title	dataload~2#1-3	gold+whole	读取存档	โหลดเกม
+title	continue~1	gold	继续游戏	เล่นต่อ
+title	continue~2	gold	继续游戏	เล่นต่อ
+title	flowchart~1	gold	流程图	ผังเรื่อง
+title	flowchart~2	gold	流程图	ผังเรื่อง
+title	extra	gold	鉴赏模式	เอ็กซ์ตร้า
+title	after	gold	后日谈	บทส่งท้าย
+title	system~1	gold	系统设置	ตั้งค่าระบบ
+title	system~2	gold	系统设置	ตั้งค่าระบบ
+title	exit~1	gold	结束游戏	ออกจากเกม
+title	exit~2#1-3	gold+whole	结束游戏	ออกจากเกม
+dialog	confirm_off	tab+jponly	下次不再确认	ไม่ต้องถามอีก
+dialog	confirm_on	tab+jponly	下次不再确认	ไม่ต้องถามอีก
+dialog	dialog_change	heading+clearall	确认要更改存档吗？	ย้ายข้อมูลบันทึกหรือไม่?
+dialog	dialog_chreset	heading+clearall	确认要将立绘鉴赏初始化吗？	รีเซ็ตโหมดชมภาพตัวละครหรือไม่?
+dialog	dialog_copy	heading+clearall	确认要复制存档吗？	คัดลอกข้อมูลบันทึกหรือไม่?
+dialog	dialog_delete	heading+clearall	确认要删除存档吗？	ลบข้อมูลบันทึกหรือไม่?
+dialog	dialog_end	heading+clearall	确认要结束游戏吗？	ออกจากเกมหรือไม่?
+dialog	dialog_load	heading+clearall	确认要读档吗？	โหลดข้อมูลหรือไม่?
+dialog	dialog_nextscean	heading+clearall	确认要跳转至下一个场景吗？	ข้ามไปฉากถัดไปหรือไม่?
+dialog	dialog_nextselect	heading+clearall	确认要跳转至下一个选择项吗？	ข้ามไปตัวเลือกถัดไปหรือไม่?
+dialog	dialog_prevscean	heading+clearall	确认要返回前一个场景吗？	กลับไปฉากก่อนหน้าหรือไม่?
+dialog	dialog_prevselect	heading+clearall	确认要返回前一个选择项吗？	กลับไปตัวเลือกก่อนหน้าหรือไม่?
+dialog	dialog_qload	heading+clearall	确认要快速读档吗？	โหลดด่วนหรือไม่?
+dialog	dialog_qsave	heading+clearall	确认要快速存档吗？	บันทึกด่วนหรือไม่?
+dialog	dialog_rewrite	heading+clearall	确认要覆盖存档吗？	บันทึกทับหรือไม่?
+dialog	dialog_save	heading+clearall	确认要存档吗？	บันทึกเกมหรือไม่?
+dialog	dialog_sceanend	heading+clearall	确认结束回想模式吗？	ออกจากโหมดย้อนชมฉากหรือไม่?
+dialog	dialog_sceanjump	heading+clearall	确认要跳转场景吗？	ข้ามไปยังฉากที่เลือกหรือไม่?
+dialog	dialog_systemallreset	heading+clearall	确认要重置全部设置吗？	รีเซ็ตการตั้งค่าทั้งหมดหรือไม่?
+dialog	dialog_systemreset	heading+clearall	确认要重置系统设置吗？	รีเซ็ตการตั้งค่าระบบหรือไม่?
+dialog	dialog_title	heading+clearall	确认要返回标题界面吗？	กลับไปหน้าไตเติลหรือไม่?
+dialog	no	button	否	ไม่
+dialog	yes	button	是	ใช่
+backlog	back	button	回到游戏	กลับสู่เกม
+backlog	backlog	title	历史记录	ประวัติข้อความ
+backlog	flowchart	button	流程图	ผังเรื่อง
+backlog	search~1	title	剧情搜索	ค้นหาเนื้อเรื่อง
+backlog	search~2	button	搜索	ค้นหา
+afterstory	bt_koh	gold+center+smooth	小春	โคฮารุ
+afterstory	bt_mur	gold+center+smooth	丛雨	มุราซาเมะ
+afterstory	bt_ren	gold+center+smooth	蕾娜	เลนะ
+afterstory	bt_rok	gold+center+smooth	芦花	โรกะ
+afterstory	bt_yos~1	gold+center+smooth	芳乃	โยชิโนะ
+afterstory	bt_yos~2	gold+center+smooth	茉子	มาโกะ
+afterstory	content_bg#1-2	title	后日谈	บทส่งท้าย
+afterstory	title	button	回到标题界面	กลับหน้าไตเติล
+extra	bt01~1	button	芳乃	โยชิโนะ
+extra	bt02~1	button	茉子	มาโกะ
+extra	bt03~1	button	丛雨	มุราซาเมะ
+extra	bt04~1	button	蕾娜	เลนะ
+extra	bt05~2	button	小春	โคฮารุ
+extra	bt06~1	button	芦花	โรกะ
+extra	bt07~1	button	视频	วิดีโอ
+extra	cont_bg#2	title	鉴赏模式	เอ็กซ์ตร้า
+extra	cont_bg#4	heading	音乐鉴赏	ฟังเพลง
+extra	head_cg	heading+clearall	CG鉴赏	แกลเลอรี CG
+extra	head_scean	heading+clearall	场景鉴赏	ย้อนชมฉาก
+extra	tab_cg	tab	CG鉴赏	แกลเลอรี CG
+extra	tab_character	tab	立绘鉴赏	ชมภาพตัวละคร
+extra	tab_scean	tab	场景鉴赏	ย้อนชมฉาก
+extra	title	button	回到标题界面	กลับหน้าไตเติล
+flowchart	back	button	回到游戏	กลับสู่เกม
+flowchart	backlog	button	历史记录	ประวัติข้อความ
+flowchart	bg~3	heading	图表更新	อัปเดตผังเรื่อง
+flowchart	btkyo#2	button+outline+left	共通	เส้นทางร่วม
+flowchart	btmak#2	button+outline+left	茉子	มาโกะ
+flowchart	btmur#1	button+outline+left	丛雨	มุราซาเมะ
+flowchart	btovr	button+outline+left	总览	ภาพรวม
+flowchart	btren	button+outline+left	蕾娜	เลนะ
+flowchart	btsub	button+outline+left	小春/芦花	โคฮารุ\nโรกะ
+flowchart	btyos	button+outline+left	芳乃	โยชิโนะ
+flowchart	head	title	流程图	ผังเรื่อง
+flowchart	minimap	heading	缩略图	แผนที่ย่อ
+flowchart	scenejump	button	跳转章节	ข้ามไปฉาก
+flowchart	title	button	回到标题界面	กลับหน้าไตเติล
+gesture_help	icon_auto	button+bottom	自动模式	ออโต้
+gesture_help	icon_backlog	button+bottom	历史记录	ประวัติข้อความ
+gesture_help	icon_backskip	button+bottom	快退	ข้ามย้อน
+gesture_help	icon_fav	button+bottom	语音收藏	เสียงโปรด
+gesture_help	icon_flowchart	button+bottom	流程图	ผังเรื่อง
+gesture_help	icon_fnoff	button+bottom	无	ไม่มี
+gesture_help	icon_full	button+bottom	全屏	เต็มจอ
+gesture_help	icon_load	button+bottom	读档界面	โหลด
+gesture_help	icon_min	button+bottom	最小化	ย่อหน้าต่าง
+gesture_help	icon_nextscene	button+bottom	下一个场景	ฉากถัดไป
+gesture_help	icon_nextselect	button+bottom	下一个选项	ตัวเลือกถัดไป
+gesture_help	icon_prevscene	button+bottom	上一个场景	ฉากก่อนหน้า
+gesture_help	icon_prevselect	button+bottom	上一个选项	ตัวเลือกก่อนหน้า
+gesture_help	icon_prevtxt	button+bottom	上一句文本	ข้อความก่อนหน้า
+gesture_help	icon_qload	button+bottom	快速读档	โหลดด่วน
+gesture_help	icon_qsave	button+bottom	快速存档	บันทึกด่วน
+gesture_help	icon_save	button+bottom	存档界面	บันทึก
+gesture_help	icon_skip	button+bottom	快进	ข้าม
+gesture_help	icon_system	button+bottom	系统设置	ตั้งค่าระบบ
+gesture_help	icon_title	button+bottom	回到标题界面	กลับหน้าไตเติล
+keyboard	auto	heading	自动模式	โหมดออโต้
+keyboard	backlog	heading	打开历史记录	เปิดประวัติข้อความ
+keyboard	backlog_down	heading	历史记录下一页	ประวัติข้อความหน้าถัดไป
+keyboard	backlog_up	heading	历史记录上一页	ประวัติข้อความหน้าก่อน
+keyboard	backskip	heading	快退	ย้อน
+keyboard	base~1#1	button	取消：按下ESC键或者鼠标右键	ยกเลิก: กด ESC หรือคลิกขวา
+keyboard	base~1#2	heading	可以分配的按键	ปุ่มที่กำหนดได้
+keyboard	base~1#3	tab	功能键（F1~F12）	ปุ่มฟังก์ชัน (F1~F12)
+keyboard	base~1#4	tab	字母·数字（A~Z，0~9）	ตัวอักษร/ตัวเลข (A~Z, 0~9)
+keyboard	base~1#5	tab	小键盘数字（0~9）	ปุ่มตัวเลข (0~9)
+keyboard	ctrlskip	heading	Ctrl快进	ข้ามด้วย Ctrl
+keyboard	enter	heading	下一句／确定	ถัดไป/ตกลง
+keyboard	favvoice	heading	语音收藏	เสียงโปรด
+keyboard	flowchart	heading	打开流程图	เปิดผังเรื่อง
+keyboard	load	heading	打开读档界面	เปิดหน้าโหลด
+keyboard	nextscean	heading	跳到下一个场景	ไปฉากถัดไป
+keyboard	nextselect	heading	跳到下一个选项	ไปตัวเลือกถัดไป
+keyboard	qload	heading	快速读档	โหลดด่วน
+keyboard	qsave	heading	快速存档	บันทึกด่วน
+keyboard	save	heading	打开存档界面	เปิดหน้าบันทึก
+keyboard	sceanback	heading	跳到上一个场景	กลับฉากก่อนหน้า
+keyboard	selectback	heading	跳到上一个选项	กลับตัวเลือกก่อนหน้า
+keyboard	skip	heading	快进模式	โหมดข้าม
+keyboard	system	heading	打开系统设置	เปิดตั้งค่าระบบ
+keyboard	textback	heading	跳到上一句文本	ย้อนข้อความก่อนหน้า
+keyboard	title	heading	回到标题界面	กลับหน้าไตเติล
+keyboard	voicerepeat	heading	语音重播	เล่นเสียงซ้ำ
+keyboard	volume	heading	音量调整	ปรับเสียง
+keyboard	windowdelete	heading	隐藏对话框	ซ่อนข้อความ
+keyboard	windowsize	heading	窗口全屏切换	สลับเต็มจอ
+sl_save	_textedit	button	编辑注释	แก้ไขคำอธิบาย
+sl_save	back	button	回到游戏	กลับสู่เกม
+sl_save	chco_off	tab	显示缩略图	แสดงภาพย่อ
+sl_save	chco_on	tab	显示缩略图	แสดงภาพย่อ
+sl_save	cont_bg	title	存档	บันทึก
+sl_save	datach	button	替换存档	แทนที่ข้อมูล
+sl_save	datacopy	button	复制存档	คัดลอกข้อมูล
+sl_save	delete	button	删除存档	ลบข้อมูล
+sl_save	edithold_off	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_save	edithold_on	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_save	favvoice	button	语音收藏夹	เสียงโปรด
+sl_save	load	button	读档	โหลด
+sl_save	qload	button	快速读档	โหลดด่วน
+sl_save	title	button	回到标题界面	กลับหน้าไตเติล
+sl_load	_textedit	button	编辑注释	แก้ไขคำอธิบาย
+sl_load	back	button	回到游戏	กลับสู่เกม
+sl_load	chco_off	tab	显示缩略图	แสดงภาพย่อ
+sl_load	chco_on	tab	显示缩略图	แสดงภาพย่อ
+sl_load	cont_bg	title	读档	โหลด
+sl_load	datach	button	替换存档	แทนที่ข้อมูล
+sl_load	datacopy	button	复制存档	คัดลอกข้อมูล
+sl_load	delete	button	删除存档	ลบข้อมูล
+sl_load	edithold_off	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_load	edithold_on	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_load	favvoice	button	语音收藏夹	เสียงโปรด
+sl_load	qload	button	快速读档	โหลดด่วน
+sl_load	save	button	存档	บันทึก
+sl_load	title	button	回到标题界面	กลับหน้าไตเติล
+sl_qlod	_textedit	button	编辑注释	แก้ไขคำอธิบาย
+sl_qlod	back	button	回到游戏	กลับสู่เกม
+sl_qlod	chco_off	tab	显示缩略图	แสดงภาพย่อ
+sl_qlod	chco_on	tab	显示缩略图	แสดงภาพย่อ
+sl_qlod	cont_bg	title	快速读档	โหลดด่วน
+sl_qlod	datach	button	替换存档	แทนที่ข้อมูล
+sl_qlod	datacopy	button	复制存档	คัดลอกข้อมูล
+sl_qlod	delete	button	删除存档	ลบข้อมูล
+sl_qlod	edithold_off	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_qlod	edithold_on	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_qlod	favvoice	button	语音收藏夹	เสียงโปรด
+sl_qlod	load	button	读档	โหลด
+sl_qlod	save	button	存档	บันทึก
+sl_qlod	title	button	回到标题界面	กลับหน้าไตเติล
+sl_fvoice	_textedit	button	编辑注释	แก้ไขคำอธิบาย
+sl_fvoice	addlist	button	添加到列表	เพิ่มลง\nรายการ
+sl_fvoice	back	button	回到游戏	กลับสู่เกม
+sl_fvoice	clearlist	button	清空列表	ล้าง\nรายการ
+sl_fvoice	cont_bg#1	title	语音收藏夹	เสียงโปรด
+sl_fvoice	datach	button	替换存档	แทนที่ข้อมูล
+sl_fvoice	datacopy	button	复制存档	คัดลอกข้อมูล
+sl_fvoice	dataload	button	场景回顾	ไปยังฉากนี้
+sl_fvoice	defo~1	button	显示播放列表	แสดงรายการเล่น
+sl_fvoice	on~1	button	显示播放列表	แสดงรายการเล่น
+sl_fvoice	over~1	button	显示播放列表	แสดงรายการเล่น
+sl_fvoice	delete	button	删除存档	ลบข้อมูล
+sl_fvoice	dellist#1-2	button	从列表删除	ลบออกจาก\nรายการ
+sl_fvoice	edithold_off	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_fvoice	edithold_on	tab	选中编辑按钮	คงปุ่มแก้ไขไว้
+sl_fvoice	load	button	读档	โหลด
+sl_fvoice	loadlist	button	载入列表	โหลด\nรายการ
+sl_fvoice	qload	button	快速读档	โหลดด่วน
+sl_fvoice	save	button	存档	บันทึก
+sl_fvoice	savelist	button	保存列表	บันทึก\nรายการ
+sl_fvoice	title	button	回到标题界面	กลับหน้าไตเติล
+sys_page1	content_bg#1	heading	自动跳过已读文本	ข้ามข้อความที่อ่านแล้วอัตโนมัติ
+sys_page1	content_bg#2	heading	已读文本自动跳过方式	วิธีข้ามข้อความที่อ่านแล้ว
+sys_page1	content_bg#3	heading	自动移动鼠标指针	เลื่อนเคอร์เซอร์อัตโนมัติ
+sys_page1	content_bg#4	heading	鼠标指针自动移动至	ตำแหน่งเลื่อนเคอร์เซอร์อัตโนมัติ
+sys_page1	content_bg#5	heading	自动隐藏鼠标指针	ซ่อนเคอร์เซอร์อัตโนมัติ
+sys_page1	content_bg#6-7	heading	存档、读档时的鼠标操作	การใช้เมาส์ตอนบันทึก/โหลด
+sys_page1	content_bg#8	heading	H情节选择项固定	ล็อกตัวเลือกฉาก H
+sys_page1	content_bg#9	heading	沉浸式体验	โหมดดื่มด่ำ
+sys_page1	content_bg#10	heading	久未操作时的游戏状态	เมื่อไม่ได้ใช้งานเป็นเวลานาน
+sys_page1	content_bg#11	heading	语音中断	ตัดเสียงพากย์
+sys_page1	content_bg#12	heading	流程图中显示未读章节	แสดงฉากที่ยังไม่อ่านในผังเรื่อง
+sys_page1	10s	button	10秒	10 วินาที
+sys_page1	20s	button	20秒	20 วินาที
+sys_page1	5s	button	5秒	5 วินาที
+sys_page1	continue	button	继续	ทำต่อ
+sys_page1	doubleclick	button	双击	ดับเบิลคลิก
+sys_page1	jump	button	跳转	กระโดด
+sys_page1	no	button	否	ไม่
+sys_page1	none	button	不隐藏	ไม่ซ่อน
+sys_page1	singleclick	button	单击	คลิกเดียว
+sys_page1	skip	button	快进	ข้าม
+sys_page1	stop	button	停止	หยุด
+sys_page1	tool_off	tab	使用第三方朗读工具	ใช้โปรแกรมอ่านออกเสียง
+sys_page1	tool_on	tab	使用第三方朗读工具	ใช้โปรแกรมอ่านออกเสียง
+sys_page1	yes	button	是	ใช่
+sys_page2	cont_bg#1	heading	游戏进行速度	ความเร็วเกม
+sys_page2	cont_bg#2	heading	语音播放速度	ความเร็วเสียงพากย์
+sys_page2	cont_bg#3	heading	快进速度调整	ความเร็วการข้าม
+sys_page2	cont_bg#4	heading	快进方式	รูปแบบการข้าม
+sys_page2	cont_bg#5	heading	缩略图显示	แสดงภาพย่อ
+sys_page2	cont_bg#6	heading	系统语音选项	เสียงระบบ
+sys_page2	cont_bg#7	heading	角色选项	เลือกตัวละคร
+sys_page2	cont_bg#8	heading	系统语音音量	ระดับเสียงระบบ
+sys_page2	cv	button	角色语音	เสียงตัวละคร
+sys_page2	first	button	快速	เร็ว
+sys_page2	link_off	tab	和游戏进行速度保持一致	ให้ตรงกับความเร็วเกม
+sys_page2	link_on	tab	和游戏进行速度保持一致	ให้ตรงกับความเร็วเกม
+sys_page2	normal	button	普通	ปกติ
+sys_page2	se	button	音效	เสียงประกอบ
+sys_page2	select_gen	button	玄十郎	เก็นจูโร
+sys_page2	select_koh	button	小春	โคฮารุ
+sys_page2	select_mak	button	茉子	มาโกะ
+sys_page2	select_miz	button	美津叶	มิซึฮะ
+sys_page2	select_mur	button	丛雨	มุราซาเมะ
+sys_page2	select_ran	button	随机	สุ่ม
+sys_page2	select_ren	button	蕾娜	เลนะ
+sys_page2	select_rok	button	芦花	โรกะ
+sys_page2	select_rtr	button	廉太郎	เร็นทาโร่
+sys_page2	select_yos	button	芳乃	โยชิโนะ
+sys_page2	text	button	纯文字	ข้อความล้วน
+sys_page3	cont_bg#1	heading	文本显示速度	ความเร็วแสดงข้อความ
+sys_page3	cont_bg#2	heading	自动模式速度	ความเร็วโหมดออโต้
+sys_page3	cont_bg#3	heading	自动模式类型	รูปแบบโหมดออโต้
+sys_page3	cont_bg#4	heading	选择项后快进是否解除	เลิกข้ามหลังเลือกตัวเลือก
+sys_page3	cont_bg#5	heading	未读文本快进	ข้ามข้อความที่ยังไม่อ่าน
+sys_page3	cont_bg#6	heading	选择项后自动模式是否解除	เลิกโหมดออโต้หลังเลือกตัวเลือก
+sys_page3	cont_bg#7	heading	Ctrl快进方式	วิธีข้ามด้วย Ctrl
+sys_page3	cont_bg#8	heading	对话框不透明度	ความทึบของกล่องข้อความ
+sys_page3	cont_bg#9	heading	颜色设置	ตั้งค่าสี
+sys_page3	all	button	快速	ทั้งหมด
+sys_page3	colorreset	button	重置	รีเซ็ต
+sys_page3	continue	button	不解除	ไม่เลิก
+sys_page3	fontselect	button	字体选择	เลือกฟอนต์
+sys_page3	normal	button	普通	ปกติ
+sys_page3	normalwindow	button	普通对话框	กล่องปกติ
+sys_page3	read	button	仅已读	ที่อ่านแล้ว
+sys_page3	redtext	button	已读文字	อ่านแล้ว
+sys_page3	release	button	解除	เลิก
+sys_page3	speed	button	快速	ความเร็ว
+sys_page3	unreadtext	button	未读文字	ยังไม่อ่าน
+sys_page3	vcwindow	button	视点变更时对话框	กล่องมุมมองอื่น
+sys_page3	voice	button	语音优先	ตามเสียงพากย์
+sys_page4	cont_bg#1	heading	主音量	ระดับเสียงหลัก
+sys_page4	cont_bg#2	heading	视频音量	ระดับเสียงวิดีโอ
+sys_page4	cont_bg#4	heading	（角色说话时）	(ขณะตัวละครพูด)
+sys_page4	cont_bg#5	heading	角色语音	เสียงตัวละคร
+sys_page4	cont_bg#7	heading	游戏音效	เอฟเฟกต์เสียง
+sys_page4	cont_bg#8-9	heading	背景语音（普通）	เสียงพื้นหลัง (ปกติ)
+sys_page4	cont_bg#10	heading	系统音效	เสียงระบบ
+sys_page4	cont_bg#11-12	heading	背景语音（H）	เสียงพื้นหลัง (H)
+sys_page4	cont_bg#13	heading	单独设置每个角色的语音	ตั้งค่าเสียงตัวละครแยกรายคน
+sys_page4	down_off	tab	角色说话时不降低BGM音量	ไม่ลดเสียง BGM ขณะตัวละครพูด
+sys_page4	down_on	tab	角色说话时不降低BGM音量	ไม่ลดเสียง BGM ขณะตัวละครพูด
+sys_page4	gen_off	tab	鞍马 玄十郎	คุรามะ เก็นจูโร
+sys_page4	gen_on	tab	鞍马 玄十郎	คุรามะ เก็นจูโร
+sys_page4	koh_off	tab	鞍马 小春	คุรามะ โคฮารุ
+sys_page4	koh_on	tab	鞍马 小春	คุรามะ โคฮารุ
+sys_page4	mat_off	tab	常陆 茉子	ฮิตาจิ มาโกะ
+sys_page4	mat_on	tab	常陆 茉子	ฮิตาจิ มาโกะ
+sys_page4	mid_off	tab	驹川 美津叶	โคมากาวะ มิซึฮะ
+sys_page4	mid_on	tab	驹川 美津叶	โคมากาวะ มิซึฮะ
+sys_page4	mur_off	tab+widen	丛雨	มุราซาเมะ
+sys_page4	mur_on	tab+widen	丛雨	มุราซาเมะ
+sys_page4	off_off	tab	关闭H场景的背景语音	ปิดเสียงพื้นหลังฉาก H
+sys_page4	off_on	tab	关闭H场景的背景语音	ปิดเสียงพื้นหลังฉาก H
+sys_page4	otf_off	tab	其他女性	ผู้หญิงคนอื่น
+sys_page4	otf_on	tab	其他女性	ผู้หญิงคนอื่น
+sys_page4	ren_off	tab	蕾娜·列支诺瑙尔	เลนะ ลิคเทเนาเออร์
+sys_page4	ren_on	tab	蕾娜·列支诺瑙尔	เลนะ ลิคเทเนาเออร์
+sys_page4	rok_off~1	tab	马庭 芦花	มานิวะ โรกะ
+sys_page4	rok_on~1	tab	马庭 芦花	มานิวะ โรกะ
+sys_page4	rok_off~2	tab	其他男性	ผู้ชายคนอื่น
+sys_page4	rok_on~2	tab	其他男性	ผู้ชายคนอื่น
+sys_page4	rtr_off	tab	鞍马 廉太郎	คุรามะ เร็นทาโร่
+sys_page4	rtr_on	tab	鞍马 廉太郎	คุรามะ เร็นทาโร่
+sys_page4	yas_off	tab+widen	朝武 安晴	โทโมทาเกะ ยาสุฮารุ
+sys_page4	yas_on	tab+widen	朝武 安晴	โทโมทาเกะ ยาสุฮารุ
+sys_page4	yos_off	tab+widen	朝武 芳乃	โทโมทาเกะ โยชิโนะ
+sys_page4	yos_on	tab+widen	朝武 芳乃	โทโมทาเกะ โยชิโนะ
+sys_page5	cont_bg#1	heading	存档时是否确认	ยืนยันก่อนบันทึก
+sys_page5	cont_bg#2	heading	在历史记录窗口中跳转是否确认	ยืนยันก่อนข้ามจากประวัติข้อความ
+sys_page5	cont_bg#3	heading	覆盖存档时是否确认	ยืนยันก่อนบันทึกทับ
+sys_page5	cont_bg#4	heading	在流程图中是否确认	ยืนยันก่อนข้ามจากผังเรื่อง
+sys_page5	cont_bg#5	heading	读档时是否确认	ยืนยันก่อนโหลด
+sys_page5	cont_bg#6	heading	跳到下一个选项时是否确认	ยืนยันก่อนไปตัวเลือกถัดไป
+sys_page5	cont_bg#7	heading	快速存档时是否确认	ยืนยันก่อนบันทึกด่วน
+sys_page5	cont_bg#8	heading	跳到上一个选项时是否确认	ยืนยันก่อนกลับตัวเลือกก่อนหน้า
+sys_page5	cont_bg#9	heading	快速读档时是否确认	ยืนยันก่อนโหลดด่วน
+sys_page5	cont_bg#10	heading	跳到下一个场景时是否确认	ยืนยันก่อนไปฉากถัดไป
+sys_page5	cont_bg#11	heading	回到标题界面/中断回想时是否确认	ยืนยันก่อนกลับไตเติล/ออกจากการย้อนชม
+sys_page5	cont_bg#12	heading	跳到上一个场景时是否确认	ยืนยันก่อนกลับฉากก่อนหน้า
+sys_page5	cont_bg#13	heading	初始化系统设置时是否确认	ยืนยันก่อนรีเซ็ตการตั้งค่าระบบ
+sys_page5	cont_bg#14	heading	初始化立绘鉴赏模式时是否确认	ยืนยันก่อนรีเซ็ตโหมดชมภาพตัวละคร
+sys_page5	cont_bg#15	heading	删除存档时是否确认	ยืนยันก่อนลบข้อมูลบันทึก
+sys_page5	cont_bg#16	heading	替换存档时是否确认	ยืนยันก่อนแทนที่ข้อมูลบันทึก
+sys_page5	cont_bg#17	heading	复制存档时是否确认	ยืนยันก่อนคัดลอกข้อมูลบันทึก
+sys_page5	cont_bg#18	heading	结束游戏时是否确认	ยืนยันก่อนออกจากเกม
+sys_page6	cont_bg#1	heading	鼠标手势	ท่าเมาส์
+sys_page6	cont_bg#2	button	关闭手势功能	ปิดท่าเมาส์
+sys_page6	cont_bg#3	heading	手势功能	ฟังก์ชันท่าเมาส์
+sys_page6	disabling_off	tab	关闭手势功能	ปิดท่าเมาส์
+sys_page6	disabling_on	tab	关闭手势功能	ปิดท่าเมาส์
+sys_page6	icon_auto	button+bottom	自动模式	ออโต้
+sys_page6	icon_backlog	button+bottom	历史记录	ประวัติข้อความ
+sys_page6	icon_backskip	button+bottom	快退	ข้ามย้อน
+sys_page6	icon_fav	button+bottom	语音收藏	เสียงโปรด
+sys_page6	icon_flowchart	button+bottom	流程图	ผังเรื่อง
+sys_page6	icon_fnoff	button+bottom	无	ไม่มี
+sys_page6	icon_full	button+bottom	全屏	เต็มจอ
+sys_page6	icon_load	button+bottom	读档界面	โหลด
+sys_page6	icon_min	button+bottom	最小化	ย่อหน้าต่าง
+sys_page6	icon_nextscene	button+bottom	下一个场景	ฉากถัดไป
+sys_page6	icon_nextselect	button+bottom	下一个选项	ตัวเลือกถัดไป
+sys_page6	icon_prevscene	button+bottom	上一个场景	ฉากก่อนหน้า
+sys_page6	icon_prevselect	button+bottom	上一个选项	ตัวเลือกก่อนหน้า
+sys_page6	icon_prevtxt	button+bottom	上一句文本	ข้อความก่อนหน้า
+sys_page6	icon_qload	button+bottom	快速读档	โหลดด่วน
+sys_page6	icon_qsave	button+bottom	快速存档	บันทึกด่วน
+sys_page6	icon_save	button+bottom	存档界面	บันทึก
+sys_page6	icon_skip	button+bottom	快进	ข้าม
+sys_page6	icon_system	button+bottom	系统设置	ตั้งค่าระบบ
+sys_page6	icon_title	button+bottom	回到标题界面	กลับหน้าไตเติล
+sys_page7	key_cont_bg#1	heading	打开存档界面	เปิดหน้าบันทึก
+sys_page7	key_cont_bg#2	heading	Ctrl快进	ข้ามด้วย Ctrl
+sys_page7	key_cont_bg#3	heading	打开读档界面	เปิดหน้าโหลด
+sys_page7	key_cont_bg#4	heading	跳到下一个场景	ไปฉากถัดไป
+sys_page7	key_cont_bg#5	heading	快速存档	บันทึกด่วน
+sys_page7	key_cont_bg#6	heading	跳到下一个选项	ไปตัวเลือกถัดไป
+sys_page7	key_cont_bg#7	heading	快速读档	โหลดด่วน
+sys_page7	key_cont_bg#8	heading	打开历史记录	เปิดประวัติข้อความ
+sys_page7	key_cont_bg#9	heading	打开系统设置	เปิดตั้งค่าระบบ
+sys_page7	key_cont_bg#10	heading	历史记录上一页	ประวัติข้อความหน้าก่อน
+sys_page7	key_cont_bg#11	heading	窗口全屏切换	สลับหน้าต่าง/เต็มจอ
+sys_page7	key_cont_bg#12	heading	历史记录下一页	ประวัติข้อความหน้าถัดไป
+sys_page7	key_cont_bg#13	heading	下一句／确定	ข้อความถัดไป/ตกลง
+sys_page7	key_cont_bg#14	heading	跳到上一句文本	ย้อนข้อความก่อนหน้า
+sys_page7	key_cont_bg#15	heading	自动模式	โหมดออโต้
+sys_page7	key_cont_bg#16	heading	快退	ข้ามย้อนกลับ
+sys_page7	key_cont_bg#17	heading	快进模式	โหมดข้าม
+sys_page7	key_cont_bg#18	heading	跳到上一个场景	กลับฉากก่อนหน้า
+sys_page7	key_cont_bg#19	heading	跳到上一个选项	กลับตัวเลือกก่อนหน้า
+sys_page7	key_cont_bg#20	heading	打开流程图	เปิดผังเรื่อง
+sys_page7	key_cont_bg#21	heading	回到标题界面	กลับหน้าไตเติล
+sys_page7	key_cont_bg#22	heading	音量调整	ปรับระดับเสียง
+sys_page7	key_cont_bg#23	heading	隐藏对话框	ซ่อนกล่องข้อความ
+sys_page7	key_cont_bg#24	heading	语音重播	เล่นเสียงซ้ำ
+sys_page7	key_cont_bg#25	heading	语音收藏	เสียงโปรด
+sys_page7	key_cont_bg#26-27	heading	按键一览、取消按键功能	รายการปุ่ม/ยกเลิกปุ่มลัด
+touchuiconf	back	button	回到游戏	กลับสู่เกม
+touchuiconf	cont_bg	title	自定义按钮排列	จัดวางปุ่มเอง
+touchuiconf	head/lay	title	自定义按钮排列	จัดวางปุ่มเอง
+touchuiconf	menulink_off_defo	tab	统一按钮排列	จัดปุ่มให้เหมือนกัน
+touchuiconf	menulink_off_over	tab	统一按钮排列	จัดปุ่มให้เหมือนกัน
+touchuiconf	menulink_on_defo	tab	统一按钮排列	จัดปุ่มให้เหมือนกัน
+touchuiconf	menulink_on_over	tab	统一按钮排列	จัดปุ่มให้เหมือนกัน
+touchuiconf	reset	button	恢复默认设置	คืนค่าเริ่มต้น
+touchuiconf	revert	button	取消更改	ยกเลิกการแก้ไข
+touchuiconf	szopaccaps/lay#1	heading	尺寸	ขนาด
+touchuiconf	szopaccaps/lay#2	heading	透明度	ความทึบ
+touchuiconf	tab_touch	tab	触控菜单	เมนูสัมผัส
+touchuiconf	tab_window	tab	窗口菜单	เมนูหน้าต่าง
+touchuiconf	touchhid_off_defo	tab	显示触摸控制菜单	แสดงเมนูควบคุมแบบสัมผัส
+touchuiconf	touchhid_off_over	tab	显示触摸控制菜单	แสดงเมนูควบคุมแบบสัมผัส
+touchuiconf	touchhid_on_defo	tab	显示触摸控制菜单	แสดงเมนูควบคุมแบบสัมผัส
+touchuiconf	touchhid_on_over	tab	显示触摸控制菜单	แสดงเมนูควบคุมแบบสัมผัส
+touchuiconf	windowhid_off_defo	tab	始终显示窗口菜单	แสดงเมนูหน้าต่างตลอด
+touchuiconf	windowhid_off_over	tab	始终显示窗口菜单	แสดงเมนูหน้าต่างตลอด
+touchuiconf	windowhid_on_defo	tab	始终显示窗口菜单	แสดงเมนูหน้าต่างตลอด
+touchuiconf	windowhid_on_over	tab	始终显示窗口菜单	แสดงเมนูหน้าต่างตลอด
+touchvolume	base	heading	主音量	ระดับเสียงหลัก
+exchview	bgload	button	读取背景图片	โหลดภาพพื้นหลัง
+exchview	bt_bg_bg	button	背景	ฉากหลัง
+exchview	bt_distance_bg	button	距离	ระยะ
+exchview	bt_face_bg	button	表情	สีหน้า
+exchview	bt_pose_bg	button	姿势	ท่าทาง
+exchview	bt_style_bg	button	服装	ชุด
+exchview	bt_time_bg	button	时间	เวลา
+exchview	btdell	button	隐藏按键	ซ่อนปุ่ม
+exchview	chload	button	读取立绘状态	โหลดการจัดตัวละคร
+exchview	chmove	button	移动角色	ย้ายตัวละคร
+exchview	chname	tab	编辑角色名	แก้ชื่อ
+exchview	chsave	button	保存立绘状态	บันทึกการจัดตัวละคร
+exchview	chselect_gen	button	玄十郎	เก็นจูโร
+exchview	chselect_hin	button	比奈美	ฮินามิ
+exchview	chselect_koh	button	小春	โคฮารุ
+exchview	chselect_kok	button	心子	โมโตโกะ
+exchview	chselect_mak	button	茉子	มาโกะ
+exchview	chselect_mid	button	美津叶	มิซึฮะ
+exchview	chselect_mur	button	丛雨	มุราซาเมะ
+exchview	chselect_ren	button	蕾娜	เลนะ
+exchview	chselect_rok	button	芦花	โรกะ
+exchview	chselect_rtr	button	廉太郎	เร็นทาโร่
+exchview	chselect_yas	button	安晴	ยาสุฮารุ
+exchview	chselect_yos	button	芳乃	โยชิโนะ
+exchview	cont_bg	title	鉴赏模式	เอ็กซ์ตร้า
+exchview	hoho_off	tab	脸红 ON	แก้มแดง
+exchview	hoho_on	tab	脸红 ON	แก้มแดง
+exchview	imgsave	button	保存图片	บันทึกภาพ
+exchview	reset	button	初始化	รีเซ็ต
+exchview	stamp	button	立绘鉴赏模式	โหมดชมภาพตัวละคร
+exchview	tab_cg	tab	CG鉴赏	แกลเลอรี CG
+exchview	tab_character	tab	立绘鉴赏	ชมภาพตัวละคร
+exchview	tab_scean	tab	场景鉴赏	ย้อนชมฉาก
+exchview	text	tab	编辑对话	แก้บทพูด
+exchview	title	button	回到标题界面	กลับหน้าไตเติล
+_images	attention#1,11	button	注意	คำเตือน
+_images	attention#2-10,12-17	button+smooth	本作品纯属虚构。……	ผลงานนี้เป็นเรื่องแต่งทั้งหมด\nชื่อตัวละคร องค์กร สถานที่ และฉากต่าง ๆ ล้วนสมมติขึ้น ไม่เกี่ยวข้องกับความเป็นจริง\n\nผลงานนี้เป็นลิขสิทธิ์ของ YUZUSOFT\nห้ามคัดลอก ดัดแปลง บันทึกเสียง ให้เช่า เผยแพร่ หรือนำออกฉายโดยไม่ได้รับอนุญาต\n\nตัวละครทุกตัวในผลงานนี้มีอายุเกิน 18 ปีแล้ว
+_images	scramble2#1	button+interp	Yoozle搜索	ค้นหาด้วย Yoozle
+_images	scramble2#2	button	图片	รูปภาพ
+_images	scramble2#3	button+interp	手气不错	ดวงดี
+_images	extra_watermark#2	button	立绘鉴赏模式	โหมดชมภาพตัวละคร
