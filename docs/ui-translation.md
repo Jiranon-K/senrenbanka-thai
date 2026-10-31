@@ -64,7 +64,13 @@ Surveyed 2026-10-26. The patch keeps using the **CN slot** (see `CONTEXT.md`): e
 | Flowchart chapter captions + scene lines | `main/flow_texts_cn.ini` (325 entries) | same | Claude |
 | Help pages | `main/help_{sys,file,tui,exch,flow,lang}_cn.txt`, `main/speech_help_cn.txt` | same, zlib-compressed | Claude |
 | BGM titles (sound mode) | `main/soundlist_cn.csv` | same | Claude |
+| Title-screen language button ("Language : …", top right) | `main/syslangtext_en.ini`: `subLanguageMenuItem_cn`, plus `textLanguageMenuItem_cn` for the English menu bar | same | Claude |
 | Opening movie with Chinese subtitles | `adult.xp3: cn_OP_1080.mp4` (137 MB) | H.264, hard-subbed | later — needs re-encode |
+
+`main/custom.tjs` `updateLanguageButton` draws the button text itself: it always reads the
+**English** name of the current UI language (`GetSysLangText("subLanguageMenuItem_"+tag, "en")`),
+and the `"Language : "` prefix is hardcoded. So the Thai name has to go in `syslangtext_en.ini`,
+not the `_cn` file. It is drawn with the UI font (`flow.text`), which already has Thai glyphs.
 
 `SenrenBanka.exe` was checked with REA (`inspect_pe_resources`): it carries only KiriKiri engine
 error strings (EN/JP string tables) and boot scripts — no game UI. Nothing to patch there.
