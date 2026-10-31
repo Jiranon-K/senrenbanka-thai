@@ -80,13 +80,14 @@ csv.field_size_limit(10 ** 9)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
 import scenario
-import xp3
-import freemote
+import corpus
+import tsv
 
 # ระบบเลข idx ของฝั่ง R18 — รับ 5 ช่อง (มีเกาหลีเพิ่มเข้ามา) และเข้มกว่าฝั่ง
 # all-ages ตรงที่ทุกสมาชิกต้องเป็นข้อความ **คนละระบบเลขกับ scenario.ALL_AGES**
 # ห้ามสลับ (อ่านหัวไฟล์ tools/scenario.py)
 LAYOUT = scenario.R18
+CORPUS = corpus.R18_CORPUS
 CN = scenario.CN
 
 json_files = scenario.json_files
@@ -96,14 +97,7 @@ json_files = scenario.json_files
 
 def cmd_decompile():
     srcdir = sys.argv[2]
-    os.makedirs(P.JSON_R18, exist_ok=True)
-    files = sorted(glob.glob(os.path.join(srcdir, "*.ks.scn")))
-    print(f"decompiling {len(files)} R18 scenarios from {srcdir}")
-    fm = freemote.default()
-    for fp in files:
-        fm.decompile(fp, P.JSON_R18)
-    print("done ->", P.JSON_R18)
-
+    print(f"decompiled {corpus.decompile(CORPUS, srcdir)} R18 scenarios from {srcdir} ->", P.JSON_R18)
 
 # ---------------------------------------------------------------- 2. align
 
@@ -210,13 +204,11 @@ def cmd_align():
     over = {}
     for t in glob.glob(os.path.join(P.TH_R18_DIR, "*.tsv")):
         pf = os.path.basename(t)[:-4]
-        for line in open(t, encoding="utf-8"):
-            if line.strip():
-                i, th = line.rstrip("\n").split("\t", 1)
-                over[(pf, i)] = th
+        for i, th in tsv.read_th(t).items():
+            over[(pf, i)] = th
     kept = 0
     for row in rows:
-        pf = re.match(r"^\d+[a-z]?", row[0]).group(0)
+        pf = tsv.prefix(row[0])
         if not row[6].strip() and (pf, str(row[1])) in over:
             row[6], row[7] = over[(pf, str(row[1]))], "TH_R18"
             kept += 1
@@ -281,91 +273,19 @@ def cmd_report():
 # ---------------------------------------------------------------- 3. import
 
 def cmd_import():
-    sub = sys.argv[2] if len(sys.argv) > 2 else None
-    blk, cho = {}, {}
-    with open(P.CSV_R18, encoding="utf-8-sig") as f:
-        for r in csv.DictReader(f):
-            r["th"] = r["th"].replace("～", "〜")   # FF5E -> 301C (มี glyph ในฟอนต์)
-            i = r["idx"]
-            if i.startswith("ch"):
-                cho.setdefault(r["file"], {})[int(i[2:])] = r
-            else:
-                blk.setdefault(r["file"], {})[int(i)] = r
-
-    tot = ctot = 0
-    for jf in json_files(P.JSON_R18):
-        name = os.path.basename(jf)
-        if sub and sub not in name: continue
-        d = json.load(open(jf, encoding="utf-8"))
-        changed = False
-
-        be = blk.get(name)
-        if be:
-            blocks = list(LAYOUT.blocks(d))
-            n = 0
-            for i, b in enumerate(blocks):          # idx ในไฟล์นี้ = index ของ walk เต็ม
-                r = be.get(i)
-                if r and r["th"].strip():
-                    b[CN][1] = r["th"]
-                    if r["speaker_en"].strip(): b[CN][0] = r["speaker_en"]
-                    n += 1
-            tot += n; changed = changed or n > 0
-
-        ce = cho.get(name)
-        if ce:
-            chs = list(LAYOUT.choices(d))
-            n = 0
-            for i, x in enumerate(chs):
-                r = ce.get(i)
-                if r and r["th"].strip():
-                    for k in ("searchtext", "speechtext", "text"):
-                        if k in x["language"][CN]: x["language"][CN][k] = r["th"]
-                    n += 1
-            ctot += n; changed = changed or n > 0
-
-        if changed:
-            json.dump(d, open(jf, "w", encoding="utf-8"), ensure_ascii=False)
-
+    tot, ctot = corpus.apply(CORPUS, sys.argv[2] if len(sys.argv) > 2 else None)
     print(f"imported {tot} Thai lines + {ctot} choice options into CN slot ({P.JSON_R18})")
-
 
 # ---------------------------------------------------------------- 4. recompile
 
 def cmd_recompile():
-    os.makedirs(P.PSB_R18, exist_ok=True)
-    sub = sys.argv[2] if len(sys.argv) > 2 else None
-    fm = freemote.default()
-    for jf in json_files(P.JSON_R18):
-        if sub and sub not in os.path.basename(jf): continue
-        fm.build(jf, P.PSB_R18)
+    corpus.recompile(CORPUS, sys.argv[2] if len(sys.argv) > 2 else None)
     print("recompiled ->", P.PSB_R18)
-
 
 # ---------------------------------------------------------------- 5. pack
 
 def cmd_pack():
-    """เหมือน pipeline_cn.py pack ทุกอย่าง ต่างแค่อ่าน psb จาก thai_work/psb_r18"""
-    name, extract = sys.argv[2], sys.argv[3]
-    archive = P.game_file(name)
-    ar = xp3.Archive.read(xp3.backup_once(archive))
-
-    mine = {os.path.basename(p): p for p in glob.glob(os.path.join(P.PSB_R18, "*.ks.scn"))}
-    skipped = []
-    for entry, plain in ar.match_by_size(extract).items():
-        myscn = mine.get(os.path.basename(plain))
-        if not myscn:
-            continue
-        with open(plain, "rb") as f: orig = f.read()
-        with open(myscn, "rb") as f: new = f.read()
-        if not ar.replace(entry, new, orig):
-            skipped.append((os.path.basename(plain), len(new), entry.size))
-
-    print(f"{name}: matched+encrypted {ar.replaced} scenarios")
-    for n, got, cap in skipped:
-        print(f"  SKIP {n}: recompiled {got} > orig {cap}")
-    ar.save(archive)
-    print(f"  wrote {archive} ({os.path.getsize(archive)} bytes)")
-
+    corpus.pack(CORPUS, sys.argv[2], sys.argv[3])
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""

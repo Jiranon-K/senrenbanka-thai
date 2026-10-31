@@ -148,9 +148,6 @@ class Button(_Shape):
         self.bind("<Button-1>", self._on_press)
         self.bind("<ButtonRelease-1>", self._on_release)
 
-    def configure_command(self, command):
-        self._command = command
-
     def set_enabled(self, on: bool):
         self._enabled = on
         fg, bg, _, _ = self._palette
@@ -455,10 +452,6 @@ class CheckMark(tk.Canvas):
         b = self._t
         A.tween(POP, lambda v: self._paint(b * v), ease=A.out_back,
                 delay=delay, key=("chk", id(self)))
-
-    @property
-    def checked(self) -> bool:
-        return self._on
 
 
 class Badge(tk.Canvas):

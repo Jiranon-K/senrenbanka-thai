@@ -36,17 +36,24 @@ def _rows(prefix: str) -> list[dict]:
         return [r for r in csv.DictReader(f) if r["file"].startswith(prefix)]
 
 
-def _read_th(prefix: str) -> dict[str, str]:
-    """อ่าน th/<prefix>.tsv -> {idx: คำแปล}"""
+def read_th(path: str) -> dict[str, str]:
+    """อ่านไฟล์ `idx<TAB>คำแปล` -> {idx: คำแปล}"""
     out: dict[str, str] = {}
-    with open(os.path.join(P.TH_DIR, prefix + ".tsv"), encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
-            line = line.rstrip("\n")
-            if not line:
-                continue
-            i, t = line.split("\t", 1)
-            out[i] = t
+            if line.strip():
+                i, t = line.rstrip("\n").split("\t", 1)
+                out[i] = t
     return out
+
+
+def _read_th(prefix: str) -> dict[str, str]:
+    return read_th(os.path.join(P.TH_DIR, prefix + ".tsv"))
+
+
+def prefix(name: str) -> str:
+    """เลขนำหน้าบท เช่น `010` / `001a` (ดู CONTEXT.md)"""
+    return re.match(r"^\d+[a-z]?", name).group(0)
 
 
 def is_control(row: dict) -> bool:
