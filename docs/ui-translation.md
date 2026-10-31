@@ -1,5 +1,23 @@
 # UI translation — menus, buttons, system text
 
+> **Status 2026-10-31 — all image menus:** every CN sheet (24 `uipsd/cn/*_cn.pimg`) and 3 standalone
+> PNGs (`attention`, `scramble2`, `extra_watermark`) are drawn in Thai — 917 labels from
+> `tools/ui_labels.tsv`. Run `python tools/ui_render.py <sheet ...>` then `python tools/ui_assets.py pack-text`.
+> Left as drawn: the game logo (title_bg, aboutdialog, deactivelogo, eyecatch logo) and the Latin
+> copyright line. `python tools/ui_render.py survey <sheet>` crops every CN text block next to its EN twin
+> for writing new labels.
+>
+> Label `kind` = `title | heading | tab | button | gold` plus `+flags`: `grad` `outline` `shadow` `flat`
+> (paint), `center` `left` (align), `smooth` (diffusion fill, for text on artwork), `interp` (linear fill),
+> `whole` (erase the union box), `clearall` (layer is text only), `jponly` (compare with JP only, searching
+> ±32 px — for layers whose EN twin is laid out differently), `widen` (layer may grow up to
+> `ui_assets.WIDEN_MAX` px to the right; the packer writes the new width into the sheet), `bottom` (only
+> text blocks in the lower third — gesture icons). Layer keys are `name`, `name~N` (Nth group with that
+> name), `name#N`, `#N-M` or `#N,M` (text blocks in reading order).
+>
+> Gotcha: FreeMote's `-raw` resource keys are not always layer ids (`gesture_help` stores layer 104 as
+> key `"10"`); `build_sheet` maps layer → `#resource#N` from the sheet json → Nth resource.
+
 > **Status 2026-10-31 — image pilot:** System Config → Image page (`sys_base`, `sys_page0`,
 > 70 layers) is drawn in Thai by `python tools/ui_render.py sys_base sys_page0` and packed by
 > `python tools/ui_assets.py pack-text`, which now also rebuilds every sheet that has a folder in

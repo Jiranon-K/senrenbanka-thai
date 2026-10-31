@@ -212,6 +212,9 @@ def image_sheets() -> list[str]:
                   and not d.startswith("_")) if os.path.isdir(TH) else []
 
 
+WIDEN_MAX = 120
+
+
 def thai_layers(sheet: str) -> dict[str, str]:
     from PIL import Image
     out, bad = {}, []
@@ -222,12 +225,36 @@ def thai_layers(sheet: str) -> dict[str, str]:
             bad.append("%s: no CN original in todo/%s" % (name, sheet))
             continue
         with Image.open(png) as a, Image.open(ref) as b:
-            if a.size != b.size or a.mode != "RGBA":
+            widened = a.height == b.height and b.width < a.width <= b.width + WIDEN_MAX
+            if (a.size != b.size and not widened) or a.mode != "RGBA":
                 bad.append("%s: %s %s, want %s RGBA" % (name, a.size, a.mode, b.size))
                 continue
         out[name.split("_", 1)[0]] = png
     if bad:
         sys.exit("%s: bad Thai layers\n  " % sheet + "\n  ".join(bad))
+    return out
+
+
+IMAGES = "_images"
+
+
+def thai_images() -> dict[str, str]:
+    from PIL import Image
+    root = os.path.join(TH, IMAGES)
+    out, bad = {}, []
+    for png in sorted(glob.glob(os.path.join(root, "**", "*.png"), recursive=True)):
+        rel = os.path.relpath(png, root).replace(os.sep, "/")
+        ref = os.path.join(TODO, IMAGES, rel)
+        if not os.path.exists(ref):
+            bad.append("%s: no CN original in todo/%s" % (rel, IMAGES))
+            continue
+        with Image.open(png) as a, Image.open(ref) as b:
+            if a.size != b.size:
+                bad.append("%s: %s, want %s" % (rel, a.size, b.size))
+                continue
+        out[rel] = png
+    if bad:
+        sys.exit("%s: bad Thai images\n  " % IMAGES + "\n  ".join(bad))
     return out
 
 
@@ -244,16 +271,33 @@ def build_sheet(base: str, sheet: str) -> bytes:
     resx = os.path.splitext(js)[0] + ".resx.json"
     meta = json.load(open(resx, encoding="utf-8"))
     res = meta["Resources"]
+    slots = list(res)
+    index = {}
+    for k, v in json.load(open(js, encoding="utf-8")).items():
+        if k.endswith(".tlg") and isinstance(v, str) and v.startswith("#resource#"):
+            index[k[:-4]] = int(v[len("#resource#"):])
     layers_ = thai_layers(sheet)
-    missing = [lid for lid in layers_ if lid not in res]
+    missing = [lid for lid in layers_ if lid not in index or index[lid] >= len(slots)]
     if missing:
         sys.exit("%s: layer ids not in sheet: %s" % (sheet, ", ".join(missing)))
     for lid, png in layers_.items():
-        rel = os.path.splitext(res[lid])[0] + ".png"
+        slot = slots[index[lid]]
+        rel = os.path.splitext(res[slot])[0] + ".png"
         shutil.copyfile(png, os.path.join(work, rel))
-        res[lid] = rel
+        res[slot] = rel
     with open(resx, "w", encoding="utf-8") as fh:
         json.dump(meta, fh, ensure_ascii=False, indent=2)
+    from PIL import Image
+    widths = {}
+    for lid, png in layers_.items():
+        with Image.open(png) as im:
+            widths[int(lid)] = im.width
+    sheet_meta = json.load(open(js, encoding="utf-8"))
+    for L in sheet_meta["layers"]:
+        if L.get("layer_id") in widths and L.get("width") != widths[L["layer_id"]]:
+            L["width"] = widths[L["layer_id"]]
+    with open(js, "w", encoding="utf-8") as fh:
+        json.dump(sheet_meta, fh, ensure_ascii=False, indent=2)
     built = freemote.default().build(js, os.path.join(work, "out"), ext=".pimg")
     print("  %-32s %d Thai layers" % (entry, len(layers_)))
     with open(built, "rb") as f:
@@ -280,11 +324,15 @@ def build_data(out: str | None = None, verify: bool = True):
             plain[n] = f.read()
     for sheet in sheets:
         plain[SHEET_ENTRY % sheet] = build_sheet(base, sheet)
+    images = thai_images()
+    for rel, png in images.items():
+        with open(png, "rb") as f:
+            plain[rel] = f.read()
     if plain:
         _apply_plain(ar, base, plain)
     ar.save(target)
-    print("wrote %s from %s (3 fonts + %d text files + %d image sheets)"
-          % (target, t.orig, len(files), len(sheets)))
+    print("wrote %s from %s (3 fonts + %d text files + %d image sheets + %d images)"
+          % (target, t.orig, len(files), len(sheets), len(images)))
 
     if verify and plain:
         verify_text(target, plain)
