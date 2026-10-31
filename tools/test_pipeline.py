@@ -664,6 +664,23 @@ def test_ui_render_helpers():
     chk("text_boxes แยกสองก้อนและตัดเส้นกรอบ", R.text_boxes(m), [(10, 10, 31, 21), (120, 12, 151, 23)])
 
 
+def test_screenshots_rule():
+    print("=" * 70)
+    print("R12 — ภาพหน้าจอเกมอยู่ใน docs/screenshots/ และกว้างไม่เกิน 1600 px")
+    if not _has_pil("R12 screenshots"):
+        return
+    from PIL import Image
+    shots = os.path.join(P.REPO, "docs", "screenshots")
+    files = sorted(os.listdir(shots)) if os.path.isdir(shots) else []
+    wide = []
+    for f in files:
+        with Image.open(os.path.join(shots, f)) as im:
+            if im.width > 1600:
+                wide.append("%s %dpx" % (f, im.width))
+    chk("ภาพหน้าจอกว้างไม่เกิน 1600 px", wide, [])
+    chk("docs/screenshots มีแต่ไฟล์ภาพ", [f for f in files if not f.lower().endswith((".webp", ".png", ".jpg"))], [])
+
+
 def test_ui_text_shadowing():
     print("=" * 70)
     print("ui text — ไฟล์เมนูไทยใน data.xp3 ไม่ถูก archive อื่นบัง")
@@ -713,6 +730,7 @@ def main():
     test_ui_images()
     test_ui_labels()
     test_ui_render_helpers()
+    test_screenshots_rule()
 
     print("=" * 70)
     if skipped:
