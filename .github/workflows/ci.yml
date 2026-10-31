@@ -1,0 +1,20 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    # tools/ targets Windows (krkrz, PowerShell helpers), so test on Windows too.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Needs no game files; the cases that do skip themselves.
+      - name: Pipeline tests
+        run: python tools/test_pipeline.py
