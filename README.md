@@ -165,6 +165,8 @@ python tools/gui/test_app.py --no-input # หน้าจอตัวติด�
 bash   tools/test_installer.sh <ชุดติดตั้ง>
 ```
 
+**ส่งงาน** — `main` รับเฉพาะ pull request ดู [CONTRIBUTING.md](CONTRIBUTING.md)
+
 **คู่มือละเอียด** — [THAI_TRANSLATION_GUIDE.md](tools/THAI_TRANSLATION_GUIDE.md) ·
 [R18_COMPAT.md](tools/R18_COMPAT.md) · [tools/gui/README.md](tools/gui/README.md)
 
