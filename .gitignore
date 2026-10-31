@@ -16,7 +16,8 @@
 !/CONTRIBUTING.md
 !/.github/
 
-# 2b) docs/ — ภาพประกอบ README (ภาพหน้าจอตัวติดตั้งที่เราเขียนเอง)
+# 2b) docs/ — ภาพประกอบ README: ภาพหน้าจอตัวติดตั้งที่เราเขียนเอง และภาพหน้าจอเกมใน
+#     docs/screenshots/ (ข้อยกเว้น R12 — ภาพหน้าจอเท่านั้น ห้ามไฟล์ asset ที่แตกจากเกม)
 !/docs/
 
 # 3) tools/  — our pipeline scripts + guide (NOT 3rd-party binaries)
