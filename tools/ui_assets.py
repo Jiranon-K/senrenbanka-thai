@@ -26,6 +26,7 @@ import os, sys, csv, json, glob, shutil, subprocess, re
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
+import freemote
 
 UI = os.path.join(P.WORK, "ui")
 ORIG = os.path.join(UI, "orig")
@@ -45,9 +46,7 @@ def decompile(pimg: str) -> str:
     if not os.path.exists(js):
         dst = os.path.join(DECOMP, os.path.basename(pimg))
         shutil.copyfile(pimg, dst)
-        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(dst)], capture_output=True)
-    if not os.path.exists(js):
-        raise RuntimeError("FreeMote could not decompile " + pimg)
+        freemote.default().decompile(dst)
     return js
 
 

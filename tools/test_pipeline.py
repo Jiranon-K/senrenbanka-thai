@@ -30,6 +30,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 import paths as P                                             # noqa: E402
 import scenario                                               # noqa: E402
 import xp3                                                    # noqa: E402
+import freemote                                               # noqa: E402
 
 fails = []
 skipped = []
@@ -522,6 +523,53 @@ def test_generated_bat_matches_shipped():
             chk("%s ที่เติมค่าแล้วผ่านด่านกันลืม" % n, str(ex), "ผ่าน")
 
 
+# ═════════════════════════════════════════════════════════════ freemote
+
+class _Done:
+    def __init__(self, code, out=b""):
+        self.returncode, self.stdout, self.stderr = code, out, b""
+
+
+def _fake_run(code=0, write=True, build_name=".pure.scn"):
+    """ตัวปลอมแทน PsbDecompile/PsBuild — เขียนไฟล์ตามที่ exe จริงเขียน"""
+    def run(args, cwd=None, capture_output=True):
+        exe, src = os.path.basename(args[0]), args[1]
+        if write and code == 0:
+            stem = os.path.splitext(src)[0]
+            if exe == "dec":                              # ข้างไฟล์ต้นทาง
+                open(stem + ".json", "w").write("{}")
+                open(stem + ".resx.json", "w").write("{}")
+            else:                                         # ลง CWD
+                base = os.path.basename(src)[:-5]
+                open(os.path.join(cwd, base + build_name), "wb").write(b"PSB")
+        return _Done(code, b"boom" if code else b"")
+    return run
+
+
+def test_freemote():
+    with tempfile.TemporaryDirectory() as d:
+        src = os.path.join(d, "001.ks.scn"); open(src, "wb").write(b"x")
+        out = os.path.join(d, "json")
+        fm = freemote.FreeMote("dec", "bld", run=_fake_run())
+        js = fm.decompile(src, out)
+        chk("decompile คืน path ใน out_dir", js, os.path.join(out, "001.ks.json"))
+        chk_true("resx.json ย้ายตามไปด้วย", os.path.exists(os.path.join(out, "001.ks.resx.json")))
+        psb = os.path.join(d, "psb")
+        chk("build .pure.scn -> .scn", fm.build(js, psb), os.path.join(psb, "001.ks.scn"))
+        fm2 = freemote.FreeMote("dec", "bld", run=_fake_run(build_name=".psb"))
+        chk_true("build .psb -> .scn", os.path.exists(fm2.build(js, os.path.join(d, "p2"))))
+
+        for label, fake in (("exit code ไม่ใช่ 0", _fake_run(code=1)),
+                            ("ไม่มีไฟล์ผลลัพธ์", _fake_run(write=False))):
+            bad = freemote.FreeMote("dec", "bld", run=fake)
+            for what, call in (("decompile", lambda: bad.decompile(src, out)),
+                               ("build", lambda: bad.build(js, psb))):
+                try:
+                    call(); chk("%s: %s ต้อง raise" % (label, what), "ไม่ raise", "raise")
+                except freemote.FreeMoteError:
+                    chk("%s: %s ต้อง raise" % (label, what), "raise", "raise")
+
+
 # ═════════════════════════════════════════════════════════════ main
 
 def main():
@@ -534,6 +582,7 @@ def main():
     test_xp3_guards()
     test_xp3_match_by_size()
     test_xp3_real_archive()
+    test_freemote()
 
     print("=" * 70)
     if skipped:

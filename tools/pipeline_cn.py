@@ -26,12 +26,13 @@ KEYSTREAM packing (no cipher key needed, content-independent):
   Game regenerates the same keystream from the unchanged adlr -> decrypts to my PSB.
 Preserves the Yuzu 'sen:' pre-index blob so the archive stays loadable.
 """
-import os, sys, csv, json, glob, shutil, subprocess
+import os, sys, csv, json, glob
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
 import scenario
 import xp3
+import freemote
 
 # ระบบเลข idx ของฝั่ง all-ages — ตัวเดียวกับที่ strings_cn.csv กับ thai_work/th/
 # ถูกนับไว้ **ห้ามสลับเป็น scenario.R18** ไม่งั้นคำแปล 45,182 บรรทัดเลื่อนทั้งเกม
@@ -44,12 +45,9 @@ def cmd_decompile():
     os.makedirs(P.JSON_CN, exist_ok=True)
     files = sorted(glob.glob(os.path.join(srcdir, "*.ks.scn")))
     print(f"decompiling {len(files)} from {srcdir}")
+    fm = freemote.default()
     for fp in files:
-        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(fp)], capture_output=True)   # FreeMote writes next to source
-        base = os.path.basename(fp)[:-4]
-        for ext in (".json", ".resx.json"):
-            s = os.path.join(srcdir, base + ext)
-            if os.path.exists(s): shutil.move(s, os.path.join(P.JSON_CN, base + ext))
+        fm.decompile(fp, P.JSON_CN)
     print("done ->", P.JSON_CN)
 
 def cmd_export():
@@ -114,13 +112,10 @@ def cmd_import():
 def cmd_recompile():
     os.makedirs(P.PSB_CN, exist_ok=True)
     sub = sys.argv[2] if len(sys.argv) > 2 else None   # optional: recompile only files matching substring
+    fm = freemote.default()
     for jf in scenario.json_files(P.JSON_CN):
         if sub and sub not in os.path.basename(jf): continue
-        subprocess.run([P.PSB_BUILD, os.path.abspath(jf)], cwd=P.PSB_CN, capture_output=True)   # PsBuild writes to CWD
-        base = os.path.basename(jf)[:-5]               # *.ks
-        for cand in (base + ".pure.scn", base + ".psb"):
-            pc = os.path.join(P.PSB_CN, cand)
-            if os.path.exists(pc): shutil.move(pc, os.path.join(P.PSB_CN, base + ".scn")); break
+        fm.build(jf, P.PSB_CN)
     print("recompiled ->", P.PSB_CN)
 
 def cmd_pack():

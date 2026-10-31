@@ -72,7 +72,7 @@ Workflow
 * บรรทัดที่ align ไม่ติด จะปล่อยว่าง → ในเกมจะเห็นเป็นภาษาจีนเดิม (ไม่พัง ไม่ค้าง)
 * pack ใช้ keystream method เดิม (ks = origEnc XOR origPlain) — ไม่ต้องรู้คีย์
 """
-import os, sys, csv, json, glob, re, shutil, subprocess, difflib
+import os, sys, csv, json, glob, re, difflib
 
 sys.stdout.reconfigure(encoding="utf-8")
 csv.field_size_limit(10 ** 9)
@@ -81,6 +81,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
 import scenario
 import xp3
+import freemote
 
 # ระบบเลข idx ของฝั่ง R18 — รับ 5 ช่อง (มีเกาหลีเพิ่มเข้ามา) และเข้มกว่าฝั่ง
 # all-ages ตรงที่ทุกสมาชิกต้องเป็นข้อความ **คนละระบบเลขกับ scenario.ALL_AGES**
@@ -98,13 +99,9 @@ def cmd_decompile():
     os.makedirs(P.JSON_R18, exist_ok=True)
     files = sorted(glob.glob(os.path.join(srcdir, "*.ks.scn")))
     print(f"decompiling {len(files)} R18 scenarios from {srcdir}")
+    fm = freemote.default()
     for fp in files:
-        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(fp)], capture_output=True)
-        base = os.path.basename(fp)[:-4]
-        for ext in (".json", ".resx.json"):
-            s = os.path.join(srcdir, base + ext)
-            if os.path.exists(s):
-                shutil.move(s, os.path.join(P.JSON_R18, base + ext))
+        fm.decompile(fp, P.JSON_R18)
     print("done ->", P.JSON_R18)
 
 
@@ -337,14 +334,10 @@ def cmd_import():
 def cmd_recompile():
     os.makedirs(P.PSB_R18, exist_ok=True)
     sub = sys.argv[2] if len(sys.argv) > 2 else None
+    fm = freemote.default()
     for jf in json_files(P.JSON_R18):
         if sub and sub not in os.path.basename(jf): continue
-        subprocess.run([P.PSB_BUILD, os.path.abspath(jf)], cwd=P.PSB_R18, capture_output=True)
-        base = os.path.basename(jf)[:-5]            # *.ks
-        for cand in (base + ".pure.scn", base + ".psb"):
-            pc = os.path.join(P.PSB_R18, cand)
-            if os.path.exists(pc):
-                shutil.move(pc, os.path.join(P.PSB_R18, base + ".scn")); break
+        fm.build(jf, P.PSB_R18)
     print("recompiled ->", P.PSB_R18)
 
 
