@@ -167,10 +167,13 @@ def text_files() -> list[str]:
                   for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
 
 
-def _apply_text(ar, base: str, files: list[str]) -> dict:
+SHADOWED = {"patch.xp3": {"help_sys_cn.txt": "main/help_sys_cn.txt"}}
+
+
+def _apply_text(ar, base: str, files: dict[str, str]) -> dict:
     plain = {}
-    for n in files:
-        with open(os.path.join(TEXT, n), "rb") as f:
+    for n, src in files.items():
+        with open(os.path.join(TEXT, src), "rb") as f:
             plain[n] = f.read()
     os.makedirs(KS, exist_ok=True)
     req = os.path.join(KS, "req.tsv")
@@ -209,21 +212,33 @@ def build_data(out: str | None = None, verify: bool = True):
     ar = xp3.Archive.read(base)
     rebuild_fonts.apply_fonts(ar)
     files = text_files()
-    plain = _apply_text(ar, base, files) if files else {}
+    plain = _apply_text(ar, base, {n: n for n in files}) if files else {}
     ar.save(target)
     print("wrote %s from %s (3 fonts + %d text files)" % (target, t.orig, len(files)))
 
     if verify and files:
-        chk = os.path.join(UI, "verify")
-        shutil.rmtree(chk, ignore_errors=True)
-        bad = []
-        for n in files:
-            with open(garbro_extract(target, n, chk), "rb") as f:
-                if f.read() != plain[n]:
-                    bad.append(n)
-        print("verify: %d/%d files read back byte-identical" % (len(files) - len(bad), len(files)))
-        if bad:
-            sys.exit("MISMATCH: " + ", ".join(bad))
+        verify_text(target, plain)
+
+
+def apply_shadowed(ar, base: str, name: str) -> dict:
+    files = SHADOWED.get(name, {})
+    missing = [src for src in files.values() if not os.path.exists(os.path.join(TEXT, src))]
+    if missing:
+        sys.exit("missing Thai text for %s: %s" % (name, ", ".join(missing)))
+    return _apply_text(ar, base, files) if files else {}
+
+
+def verify_text(archive: str, plain: dict):
+    chk = os.path.join(UI, "verify")
+    shutil.rmtree(chk, ignore_errors=True)
+    bad = []
+    for n in plain:
+        with open(garbro_extract(archive, n, chk), "rb") as f:
+            if f.read() != plain[n]:
+                bad.append(n)
+    print("verify: %d/%d files read back byte-identical" % (len(plain) - len(bad), len(plain)))
+    if bad:
+        sys.exit("MISMATCH: " + ", ".join(bad))
 
 
 def cmd_pack_text(out: str | None = None, verify: bool = True):

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import struct
+import subprocess
 import sys
 import tempfile
 import zlib
@@ -543,6 +544,36 @@ def test_freemote():
                     chk("%s: %s ต้อง raise" % (label, what), "raise", "raise")
 
 
+def test_ui_text_shadowing():
+    print("=" * 70)
+    print("ui text — ไฟล์เมนูไทยใน data.xp3 ไม่ถูก archive อื่นบัง")
+    import targets as T
+    import ui_assets as U
+
+    chk("SHADOWED ชี้ไปที่ target ที่มีจริง",
+        [n for n in U.SHADOWED if not T.by_file(n)], [])
+    try:
+        game = P.game_dir()
+    except SystemExit:
+        return skip("ui text shadowing", "หาโฟลเดอร์เกมไม่เจอ")
+    ours = {os.path.basename(n): n for n in U.text_files()}
+    if not ours:
+        return skip("ui text shadowing", "ไม่มีไฟล์แปลใน thai_work/ui/text")
+    for t in T.TARGETS:
+        src = os.path.join(game, t.orig)
+        if t.file == "data.xp3" or not os.path.isfile(src):
+            continue
+        r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                            os.path.join(P.TOOLS, "garbro_extract.ps1"), "-Archive", src,
+                            "-OutDir", tempfile.mkdtemp(prefix="sbtp-ls-"), "-Filter", "*_cn*",
+                            "-ListOnly", "-ListAll"], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        names = {l.split()[0] for l in r.stdout.splitlines() if l.startswith("  ")}
+        hit = sorted(n for n in names if os.path.basename(n) in ours)
+        chk("%s: ทุกไฟล์ที่บังเมนูไทยถูกแพ็กทับด้วย (ui_assets.SHADOWED)" % t.file,
+            [n for n in hit if n not in U.SHADOWED.get(t.file, {})], [])
+
+
 def main():
     test_layouts_differ()
     test_corpus_layouts()
@@ -556,6 +587,7 @@ def main():
     test_xp3_compressed()
     test_xp3_shared_payload()
     test_xp3_real_archive()
+    test_ui_text_shadowing()
     test_freemote()
 
     print("=" * 70)
