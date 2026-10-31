@@ -587,7 +587,11 @@ def test_ui_images():
             Image.new("RGBA", (40, 20)).save(os.path.join(th, "s", "11_a_defo.png"))
             chk("ภาพขนาดตรง RGBA ผ่าน", U.thai_layers("s"), {"11": os.path.join(th, "s", "11_a_defo.png")})
             chk("image_sheets เห็นชีต s", U.image_sheets(), ["s"])
-            for label, make in (("ขนาดไม่ตรง", lambda p: Image.new("RGBA", (41, 20)).save(p)),
+            Image.new("RGBA", (40 + U.WIDEN_MAX, 20)).save(os.path.join(th, "s", "12_b_defo.png"))
+            chk("กว้างขึ้นไม่เกิน WIDEN_MAX ผ่าน", "12" in U.thai_layers("s"), True)
+            for label, make in (("สูงไม่ตรง", lambda p: Image.new("RGBA", (40, 21)).save(p)),
+                                ("กว้างเกิน WIDEN_MAX", lambda p: Image.new("RGBA", (41 + U.WIDEN_MAX, 20)).save(p)),
+                                ("แคบกว่าต้นฉบับ", lambda p: Image.new("RGBA", (39, 20)).save(p)),
                                 ("ไม่ใช่ RGBA", lambda p: Image.new("RGB", (40, 20)).save(p))):
                 make(os.path.join(th, "s", "12_b_defo.png"))
                 try:
@@ -614,7 +618,20 @@ def test_ui_labels():
     with open(R.LABELS, encoding="utf-8") as f:
         rows = list(_csv.DictReader(f, delimiter="	"))
     chk("ทุกแถวมีครบ 5 ช่อง", [r for r in rows if None in r.values() or "" in r.values()], [])
-    chk("kind อยู่ใน STYLE", sorted({r["kind"] for r in rows} - set(R.STYLE)), [])
+    bad_kind = []
+    for r in rows:
+        try:
+            R.parse_kind(r["kind"])
+        except R.RenderError:
+            bad_kind.append(r["kind"])
+    chk("kind อ่านได้ (STYLE + flag ที่รู้จัก)", sorted(set(bad_kind)), [])
+    try:
+        R.parse_kind("button+nosuch"); chk("flag ไม่รู้จักต้อง raise", "ไม่ raise", "raise")
+    except R.RenderError:
+        chk("flag ไม่รู้จักต้อง raise", "raise", "raise")
+    chk("ทุกแถวมี JP/EN twin หรือเป็น _images (ชีตมีจริงใน todo/)",
+        sorted({r["sheet"] for r in rows if not os.path.isdir(os.path.join(R.TODO, r["sheet"]))}
+               - ({"_images"} if not os.path.isdir(R.TODO) else set())) if os.path.isdir(R.TODO) else [], [])
     chk("ไม่มี (sheet, layer) ซ้ำ", len({(r["sheet"], r["layer"]) for r in rows}), len(rows))
     chk("คำแปลเป็นภาษาไทย", [r["layer"] for r in rows
                              if not any("฀" <= c <= "๿" for c in r["thai"])], [])
