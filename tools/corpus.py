@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import freemote
 import paths as P
 import scenario
+import targets
 import xp3
 
 CN = scenario.CN
@@ -96,9 +97,14 @@ def recompile(c: Corpus, sub: str | None = None, fm: freemote.FreeMote | None = 
         fm.build(jf, c.psb_dir)
 
 
+def pristine(archive: str, name: str) -> str:
+    t = targets.by_file(name)
+    return xp3.backup_once(archive, t.orig[len(t.file):] if t else ".orig")
+
+
 def pack(c: Corpus, name: str, extract: str):
     archive = P.game_file(name)
-    ar = xp3.Archive.read(xp3.backup_once(archive))
+    ar = xp3.Archive.read(pristine(archive, name))
 
     mine = {os.path.basename(p): p for p in glob.glob(os.path.join(c.psb_dir, "*.ks.scn"))}
     skipped = []
