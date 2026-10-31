@@ -39,7 +39,6 @@ FIELDS = ["kind", "source", "layer_id", "name", "width", "height", "left", "top"
 
 
 def decompile(pimg: str) -> str:
-    """Decompile one pimg into DECOMP/<stem>/ and return the json path."""
     os.makedirs(DECOMP, exist_ok=True)
     stem = os.path.splitext(os.path.basename(pimg))[0]
     js = os.path.join(DECOMP, stem + ".json")
@@ -51,7 +50,6 @@ def decompile(pimg: str) -> str:
 
 
 def layers(js: str) -> list[dict]:
-    """Image layers of a decompiled pimg, each with its png path attached."""
     meta = json.load(open(js, encoding="utf-8"))
     base = os.path.splitext(js)[0]
     out = []
@@ -63,13 +61,6 @@ def layers(js: str) -> list[dict]:
 
 
 def differs(png_a: str, png_b: str, threshold: int = 64) -> bool:
-    """True when the two layers differ by more than compression noise.
-
-    Every language's sheet was encoded separately, so even pure artwork (the
-    title background) differs by a few levels here and there. Drawn text moves
-    pixels by far more, so count only channel differences above `threshold`,
-    after premultiplying by alpha so changes in invisible pixels don't count.
-    """
     from PIL import Image, ImageChops
 
     def premul(im):
@@ -77,8 +68,6 @@ def differs(png_a: str, png_b: str, threshold: int = 64) -> bool:
         return [ImageChops.multiply(c, a) for c in (r, g, b)] + [a]
 
     with Image.open(png_a) as a, Image.open(png_b) as b:
-        # A text layer is cropped to its words, so its size changes with the
-        # language. Artwork may be re-cropped by a pixel or two; compare the overlap.
         if abs(a.width - b.width) > 4 or abs(a.height - b.height) > 4:
             return True
         box = (0, 0, min(a.width, b.width), min(a.height, b.height))
@@ -97,13 +86,12 @@ def safe(name: str) -> str:
 def cmd_inventory():
     rows = []
 
-    # 1) layered sheets: keep CN layers that differ from their JP twin
     for cn in sorted(glob.glob(os.path.join(ORIG, "uipsd", "cn", "*_cn.pimg"))):
         stem = os.path.basename(cn)[:-len("_cn.pimg")]
         jp = os.path.join(ORIG, "uipsd", "jp", stem + "_jp.pimg")
         en = os.path.join(ORIG, "uipsd", "en", stem + "_en.pimg")
         cn_layers = layers(decompile(cn))
-        twin_sheet = jp if os.path.exists(jp) else en       # touchvolume has no JP sheet
+        twin_sheet = jp if os.path.exists(jp) else en
         jp_by = {L["name"]: L
                  for L in (layers(decompile(twin_sheet)) if os.path.exists(twin_sheet) else [])}
         en_by = {L["name"]: L for L in (layers(decompile(en)) if os.path.exists(en) else [])}
@@ -111,7 +99,7 @@ def cmd_inventory():
             key = L["name"]
             twin = jp_by.get(key)
             if twin is not None and not differs(twin["png"], L["png"]):
-                continue                                   # shared artwork
+                continue
             out_dir = os.path.join(TODO, stem)
             os.makedirs(out_dir, exist_ok=True)
             fname = "%d_%s.png" % (L["layer_id"], safe(L["name"]))
@@ -129,7 +117,6 @@ def cmd_inventory():
                              en_ref=os.path.relpath(ref, UI) if ref else "",
                              ) | ({} if twin else {"name": L["name"] + "  [no JP twin]"}))
 
-    # 2) single images whose file name carries the CN tag
     from PIL import Image
     for f in sorted(glob.glob(os.path.join(ORIG, "**", "*_cn.*"), recursive=True)):
         if not f.lower().endswith(".png"):
@@ -164,7 +151,7 @@ def cmd_inventory():
     print("total %d images -> %s" % (len(rows), os.path.relpath(TODO, P.REPO)))
 
 
-TEXT = os.path.join(UI, "text")       # translated text files, same relative paths as in data.xp3
+TEXT = os.path.join(UI, "text")
 KS = os.path.join(UI, "ks")
 
 
@@ -176,19 +163,13 @@ def garbro_extract(archive: str, name: str, out_dir: str) -> str:
 
 
 def cmd_pack_text(out: str | None = None, verify: bool = True):
-    """Pack thai_work/ui/text/** into data.xp3 at the same paths.
-
-    Files go in as plain UTF-16 with BOM — the engine reads that directly, so the
-    original simple-crypt wrapper (FE FE 01/02 ...) is not needed. Sizes may grow:
-    see xp3.Archive.replace_sized.
-    """
     import xp3
     files = sorted(os.path.relpath(f, TEXT).replace(os.sep, "/")
                    for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
     if not files:
         sys.exit("nothing under " + TEXT)
     target = out or P.game_file("data.xp3")
-    base = xp3.backup_once(P.game_file("data.xp3"))        # always rebuild from the untouched copy
+    base = xp3.backup_once(P.game_file("data.xp3"))
     plain = {n: open(os.path.join(TEXT, n), "rb").read() for n in files}
 
     os.makedirs(KS, exist_ok=True)
@@ -215,7 +196,7 @@ def cmd_pack_text(out: str | None = None, verify: bool = True):
     ar.save(target)
     print("wrote %s (%d entries replaced)" % (target, ar.replaced))
 
-    if verify:                                   # read every file back through GARbro
+    if verify:
         chk = os.path.join(UI, "verify")
         shutil.rmtree(chk, ignore_errors=True)
         bad = [n for n in files

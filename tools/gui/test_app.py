@@ -1,30 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""
-test_app.py — เทสหน้าจอ (tkinter) โดยไม่ต้องมองจอ
-
-    set SBTP_RES=...\thai_work\dist\senrenbanka-thai-patch-v1.1
-    python tools/gui/test_app.py
-    python tools/gui/test_app.py --no-input     # ข้ามเคสที่ขยับเมาส์จริง
-
-หน้าต่างถูก withdraw ไว้ตลอด ไม่เด้งขึ้นมากวน — ตรวจจาก widget tree ตรงๆ
-ยกเว้นเคสลากหน้าต่างด้วยเมาส์จริง ซึ่งต้องโชว์หน้าต่างจริงๆ ราว 1 วินาที
-
-สิ่งที่เทสนี้กันไว้:
-  * ฟอนต์ไทยที่ bundle มาต้องลงทะเบียนได้ และ Tk ต้องซ้อนสระ/วรรณยุกต์ถูก
-    (ถ้าวันหนึ่ง Tk เปลี่ยน text engine แล้วไทยแตก เทสนี้จะจับได้ทันที)
-  * โปรแกรมต้อง **ไม่เปิดพอร์ต TCP** — เวอร์ชันก่อนหน้าใช้ pywebview
-    ซึ่งแอบตั้ง HTTP server ที่ 127.0.0.1 แล้วโหลดหน้าเว็บผ่านมัน
-  * แถบหัวของ Windows ต้องถูกถอดออกจริง แต่หน้าต่างยังเป็น top-level ปกติ
-  * **ลากหน้าต่างต้องเร็ว** — เดิมใช้ root.geometry() ซึ่งกิน 30 ms ต่อเฟรม
-    (เพดาน 33 fps) หน้าต่างเลยตามเมาส์ไม่ทัน เห็นเป็นเงาแล้วกระโดดตาม
-  * ตัวเลือก all-ages / R18 ต้องเปลี่ยนสิ่งที่จะทำกับไฟล์จริงๆ
-  * สถานะปุ่ม/ขั้นตอน/หน้าจอ เดินถูกตามตาราง
-
-หมายเหตุเรื่องอนิเมชัน: ค่าบนจอระหว่างทวีนยังไม่ใช่ค่าปลายทาง เทสจึงเรียก
-A.flush() (จบทุกทวีนทันที) ก่อนตรวจ "สถานะที่ควรจะเป็น" เสมอ ส่วนตัวอนิเมชัน
-เองมีหัวข้อเทสของมันแยกต่างหาก
-"""
 import ctypes
 import ctypes.wintypes as wt
 import os
@@ -74,7 +49,6 @@ def skip(label, why):
     print("    SKIP  %s — %s" % (label, why))
 
 
-# เหตุผลเดียวที่ใช้ซ้ำในหลายเคส: ไฟล์หน้าตาเป็นภาพของเกม ต้องสร้างเองที่เครื่อง
 NO_ART = "ยังไม่ได้สร้างด้วย tools/gui/build/make_logo.py หรือ make_bg.py"
 
 
@@ -99,7 +73,6 @@ def listening_ports(pid: int):
 
 
 def settle(inst):
-    """ประมวลผล event ค้าง แล้วดันทวีนทุกตัวไปเฟรมสุดท้าย"""
     inst.root.update()
     A.flush()
     inst.root.update()
@@ -110,8 +83,6 @@ class FakeEvent:
         self.x_root, self.y_root = xr, yr
         self.x = self.y = 0
 
-
-# ───────────────────────────────────────────── ลากหน้าต่างด้วยเมาส์ของจริง
 
 u32 = ctypes.windll.user32
 MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP = 0x0002, 0x0004
@@ -124,14 +95,6 @@ def _root_window_at(x, y) -> int:
 
 
 def real_mouse_drag(inst, dx, dy):
-    """กดปุ่มซ้ายบนแถบหัวจริงๆ แล้วลาก — เส้นทางเดียวกับที่ผู้ใช้ทำ
-
-    event ปลอมเทสได้แค่สูตรคำนวณ อันนี้เทสทั้งเส้น: Windows ส่ง input ->
-    Tk แปลงเป็น <B1-Motion> -> handler -> หน้าต่างขยับจริงบนจอ
-
-    ระวังไว้สองชั้น: (1) เช็กว่าจุดที่จะกดเป็นหน้าต่างของเราเองก่อนเสมอ
-    (2) ปล่อยปุ่มใน finally ไม่ว่าจะเกิดอะไรขึ้น แล้วคืนตำแหน่งเคอร์เซอร์เดิม
-    """
     root = inst.root
     root.deiconify()
     root.lift()
@@ -140,14 +103,14 @@ def real_mouse_drag(inst, dx, dy):
     root.update()
 
     x, y, _w, _h = winui.window_rect(root)
-    px, py = x + T.S(300), y + T.S(20)          # กลางแถบหัว ไม่โดนปุ่มย่อ/ปิด
+    px, py = x + T.S(300), y + T.S(20)
     if _root_window_at(px, py) != winui.hwnd_of(root):
         root.withdraw()
         return None, "จุดที่จะกดไม่ใช่หน้าต่างของเรา (มีหน้าต่างอื่นบัง)"
 
     home = wt.POINT()
     u32.GetCursorPos(ctypes.byref(home))
-    hwnd = winui.hwnd_of(root)          # เก็บไว้ให้เธรดขับใช้ (GetWindowRect เรียกข้ามเธรดได้)
+    hwnd = winui.hwnd_of(root)
     done = threading.Event()
     got = {}
 
@@ -157,13 +120,6 @@ def real_mouse_drag(inst, dx, dy):
         return r.left, r.top
 
     def driver():
-        """ขยับเมาส์จริงแล้ววัด **ตอนยังกดปุ่มค้างอยู่**
-
-        ถ้าไปวัดหลังปล่อยปุ่ม จะแข่งกับคิว input ของ Windows: SetCursorPos มีผล
-        ทันทีแต่ mouse_event เข้าคิว ลำดับจึงสลับกันได้ แล้ววัดได้ขาดไปไม่กี่ px
-        ทั้งที่ตอนลากจริงไม่มีปัญหา — วัดตอนยังลากอยู่จึงตรงกับสิ่งที่อยากรู้
-        (หน้าต่างตามเมาส์ทันไหม) และไม่มีการแข่งกันเลย
-        """
         try:
             time.sleep(0.15)
             u32.SetCursorPos(px, py)
@@ -173,7 +129,7 @@ def real_mouse_drag(inst, dx, dy):
                 time.sleep(0.012)
                 u32.SetCursorPos(px + dx * i // 12, py + dy * i // 12)
             u32.SetCursorPos(px + dx, py + dy)
-            time.sleep(0.25)                    # ให้ Tk ตามให้ทันก่อนวัด
+            time.sleep(0.25)
             cur = wt.POINT()
             u32.GetCursorPos(ctypes.byref(cur))
             wx, wy = raw_rect()
@@ -199,15 +155,12 @@ def real_mouse_drag(inst, dx, dy):
     return got, None
 
 
-# ─────────────────────────────────────────────────────────────── หัวข้อเทส
-
 def test_fonts(inst):
     print("=" * 70)
     print("ฟอนต์และการเรียงตัวอักษรไทย")
     fams = [f for f in tkfont.families() if "sarabun" in f.lower()]
     chk_true("Tk เห็นตระกูล Sarabun", fams)
     f = tkfont.Font(family=T.FAMILY, size=-15)
-    # สระ/วรรณยุกต์ไทยเป็น combining mark กว้าง 0 -> ต้องซ้อน ไม่ใช่เรียงต่อกัน
     for base, full in [("ท", "ที่"), ("ก", "กุ๊"), ("ป", "ปั๊")]:
         chk("ซ้อนสระ/วรรณยุกต์ %r" % full, f.measure(full) <= f.measure(base) * 1.35, True)
 
@@ -238,7 +191,6 @@ PNG_MAGIC = bytes([137, 80, 78, 71, 13, 10, 26, 10])
 
 
 def ico_frames(path):
-    """คืน [(ขนาด, เป็น PNG ไหม), ...] ที่อยู่ในไฟล์ .ico"""
     d = open(path, "rb").read()
     n = struct.unpack("<H", d[4:6])[0]
     out = []
@@ -252,8 +204,6 @@ def ico_frames(path):
 def test_logo(inst):
     print("=" * 70)
     print("โลโก้และไอคอน")
-    # โลโก้/ไอคอน/ภาพพื้นหลังตัดมาจากภาพของเกม จึงไม่ได้อยู่ใน repo (ดู .gitignore)
-    # เครื่องที่ยังไม่ได้รัน make_logo.py / make_bg.py ต้อง "ข้าม" เคสพวกนี้ ไม่ใช่ล้ม
     img = inst.win._logo_img
     have = assets.logo_file(gui.LOGO_PX) is not None
     if not have:
@@ -268,7 +218,6 @@ def test_logo(inst):
         top = inst._mark.winfo_y()
         chk("วางกึ่งกลางแถบหัวพอดี", top * 2 + img.height(), T.S(44))
 
-    # เตรียมไว้หลายขนาดเพราะ Tk ย่อภาพได้แค่หารจำนวนเต็มแบบ nearest
     if have:
         for want, px in ((20, 21), (25, 24), (30, 31), (40, 55)):
             f = assets.logo_file(px)
@@ -287,7 +236,6 @@ def test_logo(inst):
         chk("ทุกขนาดเก็บเป็น PNG (มีช่อง alpha)",
             all(png for _, png in frames), True)
 
-    # ถ้าไม่มีไฟล์โลโก้ ต้องถอยไปใช้สี่เหลี่ยมตามดีไซน์ ไม่ใช่ล้ม
     real = assets.logo_file
     assets.logo_file = lambda _px: None
     try:
@@ -315,7 +263,6 @@ def test_credit(inst):
     chk("อยู่ล่างสุดของหน้าต่าง", gap <= T.S(24), True)
     chk("อยู่ต่ำกว่าขั้นตอนทุกขั้นในแถบซ้าย",
         c.winfo_rooty() > inst.w_steps[-1][1].winfo_rooty(), True)
-    # ถ้ายาวเกินจะไปชนข้อความในแถวปุ่ม (โผล่ตอนหน้า "กำลังติดตั้ง")
     chk("สั้นพอที่จะไม่ชนข้อความในแถวปุ่ม",
         T.S(26) + c.winfo_reqwidth() <= T.S(242), True)
 
@@ -325,7 +272,6 @@ def test_backdrop(inst):
     print("แผงภาพพื้นหลัง")
     cv, img = inst.win.bg, inst.win._bg_img
     if assets.backdrop_file() is None:
-        # ไม่มีภาพก็ยังต้องไม่ล้ม — เคสนั้นอยู่ท้ายฟังก์ชัน ยังต้องรัน
         skip("แผงภาพที่ bundle มา", NO_ART)
         chk("ไม่มีภาพก็ยังทำงานได้", inst.win.bg, None)
         inst.win.slide_backdrop(T.S(20), 0.2)
@@ -335,7 +281,6 @@ def test_backdrop(inst):
     if not cv:
         return
     chk("ขนาดตรงกับที่ make_bg.py สร้าง", (img.width(), img.height()), (280, 482))
-    # ตรวจว่าการไล่จางถูกฝังใน alpha จริง ไม่ใช่ภาพทึบทั้งใบ
     chk_true("ขอบซ้ายใสสนิท", img.transparency_get(0, 240))
     chk_true("ขอบขวาไม่ใส", not img.transparency_get(279, 240))
     chk_true("ขอบบนสุดใส (ไม่ชนแถบหัว)", img.transparency_get(279, 0))
@@ -343,7 +288,6 @@ def test_backdrop(inst):
 
     chk("แผงเริ่มตรงขอบขวาของคอลัมน์เนื้อหาพอดี",
         gui.BG_X, 212 + 30 + gui.CONTENT_W)
-    # เทียบกับ body ไม่ใช่มุมหน้าต่าง — shell มีกรอบ 1 px ทุกอย่างจึงเลื่อนไป 1
     body = inst.w_credit.master
     chk("วางถูกตำแหน่ง",
         (cv.winfo_x() - body.winfo_x(), cv.winfo_y() - body.winfo_y()),
@@ -362,7 +306,7 @@ def test_backdrop(inst):
 
     saved = inst.win.bg
     inst.win.bg = None
-    inst.win.slide_backdrop(T.S(20), 0.2)      # เครื่องที่ไม่มี bg.png ต้องไม่ล้ม
+    inst.win.slide_backdrop(T.S(20), 0.2)
     A.flush()
     chk("ไม่มีภาพก็ยังทำงานได้", inst.win.bg, None)
     inst.win.bg = saved
@@ -374,7 +318,6 @@ def test_drag(inst, allow_input=True):
     root = inst.root
     x0, y0, w0, h0 = winui.window_rect(root)
 
-    # ── สูตรคำนวณตำแหน่ง
     inst.win._drag_start(FakeEvent(x0 + 300, y0 + 20))
     chk("จำระยะจากมุมหน้าต่างถึงเมาส์ได้", inst.win._drag, (300, 20))
     inst.win._drag_move(FakeEvent(x0 + 300 + 137, y0 + 20 + 61))
@@ -387,7 +330,6 @@ def test_drag(inst, allow_input=True):
     chk("ปล่อยแล้วขยับเมาส์ หน้าต่างต้องอยู่นิ่ง",
         winui.window_rect(root)[:2], (x1, y1))
 
-    # ── ความเร็ว: ของเดิมวัดได้ 30.6 ms/เฟรม = 33 fps ซึ่งคือต้นเหตุอาการเงา
     inst.win._drag_start(FakeEvent(x1 + 300, y1 + 20))
     N = 60
     t = time.perf_counter()
@@ -401,7 +343,6 @@ def test_drag(inst, allow_input=True):
           % (ms, 1000 / ms))
     chk("หนึ่งเฟรมต้องต่ำกว่า 8 ms", ms < 8.0, True)
 
-    # ── ที่เหลือต้องให้หน้าต่างโผล่จริง (Tk ไม่อ่าน WM_MOVE ตอนถูก withdraw)
     if not allow_input:
         skip("Tk ตามตำแหน่งทัน", "สั่ง --no-input ไว้")
         return skip("ลากด้วยเมาส์จริง", "สั่ง --no-input ไว้")
@@ -423,7 +364,6 @@ def test_drag(inst, allow_input=True):
     winui.move_window(root, xa, ya)
     root.update()
 
-    # ── ของจริง: กดเมาส์จริงแล้วลาก ต้องเข้าลูปย้ายหน้าต่างของ Windows
     got, why = real_mouse_drag(inst, T.S(140), T.S(70))
     if why:
         return skip("ลากด้วยเมาส์จริง", why)
@@ -467,7 +407,6 @@ def test_anim(inst):
     A.flush()
     chk("เรียก done ตอนจบ", done, [1])
 
-    # เดินจริงบนนาฬิกาจริง: 0.18 วิ ต้องได้อย่างน้อย 40 fps และจบตรงเวลา
     frames, t0 = [], time.perf_counter()
     A.tween(0.18, lambda v: frames.append(v), ease=A.linear, key="unit-d",
             done=inst.root.quit)
@@ -509,8 +448,6 @@ def test_widgets(inst):
     A.flush()
     chk("ติ๊กกลับแล้วเต็มเหมือนเดิม", round(box._t, 3), 1.0)
 
-    # event_generate ส่ง <Enter> ให้ widget ที่ยังไม่ปรากฏบนจอไม่ได้ (root ถูก
-    # withdraw อยู่) จึงตรวจสองชั้นแทน: ผูก binding ไว้จริงไหม + handler ทำถูกไหม
     b = W.Button(root, "x", "primary")
     chk_true("ผูก <Enter>/<Leave> ไว้จริง", b.bind("<Enter>") and b.bind("<Leave>"))
     b._on_enter(None)
@@ -546,8 +483,6 @@ def test_window_fx(inst):
     inst.win.appear()
     A.flush()
     chk("เฟดเข้าจบที่ทึบเต็ม", float(root.attributes("-alpha")), 1.0)
-    # Tk เปิด WS_EX_LAYERED ให้ตอนสร้าง wrapper เท่านั้น ถ้าบิตหลุดไป
-    # -alpha จะเงียบไปเฉยๆ (เฟดตอนปิดจะไม่ทำงาน) — จึงต้องเปิดเองให้แน่
     chk("ตั้งความทึบได้จริง (บิตหน้าต่างซ้อนชั้นยังอยู่)",
         winui.make_layered(root) and winui.is_layered(root), True)
     root.attributes("-alpha", 0.4)
@@ -556,7 +491,7 @@ def test_window_fx(inst):
     root.attributes("-alpha", 1.0)
 
     x, y, _w, _h = winui.window_rect(root)
-    inst.win.shake()                       # หน้าต่างถูก withdraw อยู่ -> ต้องไม่ทำอะไร
+    inst.win.shake()
     A.flush()
     chk("ไม่สั่นตอนหน้าต่างยังไม่โผล่", winui.window_rect(root)[:2], (x, y))
 
@@ -571,8 +506,6 @@ def test_flow(inst):
     chk_true("เติม path ให้อัตโนมัติ", inst.var_path.get())
     chk_true("สร้าง Plan จาก path นั้นได้", inst.plan is not None)
     chk("ปุ่มหลักเขียนว่า 'ถัดไป'", inst.b_primary.cget("text"), "ถัดไป")
-    # winfo_ismapped() เป็น 0 เสมอตอน root ถูก withdraw -> ใช้ winfo_manager() แทน
-    # ("" = ไม่ได้ถูก pack ไว้เลย, "pack" = อยู่ในผัง)
     chk("ปุ่มย้อนกลับถูกซ่อน", inst.b_back.winfo_manager(), "")
     chk("ขั้นที่ 1 ถูกไฮไลต์", inst.w_steps[0][0].cget("bg"), T.ACCENT)
     chk("ขีดของขั้นที่ทำอยู่ยืดออก", inst.w_steps[0][0].cget("width"), T.S(W.Rule.W_ON))
@@ -588,7 +521,6 @@ def test_flow(inst):
     inst.show("components")
     settle(inst)
     rows = [w for w in inst.w_comps.winfo_children()]
-    # ไฟล์ฝั่ง R18 (adult.xp3 + patch_extra.xp3) รวมเป็นการ์ด "ฉาก R18" ใบเดียว
     act = inst.plan.active
     chk("หน้ารายการแสดงครบทุกไฟล์ที่มี", len(rows),
         len([t for t in act if not t.r18]) + (1 if any(t.r18 for t in act) else 0))
@@ -636,7 +568,6 @@ def test_flow(inst):
     chk("แถบกับตัวเลขเป็นค่าเดียวกันเสมอ", round(inst.w_bar.value), 64)
     chk_true("ข้อความขั้นตอนแปลเป็นไทย",
              inst.w_stage.cget("text").startswith("แปะแพตช์ patch.xp3"))
-    # ทุก kind ต้องมีคำแปล ไม่มีตัวไหนหลุดออกมาเป็นโค้ดดิบให้ผู้ใช้เห็น
     kinds = [core.Step.HASH, core.Step.BACKUP, core.Step.APPLY,
              core.Step.DISABLE, core.Step.RESTORE, core.Step.DONE]
     chk("core.Step ทุกแบบมีข้อความไทย",
@@ -662,14 +593,11 @@ def test_flow(inst):
 
 
 def test_modules():
-    """โครงสร้างโมดูล — ของที่แยกกันแล้วต้องไม่ไหลกลับมาปนกันอีก"""
     print("=" * 70)
     print("โครงสร้างโมดูล")
 
     here = os.path.dirname(os.path.abspath(__file__))
 
-    # theme = โทเคนล้วน ต้อง import ได้โดยไม่ลาก ctypes ตามมา
-    # (แปลว่าเทส widget รันบนเครื่องที่ไม่ใช่ Windows ได้)
     r = subprocess.run(
         [sys.executable, "-c",
          "import sys; sys.path.insert(0, %r); import theme; "
@@ -677,13 +605,11 @@ def test_modules():
         capture_output=True, text=True)
     chk("import theme แล้วไม่ลาก ctypes ตามมา", r.stdout.strip(), "False")
 
-    # ขนาดโลโก้ต้องมีชุดเดียว — ฝั่ง build import ไปจาก assets
     sys.path.insert(0, os.path.join(here, "build"))
     import importlib
     ml = importlib.import_module("make_logo")
     chk("ขนาดโลโก้: ฝั่ง build ใช้ชุดเดียวกับตัวแอป",
         ml.LOGO_SIZES, assets.LOGO_SIZES)
-    # ถ้าสร้างไว้แล้วต้องครบทุกขนาด — ครบครึ่งเดียวคือจอ DPI บางค่าจะได้ภาพแตก
     made = sorted(s for s in assets.LOGO_SIZES
                   if os.path.isfile(os.path.join(assets.ui_dir(), "logo@%d.png" % s)))
     if made:
@@ -691,7 +617,6 @@ def test_modules():
     else:
         skip("ไฟล์โลโก้ที่ bundle มา ตรงกับรายการขนาด", NO_ART)
 
-    # เครื่องมือตอน build ต้องไม่ถูก import จากตัวแอป
     app_side = ("app.py", "core.py", "theme.py", "widgets.py", "anim.py",
                 "winui.py", "assets.py", "shape.py")
     leaked = []

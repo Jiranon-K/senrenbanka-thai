@@ -83,9 +83,6 @@ import scenario
 import corpus
 import tsv
 
-# ระบบเลข idx ของฝั่ง R18 — รับ 5 ช่อง (มีเกาหลีเพิ่มเข้ามา) และเข้มกว่าฝั่ง
-# all-ages ตรงที่ทุกสมาชิกต้องเป็นข้อความ **คนละระบบเลขกับ scenario.ALL_AGES**
-# ห้ามสลับ (อ่านหัวไฟล์ tools/scenario.py)
 CORPUS = corpus.R18_CORPUS
 LAYOUT = CORPUS.layout
 CN = scenario.CN
@@ -93,16 +90,12 @@ CN = scenario.CN
 json_files = scenario.json_files
 
 
-# ---------------------------------------------------------------- 1. decompile
-
 def cmd_decompile():
     srcdir = sys.argv[2]
     print(f"decompiled {corpus.decompile(CORPUS, srcdir)} R18 scenarios from {srcdir} ->", P.JSON_R18)
 
-# ---------------------------------------------------------------- 2. align
 
 def _load_cn_csv():
-    """strings_cn.csv (ฝั่ง all-ages) -> {file: {'blocks': [rows in order], 'choices': [rows]}}"""
     if not os.path.exists(P.CSV_CN):
         sys.exit(f"[ERROR] ไม่พบ {P.CSV_CN}\n"
                  f"        รัน pipeline_cn.py decompile/export + tsv.py merge ให้ครบก่อน")
@@ -111,7 +104,6 @@ def _load_cn_csv():
         for r in csv.DictReader(f):
             e = per.setdefault(r["file"], {"blocks": [], "choices": []})
             (e["choices"] if r["idx"].startswith("ch") else e["blocks"]).append(r)
-    # export() เขียนตามลำดับ walk อยู่แล้ว แต่กันไว้อีกชั้น
     for e in per.values():
         e["blocks"].sort(key=lambda r: int(r["idx"]))
         e["choices"].sort(key=lambda r: int(r["idx"][2:]))
@@ -119,7 +111,6 @@ def _load_cn_csv():
 
 
 def _align(src_keys, dst_keys):
-    """คืน {dst_index: src_index} จากการ align สองลิสต์ข้อความ (รักษาลำดับ)"""
     sm = difflib.SequenceMatcher(a=src_keys, b=dst_keys, autojunk=False)
     m = {}
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
@@ -136,19 +127,16 @@ def cmd_align():
         name = os.path.basename(jf)
         d = json.load(open(jf, encoding="utf-8"))
 
-        # ---- เก็บบล็อกฝั่ง R18 ตามลำดับ walk (ต้องตรงกับตอน import เป๊ะๆ) ----
         dst_blocks = list(LAYOUT.blocks(d))
         dst_choices = list(LAYOUT.choices(d))
 
         src = cn.get(name)
-        # export() ของ pipeline เดิม "ข้าม" บล็อกที่ jp และ en ว่างทั้งคู่
-        # จึงต้อง rebuild ลิสต์ฝั่ง dst ด้วยกติกาเดียวกัน ก่อนเอาไป align
         dst_idx_kept, dst_keys = [], []
         for i, b in enumerate(dst_blocks):
             jp, en = b[0][1], b[1][1]
             if jp.strip() or en.strip():
                 dst_idx_kept.append(i)
-                dst_keys.append(jp + "\x00" + (b[1][0] or ""))   # jp + ชื่อผู้พูด
+                dst_keys.append(jp + "\x00" + (b[1][0] or ""))
 
         if src:
             src_keys = [r["jp"] + "\x00" + r["speaker_en"] for r in src["blocks"]]
@@ -170,7 +158,6 @@ def cmd_align():
                     origin = "UNTRANSLATED"
             rows.append([name, bi, b[1][0] or "", jp, en, cn_txt, th, origin])
 
-        # ---- choices: align ด้วยข้อความ CN (ฝั่ง all-ages export ก็ใช้ CN เป็น 'jp') ----
         src_ch = [r["jp"] for r in src["choices"]] if src else []
         dst_ch = [x["language"][CN]["text"] for x in dst_choices]
         cmap = _align(src_ch, dst_ch)
@@ -187,8 +174,6 @@ def cmd_align():
                 else:
                     origin = "UNTRANSLATED"
             elif any("฀" <= c <= "๿" for c in cn_txt):
-                # json_r18 was imported before, so this CN slot already holds Thai and
-                # can't match the Chinese on the all-ages side — keep it, don't drop it
                 th, origin = cn_txt, "KEPT"
                 cmatched += 1
             rows.append([name, "ch%d" % k, "(choice)", cn_txt, en, cn_txt, th, origin])
@@ -199,8 +184,6 @@ def cmd_align():
         flag = "" if got == total else "   <-- ต้องแปลเพิ่ม %d" % (total - got)
         print(f"  {name:<48} {got:5}/{total:<5} ({(got/total*100 if total else 100):5.1f}%){flag}")
 
-    # Lines with no all-ages counterpart are translated separately (mt.py) and kept in
-    # th_r18/<prefix>.tsv; overlay them so re-running align never drops them.
     over = {}
     for t in glob.glob(os.path.join(P.TH_R18_DIR, "*.tsv")):
         pf = os.path.basename(t)[:-4]
@@ -227,7 +210,6 @@ def cmd_align():
 
 
 def cmd_report():
-    """พิมพ์สถานะรายไฟล์ + เขียน thai_work/PROGRESS_R18.md เป็น dashboard"""
     if not os.path.exists(P.CSV_R18):
         sys.exit(f"[ERROR] ยังไม่มี {P.CSV_R18} — รัน `port_r18.py align` ก่อน")
     per, newonly = {}, {}
@@ -247,7 +229,6 @@ def cmd_report():
     D = sum(v[0] for v in per.values()); T = sum(v[1] for v in per.values())
     print(f"{'TOTAL':<50}{D:>8}{T:>8}{T - D:>8}")
 
-    # ---- dashboard ----
     done_files = sum(1 for v in per.values() if v[0] == v[1])
     md = [
         "# Senren Banka — Thai on R18 (adult.xp3) Progress",
@@ -270,19 +251,15 @@ def cmd_report():
     print("\nเขียน dashboard ->", out)
 
 
-# ---------------------------------------------------------------- 3. import
-
 def cmd_import():
     tot, ctot = corpus.apply(CORPUS, sys.argv[2] if len(sys.argv) > 2 else None)
     print(f"imported {tot} Thai lines + {ctot} choice options into CN slot ({P.JSON_R18})")
 
-# ---------------------------------------------------------------- 4. recompile
 
 def cmd_recompile():
     corpus.recompile(CORPUS, sys.argv[2] if len(sys.argv) > 2 else None)
     print("recompiled ->", P.PSB_R18)
 
-# ---------------------------------------------------------------- 5. pack
 
 def cmd_pack():
     corpus.pack(CORPUS, sys.argv[2], sys.argv[3])

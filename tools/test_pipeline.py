@@ -1,20 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-test_pipeline.py — เทสเครื่องมือฝั่ง tools/ ที่ไม่ใช่ GUI
-
-    python tools/test_pipeline.py
-
-ครอบ xp3.py (รูปแบบ archive), scenario.py (ตัวเดินบทพูด) และ targets.py
-(ตารางไฟล์ที่แพตช์แตะ)
-
-**ไม่ต้องมีเกม ไม่ต้องมีไฟล์ .xp3** — สร้าง archive จิ๋วขึ้นมาในหน่วยความจำเอง
-นี่คือเหตุผลที่แยกโมดูลพวกนี้ออกมา: ตอนที่โค้ดยังฝังอยู่ใน cmd_pack()
-ที่อ่าน sys.argv เองและเขียนทับ archive 855 MB เอง มันเทสไม่ได้เลยสักบรรทัด
-
-ถ้ามี archive จริง / ชุดติดตั้งที่ build ไว้อยู่ในเครื่อง จะเทสเพิ่มอีกชุด
-(ข้ามเองถ้าไม่มี)
-"""
 from __future__ import annotations
 
 import json
@@ -53,20 +38,9 @@ def skip(label, why):
     skipped.append(label)
 
 
-# ═════════════════════════════════════════════════ archive จิ๋วไว้เทส
-
 def build_archive(files, blob=b"BLOB-KEEP-ME") -> bytes:
-    """ประกอบ .xp3 ขั้นต่ำที่ xp3.Archive อ่านได้ — ไว้เทสโดยไม่ต้องมีเกม
-
-    วางผังเหมือนของจริง: header 40 -> เนื้อไฟล์ -> sen: blob -> index (zlib)
-
-    files = [(ชื่อ, ไบต์)] หรือ dict เพื่อคุมกรณีพิเศษ:
-        {"name":…, "data":…}              ธรรมดา
-        {"name":…, "data":…, "size": n}   บีบอัดไว้ (size = ขนาดหลังคลาย)
-        {"name":…, "share": i}            ใช้เนื้อร่วมกับ entry ที่ i
-    """
     body = bytearray(b"\x00" * 40)
-    struct.pack_into("<Q", body, 11, 23)      # ตัวชี้ v2
+    struct.pack_into("<Q", body, 11, 23)
     body[23] = 0x80
 
     placed = []
@@ -84,7 +58,6 @@ def build_archive(files, blob=b"BLOB-KEEP-ME") -> bytes:
     body += blob
     index_at = len(body)
 
-    # prefix ของ index: ต้องมี 'sen:' ที่ field0 = offset ของ blob, field3 = ความยาว
     sen = bytearray(16)
     struct.pack_into("<I", sen, 0, blob_at)
     struct.pack_into("<I", sen, 12, len(blob))
@@ -113,12 +86,9 @@ def build_archive(files, blob=b"BLOB-KEEP-ME") -> bytes:
 
 
 def encrypt(plain: bytes, key: bytes) -> bytes:
-    """เลียนแบบการเข้ารหัสของเกม — XOR กับ keystream ที่ผูกกับ adlr"""
     ks = (key * (len(plain) // len(key) + 1))[:len(plain)]
     return bytes(a ^ b for a, b in zip(plain, ks))
 
-
-# ═════════════════════════════════════════════════════ xp3: อ่าน/เขียน
 
 def test_xp3_roundtrip():
     print("=" * 70)
@@ -139,7 +109,6 @@ def test_xp3_roundtrip():
     chk("ขนาดตรง", [e.size for e in ar.entries], [len(plain_a), len(plain_b)])
     chk("ยังไม่ได้แทนอะไร", ar.replaced, 0)
 
-    # ประกอบกลับโดยไม่แทนอะไรเลย -> เนื้อทุกไฟล์ต้องเหมือนเดิมไบต์ต่อไบต์
     out = os.path.join(d, "same.xp3")
     ar.save(out)
     ar2 = xp3.Archive.read(out)
@@ -149,7 +118,6 @@ def test_xp3_roundtrip():
         [ar2.encrypted(e) for e in ar2.entries],
         [ar.encrypted(e) for e in ar.entries])
 
-    # แทนไฟล์ a ด้วยเนื้อใหม่ แล้วต้องถอดกลับออกมาได้เท่าที่ใส่ไป
     ar3 = xp3.Archive.read(src)
     new_plain = "คำแปลไทย".encode("utf-8") * 30
     entry = ar3.find("a.ks.scn")
@@ -160,7 +128,6 @@ def test_xp3_roundtrip():
 
     ar4 = xp3.Archive.read(out2)
     e4 = ar4.find("a.ks.scn")
-    # ถอดด้วย keystream เดิม (เกมทำแบบนี้ เพราะ adlr ไม่ถูกแตะ)
     ks = bytes(x ^ y for x, y in zip(ar.encrypted(entry), plain_a))
     got = bytes(x ^ y for x, y in zip(ar4.encrypted(e4), ks))
     chk("ถอดกลับได้เนื้อใหม่", got[:len(new_plain)], new_plain)
@@ -196,7 +163,7 @@ def test_xp3_guards():
         chk_true("จับคู่ผิดไฟล์ raise พร้อมบอกขนาด", "100" in str(ex))
 
     bad = bytearray(raw)
-    bad[23] = 0x00                       # ทำให้ไม่ใช่ header v2
+    bad[23] = 0x00
     p = os.path.join(d, "bad.xp3")
     with open(p, "wb") as f:
         f.write(bytes(bad))
@@ -211,7 +178,7 @@ def test_xp3_match_by_size():
     print("=" * 70)
     print("xp3 — จับคู่ entry กับไฟล์จริงด้วยขนาด")
 
-    a, b, c = b"a" * 111, b"b" * 222, b"c" * 222     # b กับ c ขนาดชนกัน
+    a, b, c = b"a" * 111, b"b" * 222, b"c" * 222
     raw = build_archive([("one", a), ("two", b), ("three", c)])
     d = tempfile.mkdtemp(prefix="sbtp-xp3m-")
     src = os.path.join(d, "t.xp3")
@@ -247,7 +214,6 @@ def test_xp3_compressed():
     chk("รู้ว่า entry นี้ถูกบีบอัด", packed.compressed, True)
     chk("ขนาดหลังคลาย", packed.size, 3000)
     chk("จำนวนไบต์ที่เก็บจริง", packed.stored, len(stored))
-    # นี่คือบั๊กที่โค้ดชุดเดิมมี: ก็อป size ไบต์ = ลากของ entry ถัดไปติดมาด้วย
     chk("อ่านมาแค่ไบต์ที่เก็บจริง ไม่ลากของข้างเคียง",
         ar.encrypted(packed), stored)
     chk("entry ธรรมดาไม่ถูกหมายว่าบีบอัด", ar.find("plain").compressed, False)
@@ -294,7 +260,6 @@ def test_xp3_shared_payload():
         (ar2.encrypted(ar2.find("one")), ar2.encrypted(ar2.find("two"))),
         (body, body))
 
-    # แทนตัวหนึ่ง อีกตัวที่ใช้ร่วมกันต้องยังได้ของเดิม
     ar3 = xp3.Archive.read(src)
     new = b"N" * 5000
     chk_true("แทนตัวแรกได้", ar3.replace(ar3.find("one"), new, body))
@@ -350,10 +315,6 @@ def _check_real(src):
     os.remove(out)
 
 
-# ═══════════════════════════════════════════════ scenario: สอง layout
-
-# node ที่ ALL_AGES นับเป็นบทพูดแต่ R18 ไม่นับ — ตัวการที่ทำให้เลข idx
-# ของสองสายไม่ตรงกัน 70 จาก 86 บท (46,303 vs 45,208 บล็อก)
 NESTED_4 = [["bgm", "bgm", {"v": 1}], ["lse", "loopse", {"v": 2}],
             ["se", "se", {"v": 3}], ["vo", "voice", {"v": 4}]]
 PLAIN_4 = [["さくら", "ข้อความ JP"], [None, "EN text"],
@@ -402,7 +363,6 @@ def test_walk_order():
     chk("เจอครบทุกบล็อก", len(got), 4)
     chk("เป็นตัวเดียวกัน ไม่ใช่ก็อป", all(g is PLAIN_4 for g in got), True)
 
-    # ลำดับต้องเป็น "พ่อก่อนลูก ซ้ายไปขวา" ตามที่ CSV ถูกนับไว้
     def blk(tag):
         return [[tag, "jp-" + tag], [None, "en"], [None, "cn"], [None, "tw"]]
     doc3 = {"first": blk("A"), "mid": [blk("B"), {"deep": blk("C")}],
@@ -434,8 +394,6 @@ def test_json_files():
         ["a.ks.json", "b.ks.json"])
 
 
-# ══════════════════════════════════════════════ targets: ตารางไฟล์เป้าหมาย
-
 def test_targets_table():
     print("=" * 70)
     print("targets — ตารางไฟล์ที่แพตช์แตะ")
@@ -455,7 +413,6 @@ def test_targets_table():
         [t.file for t in T.TARGETS if t.r18 and t.file not in
          T.DISABLE_ON_ALL_AGES + T.KEEP_ON_ALL_AGES], [])
 
-    # ชิ้นส่วนที่ generate ลง .bat ต้องพูดถึงทุกไฟล์
     for name, text in (("รายชื่อไฟล์ในซิป", T.bat_required_files()),
                        ("บล็อก rollback", T.bat_rollback()),
                        ("uninstall: หา .bak", T.bat_uninstall_found()),
@@ -479,7 +436,6 @@ def test_targets_table():
 
 
 def test_generated_bat_matches_shipped():
-    """.bat ที่ generate ต้องเหมือนตัวที่ปล่อยไปแล้วทุกบรรทัด (ยกเว้นค่าแฮช)"""
     print("=" * 70)
     print("targets — .bat ที่ generate เทียบกับชุดติดตั้งที่ build ไว้")
 
@@ -497,7 +453,6 @@ def test_generated_bat_matches_shipped():
         with open(os.path.join(dist, n), encoding="utf-8") as f:
             shipped[n] = f.read()
 
-    # เวอร์ชันของชุดที่ build ไว้ — เดิม hardcode "1.1" จึงตกทุกครั้งที่ออกรุ่นใหม่
     with open(os.path.join(dist, "manifest.json"), encoding="utf-8") as f:
         ver = json.load(f)["version"]
 
@@ -529,8 +484,6 @@ def test_generated_bat_matches_shipped():
     for n, text in made.items():
         chk("%s ตรงกับที่ปล่อยไปแล้วทุกบรรทัด" % n,
             norm(shipped[n]), norm(text))
-        # ด่านกันลืมต้องยิงใส่ข้อความที่เติมค่าแล้ว ไม่ใช่ตัว template — ใน
-        # template มีแต่ placeholder ยิงผิดตัวคือ build ไม่ผ่านตลอดกาล
         try:
             T.check_bat_mentions_every_target(text, n)
             chk("%s ที่เติมค่าแล้วผ่านด่านกันลืม" % n, "ผ่าน", "ผ่าน")
@@ -538,23 +491,20 @@ def test_generated_bat_matches_shipped():
             chk("%s ที่เติมค่าแล้วผ่านด่านกันลืม" % n, str(ex), "ผ่าน")
 
 
-# ═════════════════════════════════════════════════════════════ freemote
-
 class _Done:
     def __init__(self, code, out=b""):
         self.returncode, self.stdout, self.stderr = code, out, b""
 
 
 def _fake_run(code=0, write=True, build_name=".pure.scn"):
-    """ตัวปลอมแทน PsbDecompile/PsBuild — เขียนไฟล์ตามที่ exe จริงเขียน"""
     def run(args, cwd=None, capture_output=True):
         exe, src = os.path.basename(args[0]), args[1]
         if write and code == 0:
             stem = os.path.splitext(src)[0]
-            if exe == "dec":                              # ข้างไฟล์ต้นทาง
+            if exe == "dec":
                 open(stem + ".json", "w").write("{}")
                 open(stem + ".resx.json", "w").write("{}")
-            else:                                         # ลง CWD
+            else:
                 base = os.path.basename(src)[:-5]
                 open(os.path.join(cwd, base + build_name), "wb").write(b"PSB")
         return _Done(code, b"boom" if code else b"")
@@ -584,8 +534,6 @@ def test_freemote():
                 except freemote.FreeMoteError:
                     chk("%s: %s ต้อง raise" % (label, what), "raise", "raise")
 
-
-# ═════════════════════════════════════════════════════════════ main
 
 def main():
     test_layouts_differ()

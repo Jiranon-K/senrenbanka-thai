@@ -33,9 +33,6 @@ import paths as P
 import scenario
 import corpus
 
-# ระบบเลข idx ของฝั่ง all-ages — ตัวเดียวกับที่ strings_cn.csv กับ thai_work/th/
-# ถูกนับไว้ **ห้ามสลับเป็น scenario.R18** ไม่งั้นคำแปล 45,182 บรรทัดเลื่อนทั้งเกม
-# โดยไม่มี error อะไรเลย (อ่านหัวไฟล์ tools/scenario.py)
 CORPUS = corpus.ALL_AGES_CORPUS
 LAYOUT = CORPUS.layout
 CN = scenario.CN
@@ -45,7 +42,6 @@ def cmd_decompile():
     print(f"decompiled {corpus.decompile(CORPUS, srcdir)} from {srcdir} ->", P.JSON_CN)
 
 def cmd_export():
-    # translation memory: preserve any th already filled in the master CSV
     prev = {}
     if os.path.exists(P.CSV_CN):
         with open(P.CSV_CN, encoding="utf-8-sig") as f:
@@ -70,7 +66,7 @@ def cmd_export():
     print(f"exported {len(rows)} lines -> {P.CSV_CN}")
 
 def cmd_import():
-    sub = sys.argv[2] if len(sys.argv) > 2 else None   # optional: import only files matching substring
+    sub = sys.argv[2] if len(sys.argv) > 2 else None
     tot, ctot = corpus.apply(CORPUS, sub)
     print(f"imported {tot} Thai lines + {ctot} choice options into CN slot")
 

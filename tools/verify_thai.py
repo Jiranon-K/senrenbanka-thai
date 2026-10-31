@@ -1,19 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""
-verify_thai.py - นับ "สตริงภาษาไทย" ในไฟล์ .ks.scn ที่ถอดรหัสแล้ว
-
-ใช้เป็นตัวตัดสิน PASS/FAIL แบบตรงอาการ: เกมจะแสดงไทยได้ก็ต่อเมื่อ
-สคริปต์ใน archive ที่ชนะลำดับโหลด (adult.xp3) มีข้อความไทยอยู่จริง
-
-วิธีใช้
-  # ถอด archive ที่จะตรวจออกมาก่อน
-  powershell -File tools\garbro_extract.ps1 -Archive "...\adult.xp3" -OutDir "...\check_extract" -Filter "*.ks.scn"
-  python tools/verify_thai.py "...\check_extract"
-
-อ่าน string table ของ PSB v3 ตรงๆ (OffsetStringsData .. OffsetChunkOffsets)
-ไม่ต้อง decompile ด้วย FreeMote จึงเร็วมาก
-"""
 import sys, os, glob, struct
 
 sys.stdout.reconfigure(encoding="utf-8")
