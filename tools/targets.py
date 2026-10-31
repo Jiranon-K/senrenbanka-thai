@@ -96,11 +96,14 @@ def bat_hash_vars(hashes: dict) -> str:
     return "\n".join(lines)
 
 
+def _restore_line(t: Target, tail: str = "") -> str:
+    return ('if exist "%s" (del /q "%s" 2>nul & move /y "%s" "%s" >nul%s)'
+            % (t.bak, t.file, t.bak, t.file, tail))
+
+
 def bat_rollback() -> str:
     """คืนไฟล์ทุกตัวที่อาจถูก rename ไปแล้ว — ใช้ทั้งใน install และ uninstall"""
-    return "\n".join(
-        'if exist "%s" (del /q "%s" 2>nul & move /y "%s" "%s" >nul)'
-        % (t.bak, t.file, t.bak, t.file) for t in TARGETS)
+    return "\n".join(_restore_line(t) for t in TARGETS)
 
 
 def bat_uninstall_found() -> str:
@@ -110,8 +113,7 @@ def bat_uninstall_found() -> str:
 def bat_uninstall_restore() -> str:
     note = {"adult.xp3": " ^(ฉาก R18 ยังอยู่ครบ แค่กลับเป็นภาษาเดิม^)"}
     return "\n".join(
-        'if exist "%s" (del /q "%s" 2>nul & move /y "%s" "%s" >nul & echo       - %-11s คืนแล้ว%s)'
-        % (t.bak, t.file, t.bak, t.file, t.file, note.get(t.file, ""))
+        _restore_line(t, " & echo       - %-11s คืนแล้ว%s" % (t.file, note.get(t.file, "")))
         for t in TARGETS)
 
 

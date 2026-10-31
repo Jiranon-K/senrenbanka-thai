@@ -446,11 +446,6 @@ def launch_game(game_dir: str) -> bool:
     return True
 
 
-def open_folder(path: str):
-    if os.path.isdir(path):
-        subprocess.Popen(["explorer", os.path.normpath(path)])
-
-
 def free_space(path: str) -> int:
     try:
         return shutil.disk_usage(path).free

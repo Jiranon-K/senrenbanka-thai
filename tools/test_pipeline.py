@@ -581,6 +581,8 @@ def main():
     test_xp3_roundtrip()
     test_xp3_guards()
     test_xp3_match_by_size()
+    test_xp3_compressed()
+    test_xp3_shared_payload()
     test_xp3_real_archive()
     test_freemote()
 

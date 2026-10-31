@@ -27,10 +27,12 @@ environment, so Claude Code keeps using the subscription. Plain urllib on purpos
 the SDK's native dependency (jiter) is blocked by Windows Application Control here.
 """
 import os, sys, csv, json, re, time, argparse, urllib.request, urllib.error
+import functools
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
+import tsv as tsv_mod
 
 API = "https://api.anthropic.com/v1"
 VERSION = "2026-10-21"
@@ -92,10 +94,12 @@ def load_key() -> str:
 
 
 def glossary_text() -> str:
-    rows = list(csv.DictReader(open(P.GLOSSARY, encoding="utf-8-sig")))
+    with open(P.GLOSSARY, encoding="utf-8-sig") as f:
+        rows = list(csv.DictReader(f))
     return "\n".join("%s | %s | %s | %s" % (r["jp"], r["en"], r["th"], r["note"]) for r in rows)
 
 
+@functools.lru_cache(maxsize=1)
 def system_blocks() -> list:
     return [{"type": "text",
              "text": STYLE + "\n\nGlossary (jp | en | th | note):\n" + glossary_text(),
@@ -106,8 +110,7 @@ def h_files() -> set:
     return {prefix(s["file"]) for s in json.load(open(P.SCENARIOS, encoding="utf-8")) if s.get("is_h")}
 
 
-def prefix(name: str) -> str:
-    return re.match(r"^\d+[a-z]?", name).group(0)
+prefix = tsv_mod.prefix
 
 
 def load_rows(which: str) -> list:
@@ -122,8 +125,7 @@ def is_marker(r: dict) -> bool:
 
     Same rule as tsv.is_control — no character above U+3000 means it isn't text.
     """
-    return (r["speaker_en"] in ("face", "lse")
-            or not any(ord(c) > 0x3000 for c in r["jp"]))
+    return r["speaker_en"] in ("face", "lse") or tsv_mod.is_control(r)
 
 
 def chunks(which: str, files: list, retranslate_all: bool, exclude=()):
@@ -386,12 +388,7 @@ def cmd_merge(a):
     for pf in a.prefix:
         new = json.load(open(os.path.join(MT, "cn", pf + ".json"), encoding="utf-8"))
         tsv = os.path.join(P.TH_DIR, pf + ".tsv")
-        cur = {}
-        if os.path.exists(tsv):
-            for line in open(tsv, encoding="utf-8"):
-                if line.strip():
-                    i, t = line.rstrip("\n").split("\t", 1)
-                    cur[i] = t
+        cur = tsv_mod.read_th(tsv) if os.path.exists(tsv) else {}
         before = len(cur)
         cur.update({i: t.replace("\t", " ") for i, t in new.items()})
         with open(tsv, "w", encoding="utf-8") as fh:
