@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""
-test_core.py — เทส core.py ด้วยเคสชุดเดียวกับ tools/test_installer.sh
-
-    set SBTP_RES=...\thai_work\dist\senrenbanka-thai-patch-v1.1
-    python tools/gui/test_core.py
-
-GUI กับ install.bat ต้องทำสิ่งเดียวกันเป๊ะ ถ้าเทสสองชุดนี้ให้ผลต่างกัน
-แปลว่ามีตัวใดตัวหนึ่งผิด — จึงจงใจให้เคสตรงกัน
-
-โฟลเดอร์ทดสอบใช้ **hard link** ไปยัง archive ต้นฉบับจริง: ไม่ต้องก็อป 2 GB
-และ os.replace() ที่ core ใช้ก็แค่เปลี่ยนชื่อ link ไม่แตะไฟล์จริง
-(เคสสุดท้ายยืนยันซ้ำว่าต้นฉบับไม่เปลี่ยน)
-"""
 import os
 import shutil
 import subprocess
@@ -21,19 +8,16 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.dirname(HERE))                     # tools/ — เอา paths.py
+sys.path.insert(0, os.path.dirname(HERE))
 sys.stdout.reconfigure(encoding="utf-8")
 import core                                                   # noqa: E402
 import paths                                                  # noqa: E402
 
-# ตัวแอปเองไม่ import paths (มันไปอยู่บนเครื่องผู้เล่นที่ไม่มี repo) แต่เทส
-# รันในที่ทำงานเสมอ จึงใช้ตัวหาโฟลเดอร์เกมตัวเดียวกับสคริปต์อื่นได้เลย
 GAME_DIR = paths.game_dir()
 SANDBOX = os.path.join(GAME_DIR, "_gui_test")
 
 PRISTINE = {"patch.xp3": "patch.xp3.bak", "data.xp3": "data.xp3.bak",
             "adult.xp3": "adult.xp3.orig", "patch_extra.xp3": "patch_extra.xp3.orig"}
-# เครื่อง Steam ล้วนก็มี patch_extra.xp3 แต่เป็นคนละไฟล์ (53 MB) — ต้องไม่ถูกแตะ
 STEAM_PATCH_EXTRA = "patch_extra.xp3.steam.bak"
 
 fails = []
@@ -70,7 +54,6 @@ def hashes(plan):
 
 
 def expect(plan, which):
-    """which = 'orig' | 'thai'"""
     return {t.name: (t.orig if which == "orig" else t.thai) for t in plan.active}
 
 
@@ -97,8 +80,6 @@ def full_cycle(name, mode):
     chk("รายงาน step ครบทุกไฟล์",
         sorted({s.file for s in steps if s.kind == core.Step.APPLY}),
         sorted(t.name for t in p.active))
-    # ลำดับต้องเป็น backup ก่อนเสมอ แล้วปิดท้ายด้วย done — ไม่งั้นแปลว่า
-    # มีไฟล์ถูกแตะก่อนสำรอง ซึ่งคือกรณีที่กู้คืนไม่ได้
     kinds = [s.kind for s in steps]
     chk("เริ่มด้วย backup", kinds[0], core.Step.BACKUP)
     chk("จบด้วย done", kinds[-1], core.Step.DONE)
@@ -122,15 +103,9 @@ def full_cycle(name, mode):
 
 
 def case_allages_on_r18():
-    """เครื่องที่ลง R18 ไว้ แต่ผู้เล่นเลือกเวอร์ชัน all-ages
-
-    adult.xp3 ต้องถูก "ปิด" ด้วยการเปลี่ยนชื่อ ไม่ใช่ลบ — 2.3 GB ที่โหลดมา
-    ต้องได้คืนตอนถอดแพตช์
-    """
     print("=" * 70)
     print("เคส: ลง all-ages บนเครื่องที่มี R18 (ปิด adult.xp3 ไว้)")
     d = setup("allages_on_r18", "r18")
-    # adult2.xp3 ตัวจริง 1.5 GB — ในเทสใช้ไฟล์เปล่าพอ เพราะ core แค่เปลี่ยนชื่อมัน
     open(os.path.join(d, "adult2.xp3"), "wb").close()
 
     p = core.Plan(d, include_r18=False)
@@ -168,7 +143,6 @@ def case_bad_adult():
     p = core.Plan(d)
     chk("mode", p.mode, "R18")
     chk("verify", p.verify(), "unsupported")
-    # patch_extra.xp3 ในเคสนี้เป็นของ Steam = คนละ build กับที่แพตช์รองรับเหมือนกัน
     chk("ชี้ตัวที่ผิดได้ (เฉพาะไฟล์ฝั่ง R18)", sorted(p.unsupported_files()),
         ["adult.xp3", "patch_extra.xp3"])
     chk("ไม่มี .bak", p.has_backups, False)
@@ -207,7 +181,6 @@ def case_rollback():
     res = os.path.join(SANDBOX, "res-corrupt")
     shutil.rmtree(res, ignore_errors=True)
     shutil.copytree(core.resource_dir(), res, ignore=shutil.ignore_patterns("*.zip"))
-    # ทำให้ diff ตัวสุดท้ายเสีย -> ต้องล้มหลังจาก rename ไปแล้วทุกไฟล์
     with open(os.path.join(res, "thai-adult.xdelta"), "r+b") as f:
         f.seek(64)
         f.write(b"\xff" * 4096)

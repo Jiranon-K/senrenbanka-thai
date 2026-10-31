@@ -1,22 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""
-make_bg.py — แปลงภาพต้นฉบับเป็นแผงพื้นหลังแบบกระจกฝ้าของตัวติดตั้ง
-
-    python tools/gui/build/make_bg.py "...\ภาพ.jpg"
-
-ทำงาน **ตอน build เท่านั้น** ผลลัพธ์คือ `ui/bg.png` (RGBA) ที่ฝังการไล่จางไว้
-ในช่อง alpha เรียบร้อยแล้ว ตัวแอปจึงแค่วางภาพลง canvas ไม่ต้องคำนวณอะไรเลย
-
-ทำไมต้องแปลงก่อน ไม่โหลด .jpg ตรงๆ:
-  * Tk อ่านได้แค่ PNG / GIF / PPM — ไม่มี JPEG
-  * ห้ามลาก Pillow เข้ามาเพื่องานนี้งานเดียว (`.exe` จะโตขึ้นหลาย MB)
-  * การไล่จาง/เบลอ/ลดความอิ่มสี ถ้าทำตอนรันคือเสียเวลาเปิดโปรแกรมฟรีๆ
-    ทั้งที่ผลลัพธ์เหมือนเดิมทุกครั้ง
-
-หมายเหตุเรื่องลิขสิทธิ์: ภาพ CG เป็นของผู้พัฒนาเกม สคริปต์นี้จึงรับ path
-จากภายนอก ไม่เก็บไฟล์ต้นฉบับไว้ในที่เก็บโค้ด
-"""
 from __future__ import annotations
 
 import argparse
@@ -27,8 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import imgtool as I                                          # noqa: E402
 
-HERE = os.path.dirname(os.path.abspath(__file__))          # tools/gui/build
-GUI = os.path.dirname(HERE)                                # tools/gui
+HERE = os.path.dirname(os.path.abspath(__file__))
+GUI = os.path.dirname(HERE)
 
 
 def main():
@@ -60,13 +43,9 @@ def main():
         print("ต้นฉบับ  : %d x %d" % (g.sw, g.sh))
         box = I.cover_box(g.sw, g.sh, tw, th, focus, a.zoom)
         print("ครอป     : x=%d y=%d %dx%d" % box)
-        # เบลอด้วยการย่อแล้วขยายกลับ — ได้ฝ้านุ่มๆ แทบไม่มีต้นทุน
         buf = g.render(box, tw, th, blur=a.blur)
         I.dispose(g._src)
 
-    # ── แปลง BGRA -> RGBA พร้อมล้างสี ลดความอิ่ม แล้วฝังการไล่จางลง alpha
-    #    fx: ใสสนิทด้านซ้าย (คอลัมน์เนื้อหาทับอยู่) แล้วค่อยเข้มขึ้นไปทางขวา
-    #    fy: จางหายที่ขอบบน (ใต้แถบหัว) และขอบล่าง (เหนือปุ่ม) ไม่ให้มีรอยตัด
     clear_px = tw * a.clear
     ramp_px = max(1.0, (tw - 1 - clear_px) * a.ramp)
     fx = [a.peak * I.smoothstep((x - clear_px) / ramp_px) for x in range(tw)]

@@ -26,34 +26,22 @@ KEYSTREAM packing (no cipher key needed, content-independent):
   Game regenerates the same keystream from the unchanged adlr -> decrypts to my PSB.
 Preserves the Yuzu 'sen:' pre-index blob so the archive stays loadable.
 """
-import os, sys, csv, json, glob, shutil, subprocess
+import os, sys, csv, json, glob
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
 import scenario
-import xp3
+import corpus
 
-# ระบบเลข idx ของฝั่ง all-ages — ตัวเดียวกับที่ strings_cn.csv กับ thai_work/th/
-# ถูกนับไว้ **ห้ามสลับเป็น scenario.R18** ไม่งั้นคำแปล 45,182 บรรทัดเลื่อนทั้งเกม
-# โดยไม่มี error อะไรเลย (อ่านหัวไฟล์ tools/scenario.py)
-LAYOUT = scenario.ALL_AGES
+CORPUS = corpus.ALL_AGES_CORPUS
+LAYOUT = CORPUS.layout
 CN = scenario.CN
 
 def cmd_decompile():
     srcdir = sys.argv[2]
-    os.makedirs(P.JSON_CN, exist_ok=True)
-    files = sorted(glob.glob(os.path.join(srcdir, "*.ks.scn")))
-    print(f"decompiling {len(files)} from {srcdir}")
-    for fp in files:
-        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(fp)], capture_output=True)   # FreeMote writes next to source
-        base = os.path.basename(fp)[:-4]
-        for ext in (".json", ".resx.json"):
-            s = os.path.join(srcdir, base + ext)
-            if os.path.exists(s): shutil.move(s, os.path.join(P.JSON_CN, base + ext))
-    print("done ->", P.JSON_CN)
+    print(f"decompiled {corpus.decompile(CORPUS, srcdir)} from {srcdir} ->", P.JSON_CN)
 
 def cmd_export():
-    # translation memory: preserve any th already filled in the master CSV
     prev = {}
     if os.path.exists(P.CSV_CN):
         with open(P.CSV_CN, encoding="utf-8-sig") as f:
@@ -78,73 +66,16 @@ def cmd_export():
     print(f"exported {len(rows)} lines -> {P.CSV_CN}")
 
 def cmd_import():
-    sub = sys.argv[2] if len(sys.argv) > 2 else None   # optional: import only files matching substring
-    blk = {}; cho = {}                                   # per file: {int idx: row} and {choice n: row}
-    with open(P.CSV_CN, encoding="utf-8-sig") as f:
-        for r in csv.DictReader(f):
-            r["th"] = r["th"].replace("～", "〜")   # FF5E fullwidth tilde -> 301C wave dash (in-font)
-            i = r["idx"]
-            if i.startswith("ch"): cho.setdefault(r["file"], {})[int(i[2:])] = r
-            else: blk.setdefault(r["file"], {})[int(i)] = r
-    tot = 0; ctot = 0
-    for jf in scenario.json_files(P.JSON_CN):
-        name = os.path.basename(jf)
-        if sub and sub not in name: continue
-        d = json.load(open(jf, encoding="utf-8"))
-        n = cn = 0
-
-        for idx, b in enumerate(LAYOUT.blocks(d)):
-            r = blk.get(name, {}).get(idx)
-            if r and r["th"].strip():
-                b[CN][1] = r["th"]
-                if r["speaker_en"].strip(): b[CN][0] = r["speaker_en"]
-                n += 1
-        for i, x in enumerate(LAYOUT.choices(d)):
-            r = cho.get(name, {}).get(i)
-            if r and r["th"].strip():
-                for k in ("searchtext", "speechtext", "text"):
-                    if k in x["language"][CN]: x["language"][CN][k] = r["th"]
-                cn += 1
-
-        tot += n; ctot += cn
-        if n or cn:
-            json.dump(d, open(jf, "w", encoding="utf-8"), ensure_ascii=False)
+    sub = sys.argv[2] if len(sys.argv) > 2 else None
+    tot, ctot = corpus.apply(CORPUS, sub)
     print(f"imported {tot} Thai lines + {ctot} choice options into CN slot")
 
 def cmd_recompile():
-    os.makedirs(P.PSB_CN, exist_ok=True)
-    sub = sys.argv[2] if len(sys.argv) > 2 else None   # optional: recompile only files matching substring
-    for jf in scenario.json_files(P.JSON_CN):
-        if sub and sub not in os.path.basename(jf): continue
-        subprocess.run([P.PSB_BUILD, os.path.abspath(jf)], cwd=P.PSB_CN, capture_output=True)   # PsBuild writes to CWD
-        base = os.path.basename(jf)[:-5]               # *.ks
-        for cand in (base + ".pure.scn", base + ".psb"):
-            pc = os.path.join(P.PSB_CN, cand)
-            if os.path.exists(pc): shutil.move(pc, os.path.join(P.PSB_CN, base + ".scn")); break
+    corpus.recompile(CORPUS, sys.argv[2] if len(sys.argv) > 2 else None)
     print("recompiled ->", P.PSB_CN)
 
 def cmd_pack():
-    """เขียนสคริปต์ที่ recompile แล้วกลับเข้า archive (ดู tools/xp3.py)"""
-    name, extract = sys.argv[2], sys.argv[3]
-    archive = P.game_file(name)
-    ar = xp3.Archive.read(xp3.backup_once(archive))
-
-    mine = {os.path.basename(p): p for p in glob.glob(os.path.join(P.PSB_CN, "*.ks.scn"))}
-    skipped = []
-    for entry, plain in ar.match_by_size(extract).items():
-        myscn = mine.get(os.path.basename(plain))
-        if not myscn:                                  # บทนี้ยังไม่ได้แปล/ยังไม่ recompile
-            continue
-        with open(plain, "rb") as f: orig = f.read()
-        with open(myscn, "rb") as f: new = f.read()
-        if not ar.replace(entry, new, orig):
-            skipped.append((os.path.basename(plain), len(new), entry.size))
-
-    print(f"{name}: matched+encrypted {ar.replaced} scenarios")
-    for n, got, cap in skipped:
-        print(f"  SKIP {n}: recompiled {got} > orig {cap}")
-    ar.save(archive)
-    print(f"  wrote {archive} ({os.path.getsize(archive)} bytes)")
+    corpus.pack(CORPUS, sys.argv[2], sys.argv[3])
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""

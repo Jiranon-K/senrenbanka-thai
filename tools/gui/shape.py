@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-shape.py — สี่เหลี่ยมมุมโค้งแบบขอบเนียน (anti-aliased) สำหรับ Tk
-
-Canvas ของ Tk บน Windows วาดรูปทรงแบบไม่มี anti-aliasing — มุมโค้ง 6-8 px
-จะเป็นขั้นบันไดชัดเจน ซึ่งทำลายลุค shadcn ทั้งหมด
-ทางออก: วาดเป็น PhotoImage เองโดยรู้สีพื้นข้างใต้อยู่แล้ว (ทุกจอพื้นทึบ)
-จึงผสมสีขอบกับพื้นตรงๆ ได้ ไม่ต้องใช้ alpha และไม่ต้องพึ่ง PIL
-
-  * ส่วนกลางกับเส้นขอบตรง เทสีทีเดียวด้วย put(color, to=box) — เร็วมาก
-  * คำนวณทีละพิกเซลเฉพาะสี่มุม (สุ่ม 4x4 จุดย่อยต่อพิกเซล) — มุมละ r² พิกเซล
-  * เก็บผลไว้ใน cache แบบจำกัดขนาด: ทวีนสีปุ่มสร้างสีใหม่ทุกเฟรม ห้ามโตไม่สิ้นสุด
-"""
 from __future__ import annotations
 
 from collections import OrderedDict
@@ -20,14 +8,13 @@ import tkinter as tk
 
 import theme as T
 
-_SS = 4                                   # จุดย่อยต่อแกนต่อพิกเซล
+_SS = 4
 _SUB = [(i + 0.5) / _SS for i in range(_SS)]
 _CACHE: "OrderedDict[tuple, tk.PhotoImage]" = OrderedDict()
 _CACHE_MAX = 400
 
 
 def _cover(x: int, y: int, x0: float, y0: float, x1: float, y1: float, r: float) -> float:
-    """สัดส่วนของพิกเซล (x, y) ที่อยู่ในสี่เหลี่ยมมุมโค้ง (x0,y0)-(x1,y1) รัศมี r"""
     if r <= 0:
         return 1.0 if x0 <= x + 0.5 < x1 and y0 <= y + 0.5 < y1 else 0.0
     hit = 0
@@ -39,7 +26,6 @@ def _cover(x: int, y: int, x0: float, y0: float, x1: float, y1: float, r: float)
             px = x + sx
             if not x0 <= px < x1:
                 continue
-            # ระยะเกินเข้าไปในโซนมุม (0 ถ้าอยู่ในช่วงตรง)
             dx = (x0 + r - px) if px < x0 + r else (px - (x1 - r)) if px > x1 - r else 0.0
             dy = (y0 + r - py) if py < y0 + r else (py - (y1 - r)) if py > y1 - r else 0.0
             if dx * dx + dy * dy <= r * r:
@@ -52,16 +38,12 @@ def _hex(rgb) -> str:
 
 
 def _mask(w: int, h: int, r: float, b: int) -> list:
-    """พิกเซลมุมที่ต้องผสมสีเอง: [(y, [(x_start, [(outer, inner), ...]), ...]), ...]
-
-    ขึ้นกับรูปทรงอย่างเดียว ไม่ขึ้นกับสี — ทวีนสีปุ่มจึงคำนวณส่วนนี้ครั้งเดียว
-    """
     key = (w, h, r, b)
     got = _MASKS.get(key)
     if got is not None:
         return got
     ri = max(0.0, r - b)
-    n = int(r) + 1 + b                    # ขนาดโซนมุมที่ต้องคำนวณทีละพิกเซล
+    n = int(r) + 1 + b
     spans = [range(0, min(n, w))]
     if w - n > n:
         spans.append(range(w - n, w))
@@ -88,11 +70,6 @@ _MASKS: dict = {}
 
 def rrect(master, w: int, h: int, r: float, fill: str, bg: str,
           border: str | None = None, bw: int = 1) -> tk.PhotoImage:
-    """PhotoImage ขนาด w x h: สี่เหลี่ยมมุมโค้ง fill (+ เส้นขอบ border) บนพื้น bg
-
-    ผู้เรียกต้องเก็บ reference ของรูปที่ได้ไว้เองตราบที่ยังแสดงอยู่ —
-    cache ทิ้งของเก่าได้ทุกเมื่อ และ PhotoImage ที่ไม่มีใครถือจะหายจากจอ
-    """
     w, h = max(1, int(w)), max(1, int(h))
     r = max(0.0, min(float(r), w / 2.0, h / 2.0))
     key = (w, h, r, fill, bg, border, bw)
@@ -142,13 +119,6 @@ def _seg_dist(px: float, py: float, a, b) -> float:
 
 def marked(master, w: int, h: int, r: float, fill: str, bg: str, lines: list,
            sw: float, color: str, border: str | None = None) -> tk.PhotoImage:
-    """รูปทรงมุมโค้ง + เส้น (เครื่องหมายถูก/กากบาท) ที่ขอบเนียน ปลายมน
-
-    เส้นของ Canvas ไม่มี anti-aliasing เหมือนกัน เส้นทแยง 2-3 px จึงหยักชัด
-    ที่นี่คิด coverage จากระยะถึงเส้นตรงๆ (คำนวณครั้งเดียวต่อพิกเซล ไม่ต้องสุ่ม)
-    เส้นต้องอยู่ในเนื้อของรูปทรง — ใต้เส้นถือว่าเป็นสี fill เสมอ
-    ได้รูปใหม่ทุกครั้ง (ไม่ cache) เพราะเรียกระหว่างอนิเมชันที่เส้นยาวขึ้นทุกเฟรม
-    """
     base = rrect(master, w, h, r, fill, bg, border)
     img = tk.PhotoImage(master=master, width=w, height=h)
     img.tk.call(img, "copy", base)

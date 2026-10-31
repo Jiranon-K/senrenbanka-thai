@@ -17,7 +17,7 @@ missed scene line would be translated against policy.
 
 Output: thai_work/mt/hflags_r18.json  {prefix: [idx, ...]}   (R18 idx numbering)
 """
-import os, sys, json, re
+import os, sys, json
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -27,8 +27,13 @@ import mt
 MODEL = "claude-haiku-5-5"
 CHUNK = 60
 GAP = 3
-MARGIN = 6      # lines kept out on each side of a scene: lead-ins and afterglow the labels miss
-FLAGS = os.path.join(mt.MT, "hflags_r18.json")
+MARGIN = 6
+FLAGS = mt.HFLAGS
+RAW = FLAGS.replace(".json", ".raw.json")
+
+
+def _idx_key(i: str) -> int:
+    return int(i) if i.isdigit() else 10 ** 9
 
 PROMPT = """You label lines of a Japanese visual-novel script (with the official English).
 Return the idx of every line that is part of a sexual scene: sexual acts or foreplay,
@@ -58,19 +63,12 @@ def label(key: str, rows: list) -> set:
     msg = mt.call("POST", "/messages", body, key)
     mt.log_usage("hfilter", msg.get("usage", {}), False)
     if msg.get("stop_reason") != "end_turn":
-        # refusal or truncation: treat the whole chunk as sexual rather than guess
         return {r["idx"] for r in rows}
     want = {r["idx"] for r in rows}
     return {i for i in json.loads(mt.text_of(msg))["sexual_idx"] if i in want}
 
 
 def smooth(rows: list, flagged: set) -> set:
-    """Fill gaps of <= GAP lines between flagged lines (scenes are contiguous), then
-    widen every flagged run by MARGIN lines on both sides.
-
-    Checked on 317: unwidened, the run ended right before "Sorry, I dirtied your
-    uniform..." — aftermath the per-line labels didn't catch.
-    """
     pos = [k for k, r in enumerate(rows) if r["idx"] in flagged]
     keep = set(pos)
     for a, b in zip(pos, pos[1:]):
@@ -83,12 +81,11 @@ def smooth(rows: list, flagged: set) -> set:
 
 
 def cmd_resmooth(prefixes: list):
-    """Re-apply smooth() to stored raw labels without calling the model again."""
-    raw = json.load(open(FLAGS.replace(".json", ".raw.json"), encoding="utf-8"))
+    raw = json.load(open(RAW, encoding="utf-8"))
     flags = json.load(open(FLAGS, encoding="utf-8"))
     for pf in prefixes:
         rows = rows_of(pf)
-        flags[pf] = sorted(smooth(rows, set(raw[pf])), key=lambda i: int(i) if i.isdigit() else 10 ** 9)
+        flags[pf] = sorted(smooth(rows, set(raw[pf])), key=_idx_key)
         print("%s: %d raw -> %d flagged of %d" % (pf, len(raw[pf]), len(flags[pf]), len(rows)))
     json.dump(flags, open(FLAGS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 
@@ -96,8 +93,7 @@ def cmd_resmooth(prefixes: list):
 def cmd_run(prefixes: list):
     key = mt.load_key()
     flags = json.load(open(FLAGS, encoding="utf-8")) if os.path.exists(FLAGS) else {}
-    rawf = FLAGS.replace(".json", ".raw.json")
-    raw = json.load(open(rawf, encoding="utf-8")) if os.path.exists(rawf) else {}
+    raw = json.load(open(RAW, encoding="utf-8")) if os.path.exists(RAW) else {}
     for pf in prefixes:
         rows = rows_of(pf)
         parts = [rows[i:i + CHUNK] for i in range(0, len(rows), CHUNK)]
@@ -105,11 +101,11 @@ def cmd_run(prefixes: list):
             got = set().union(*ex.map(lambda p: label(key, p), parts))
         raw[pf] = sorted(got)
         final = smooth(rows, got)
-        flags[pf] = sorted(final, key=lambda i: int(i) if i.isdigit() else 10 ** 9)
+        flags[pf] = sorted(final, key=_idx_key)
         print("%s: %d lines, %d labelled sexual, %d after smoothing" % (pf, len(rows), len(got), len(final)))
     os.makedirs(mt.MT, exist_ok=True)
     json.dump(flags, open(FLAGS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    json.dump(raw, open(rawf, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+    json.dump(raw, open(RAW, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     mt.cmd_cost()
 
 

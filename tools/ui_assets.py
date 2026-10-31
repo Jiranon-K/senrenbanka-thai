@@ -26,6 +26,7 @@ import os, sys, csv, json, glob, shutil, subprocess, re
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
+import freemote
 
 UI = os.path.join(P.WORK, "ui")
 ORIG = os.path.join(UI, "orig")
@@ -38,21 +39,17 @@ FIELDS = ["kind", "source", "layer_id", "name", "width", "height", "left", "top"
 
 
 def decompile(pimg: str) -> str:
-    """Decompile one pimg into DECOMP/<stem>/ and return the json path."""
     os.makedirs(DECOMP, exist_ok=True)
     stem = os.path.splitext(os.path.basename(pimg))[0]
     js = os.path.join(DECOMP, stem + ".json")
     if not os.path.exists(js):
         dst = os.path.join(DECOMP, os.path.basename(pimg))
         shutil.copyfile(pimg, dst)
-        subprocess.run([P.PSB_DECOMPILE, os.path.abspath(dst)], capture_output=True)
-    if not os.path.exists(js):
-        raise RuntimeError("FreeMote could not decompile " + pimg)
+        freemote.default().decompile(dst)
     return js
 
 
 def layers(js: str) -> list[dict]:
-    """Image layers of a decompiled pimg, each with its png path attached."""
     meta = json.load(open(js, encoding="utf-8"))
     base = os.path.splitext(js)[0]
     out = []
@@ -64,13 +61,6 @@ def layers(js: str) -> list[dict]:
 
 
 def differs(png_a: str, png_b: str, threshold: int = 64) -> bool:
-    """True when the two layers differ by more than compression noise.
-
-    Every language's sheet was encoded separately, so even pure artwork (the
-    title background) differs by a few levels here and there. Drawn text moves
-    pixels by far more, so count only channel differences above `threshold`,
-    after premultiplying by alpha so changes in invisible pixels don't count.
-    """
     from PIL import Image, ImageChops
 
     def premul(im):
@@ -78,8 +68,6 @@ def differs(png_a: str, png_b: str, threshold: int = 64) -> bool:
         return [ImageChops.multiply(c, a) for c in (r, g, b)] + [a]
 
     with Image.open(png_a) as a, Image.open(png_b) as b:
-        # A text layer is cropped to its words, so its size changes with the
-        # language. Artwork may be re-cropped by a pixel or two; compare the overlap.
         if abs(a.width - b.width) > 4 or abs(a.height - b.height) > 4:
             return True
         box = (0, 0, min(a.width, b.width), min(a.height, b.height))
@@ -98,13 +86,12 @@ def safe(name: str) -> str:
 def cmd_inventory():
     rows = []
 
-    # 1) layered sheets: keep CN layers that differ from their JP twin
     for cn in sorted(glob.glob(os.path.join(ORIG, "uipsd", "cn", "*_cn.pimg"))):
         stem = os.path.basename(cn)[:-len("_cn.pimg")]
         jp = os.path.join(ORIG, "uipsd", "jp", stem + "_jp.pimg")
         en = os.path.join(ORIG, "uipsd", "en", stem + "_en.pimg")
         cn_layers = layers(decompile(cn))
-        twin_sheet = jp if os.path.exists(jp) else en       # touchvolume has no JP sheet
+        twin_sheet = jp if os.path.exists(jp) else en
         jp_by = {L["name"]: L
                  for L in (layers(decompile(twin_sheet)) if os.path.exists(twin_sheet) else [])}
         en_by = {L["name"]: L for L in (layers(decompile(en)) if os.path.exists(en) else [])}
@@ -112,7 +99,7 @@ def cmd_inventory():
             key = L["name"]
             twin = jp_by.get(key)
             if twin is not None and not differs(twin["png"], L["png"]):
-                continue                                   # shared artwork
+                continue
             out_dir = os.path.join(TODO, stem)
             os.makedirs(out_dir, exist_ok=True)
             fname = "%d_%s.png" % (L["layer_id"], safe(L["name"]))
@@ -130,7 +117,6 @@ def cmd_inventory():
                              en_ref=os.path.relpath(ref, UI) if ref else "",
                              ) | ({} if twin else {"name": L["name"] + "  [no JP twin]"}))
 
-    # 2) single images whose file name carries the CN tag
     from PIL import Image
     for f in sorted(glob.glob(os.path.join(ORIG, "**", "*_cn.*"), recursive=True)):
         if not f.lower().endswith(".png"):
@@ -165,7 +151,7 @@ def cmd_inventory():
     print("total %d images -> %s" % (len(rows), os.path.relpath(TODO, P.REPO)))
 
 
-TEXT = os.path.join(UI, "text")       # translated text files, same relative paths as in data.xp3
+TEXT = os.path.join(UI, "text")
 KS = os.path.join(UI, "ks")
 
 
@@ -176,22 +162,16 @@ def garbro_extract(archive: str, name: str, out_dir: str) -> str:
     return os.path.join(out_dir, name.replace("/", os.sep))
 
 
-def cmd_pack_text(out: str | None = None, verify: bool = True):
-    """Pack thai_work/ui/text/** into data.xp3 at the same paths.
+def text_files() -> list[str]:
+    return sorted(os.path.relpath(f, TEXT).replace(os.sep, "/")
+                  for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
 
-    Files go in as plain UTF-16 with BOM — the engine reads that directly, so the
-    original simple-crypt wrapper (FE FE 01/02 ...) is not needed. Sizes may grow:
-    see xp3.Archive.replace_sized.
-    """
-    import xp3
-    files = sorted(os.path.relpath(f, TEXT).replace(os.sep, "/")
-                   for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
-    if not files:
-        sys.exit("nothing under " + TEXT)
-    target = out or P.game_file("data.xp3")
-    base = xp3.backup_once(P.game_file("data.xp3"))        # always rebuild from the untouched copy
-    plain = {n: open(os.path.join(TEXT, n), "rb").read() for n in files}
 
+def _apply_text(ar, base: str, files: list[str]) -> dict:
+    plain = {}
+    for n in files:
+        with open(os.path.join(TEXT, n), "rb") as f:
+            plain[n] = f.read()
     os.makedirs(KS, exist_ok=True)
     req = os.path.join(KS, "req.tsv")
     with open(req, "w", encoding="utf-8") as fh:
@@ -202,28 +182,54 @@ def cmd_pack_text(out: str | None = None, verify: bool = True):
                         "-List", req, "-OutDir", KS], capture_output=True, text=True)
     if r.returncode:
         sys.exit(r.stdout + r.stderr)
-    manifest = [l.rstrip("\r\n").split("\t") for l in open(os.path.join(KS, "manifest.tsv"), encoding="utf-8-sig")
-                if l.strip()]
+    with open(os.path.join(KS, "manifest.tsv"), encoding="utf-8-sig") as f:
+        manifest = [l.rstrip("\r\n").split("\t") for l in f if l.strip()]
 
-    ar = xp3.Archive.read(base)
     by_offset = {e.offset: e for e in ar.entries}
     for i, name, offset in manifest:
         e = by_offset[int(offset)]
-        ks = open(os.path.join(KS, i + ".ks"), "rb").read()
+        with open(os.path.join(KS, i + ".ks"), "rb") as f:
+            ks = f.read()
         old = e.stored
         new = ar.replace_sized(e, plain[name], ks)
         print("  %-32s %7d -> %7d bytes stored%s" % (name, old, new, " (zlib)" if e.compressed else ""))
-    ar.save(target)
-    print("wrote %s (%d entries replaced)" % (target, ar.replaced))
+    return plain
 
-    if verify:                                   # read every file back through GARbro
+
+def build_data(out: str | None = None, verify: bool = True):
+    import xp3
+    import targets as T
+    import rebuild_fonts
+    t = T.by_file("data.xp3")
+    base = P.game_file(t.orig)
+    if not os.path.exists(base):
+        sys.exit("missing pristine %s" % t.orig)
+    target = out or P.game_file(t.file)
+
+    ar = xp3.Archive.read(base)
+    rebuild_fonts.apply_fonts(ar)
+    files = text_files()
+    plain = _apply_text(ar, base, files) if files else {}
+    ar.save(target)
+    print("wrote %s from %s (3 fonts + %d text files)" % (target, t.orig, len(files)))
+
+    if verify and files:
         chk = os.path.join(UI, "verify")
         shutil.rmtree(chk, ignore_errors=True)
-        bad = [n for n in files
-               if open(garbro_extract(target, n, chk), "rb").read() != plain[n]]
+        bad = []
+        for n in files:
+            with open(garbro_extract(target, n, chk), "rb") as f:
+                if f.read() != plain[n]:
+                    bad.append(n)
         print("verify: %d/%d files read back byte-identical" % (len(files) - len(bad), len(files)))
         if bad:
             sys.exit("MISMATCH: " + ", ".join(bad))
+
+
+def cmd_pack_text(out: str | None = None, verify: bool = True):
+    if not text_files():
+        sys.exit("nothing under " + TEXT)
+    build_data(out, verify)
 
 
 if __name__ == "__main__":
