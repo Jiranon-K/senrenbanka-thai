@@ -12,6 +12,7 @@ import freemote
 import paths as P
 import scenario
 import targets
+import ui_assets
 import xp3
 
 CN = scenario.CN
@@ -104,7 +105,8 @@ def pristine(archive: str, name: str) -> str:
 
 def pack(c: Corpus, name: str, extract: str):
     archive = P.game_file(name)
-    ar = xp3.Archive.read(pristine(archive, name))
+    base = pristine(archive, name)
+    ar = xp3.Archive.read(base)
 
     mine = {os.path.basename(p): p for p in glob.glob(os.path.join(c.psb_dir, "*.ks.scn"))}
     skipped = []
@@ -122,5 +124,8 @@ def pack(c: Corpus, name: str, extract: str):
     print(f"{name}: matched+encrypted {ar.replaced} scenarios")
     for n, got, cap in skipped:
         print(f"  SKIP {n}: recompiled {got} > orig {cap}")
+    text = ui_assets.apply_shadowed(ar, base, name)
     ar.save(archive)
     print(f"  wrote {archive} ({os.path.getsize(archive)} bytes)")
+    if text:
+        ui_assets.verify_text(archive, text)

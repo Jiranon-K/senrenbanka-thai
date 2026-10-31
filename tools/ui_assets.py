@@ -167,15 +167,22 @@ def text_files() -> list[str]:
                   for f in glob.glob(os.path.join(TEXT, "**", "*"), recursive=True) if os.path.isfile(f))
 
 
-def _apply_text(ar, base: str, files: list[str]) -> dict:
+SHADOWED = {"patch.xp3": {"help_sys_cn.txt": "main/help_sys_cn.txt"}}
+
+
+def _apply_text(ar, base: str, files: dict[str, str]) -> dict:
     plain = {}
-    for n in files:
-        with open(os.path.join(TEXT, n), "rb") as f:
+    for n, src in files.items():
+        with open(os.path.join(TEXT, src), "rb") as f:
             plain[n] = f.read()
+    return _apply_plain(ar, base, plain)
+
+
+def _apply_plain(ar, base: str, plain: dict[str, bytes]) -> dict:
     os.makedirs(KS, exist_ok=True)
     req = os.path.join(KS, "req.tsv")
     with open(req, "w", encoding="utf-8") as fh:
-        for n in files:
+        for n in plain:
             fh.write("%s\t%d\n" % (n, len(plain[n])))
     r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
                         os.path.join(P.TOOLS, "xp3_keystream.ps1"), "-Archive", base,
@@ -196,6 +203,107 @@ def _apply_text(ar, base: str, files: list[str]) -> dict:
     return plain
 
 
+TH = os.path.join(UI, "th")
+SHEET_ENTRY = "uipsd/cn/%s_cn.pimg"
+
+
+def image_sheets() -> list[str]:
+    return sorted(d for d in os.listdir(TH) if os.path.isdir(os.path.join(TH, d))
+                  and not d.startswith("_")) if os.path.isdir(TH) else []
+
+
+WIDEN_MAX = 120
+
+
+def thai_layers(sheet: str) -> dict[str, str]:
+    from PIL import Image
+    out, bad = {}, []
+    for png in sorted(glob.glob(os.path.join(TH, sheet, "*.png"))):
+        name = os.path.basename(png)
+        ref = os.path.join(TODO, sheet, name)
+        if not os.path.exists(ref):
+            bad.append("%s: no CN original in todo/%s" % (name, sheet))
+            continue
+        with Image.open(png) as a, Image.open(ref) as b:
+            widened = a.height == b.height and b.width < a.width <= b.width + WIDEN_MAX
+            if (a.size != b.size and not widened) or a.mode != "RGBA":
+                bad.append("%s: %s %s, want %s RGBA" % (name, a.size, a.mode, b.size))
+                continue
+        out[name.split("_", 1)[0]] = png
+    if bad:
+        sys.exit("%s: bad Thai layers\n  " % sheet + "\n  ".join(bad))
+    return out
+
+
+IMAGES = "_images"
+
+
+def thai_images() -> dict[str, str]:
+    from PIL import Image
+    root = os.path.join(TH, IMAGES)
+    out, bad = {}, []
+    for png in sorted(glob.glob(os.path.join(root, "**", "*.png"), recursive=True)):
+        rel = os.path.relpath(png, root).replace(os.sep, "/")
+        ref = os.path.join(TODO, IMAGES, rel)
+        if not os.path.exists(ref):
+            bad.append("%s: no CN original in todo/%s" % (rel, IMAGES))
+            continue
+        with Image.open(png) as a, Image.open(ref) as b:
+            if a.size != b.size:
+                bad.append("%s: %s, want %s" % (rel, a.size, b.size))
+                continue
+        out[rel] = png
+    if bad:
+        sys.exit("%s: bad Thai images\n  " % IMAGES + "\n  ".join(bad))
+    return out
+
+
+def build_sheet(base: str, sheet: str) -> bytes:
+    entry = SHEET_ENTRY % sheet
+    work = os.path.join(UI, "build", sheet)
+    shutil.rmtree(work, ignore_errors=True)
+    src = garbro_extract(base, entry, os.path.join(work, "src"))
+    if not os.path.exists(src):
+        sys.exit("could not extract %s from %s" % (entry, base))
+    pimg = os.path.join(work, os.path.basename(src))
+    shutil.copyfile(src, pimg)
+    js = freemote.default().decompile(pimg, raw=True)
+    resx = os.path.splitext(js)[0] + ".resx.json"
+    meta = json.load(open(resx, encoding="utf-8"))
+    res = meta["Resources"]
+    slots = list(res)
+    index = {}
+    for k, v in json.load(open(js, encoding="utf-8")).items():
+        if k.endswith(".tlg") and isinstance(v, str) and v.startswith("#resource#"):
+            index[k[:-4]] = int(v[len("#resource#"):])
+    layers_ = thai_layers(sheet)
+    missing = [lid for lid in layers_ if lid not in index or index[lid] >= len(slots)]
+    if missing:
+        sys.exit("%s: layer ids not in sheet: %s" % (sheet, ", ".join(missing)))
+    for lid, png in layers_.items():
+        slot = slots[index[lid]]
+        rel = os.path.splitext(res[slot])[0] + ".png"
+        shutil.copyfile(png, os.path.join(work, rel))
+        res[slot] = rel
+    with open(resx, "w", encoding="utf-8") as fh:
+        json.dump(meta, fh, ensure_ascii=False, indent=2)
+    from PIL import Image
+    widths = {}
+    for lid, png in layers_.items():
+        with Image.open(png) as im:
+            widths[int(lid)] = im.width
+    sheet_meta = json.load(open(js, encoding="utf-8"))
+    for L in sheet_meta["layers"]:
+        if L.get("layer_id") in widths and L.get("width") != widths[L["layer_id"]]:
+            L["width"] = widths[L["layer_id"]]
+    with open(js, "w", encoding="utf-8") as fh:
+        json.dump(sheet_meta, fh, ensure_ascii=False, indent=2)
+    built = freemote.default().build(js, os.path.join(work, "out"), ext=".pimg")
+    print("  %-32s %d Thai layers" % (entry, len(layers_)))
+    with open(built, "rb") as f:
+        return f.read()
+
+
 def build_data(out: str | None = None, verify: bool = True):
     import xp3
     import targets as T
@@ -209,21 +317,46 @@ def build_data(out: str | None = None, verify: bool = True):
     ar = xp3.Archive.read(base)
     rebuild_fonts.apply_fonts(ar)
     files = text_files()
-    plain = _apply_text(ar, base, files) if files else {}
+    sheets = image_sheets()
+    plain = {}
+    for n in files:
+        with open(os.path.join(TEXT, n), "rb") as f:
+            plain[n] = f.read()
+    for sheet in sheets:
+        plain[SHEET_ENTRY % sheet] = build_sheet(base, sheet)
+    images = thai_images()
+    for rel, png in images.items():
+        with open(png, "rb") as f:
+            plain[rel] = f.read()
+    if plain:
+        _apply_plain(ar, base, plain)
     ar.save(target)
-    print("wrote %s from %s (3 fonts + %d text files)" % (target, t.orig, len(files)))
+    print("wrote %s from %s (3 fonts + %d text files + %d image sheets + %d images)"
+          % (target, t.orig, len(files), len(sheets), len(images)))
 
-    if verify and files:
-        chk = os.path.join(UI, "verify")
-        shutil.rmtree(chk, ignore_errors=True)
-        bad = []
-        for n in files:
-            with open(garbro_extract(target, n, chk), "rb") as f:
-                if f.read() != plain[n]:
-                    bad.append(n)
-        print("verify: %d/%d files read back byte-identical" % (len(files) - len(bad), len(files)))
-        if bad:
-            sys.exit("MISMATCH: " + ", ".join(bad))
+    if verify and plain:
+        verify_text(target, plain)
+
+
+def apply_shadowed(ar, base: str, name: str) -> dict:
+    files = SHADOWED.get(name, {})
+    missing = [src for src in files.values() if not os.path.exists(os.path.join(TEXT, src))]
+    if missing:
+        sys.exit("missing Thai text for %s: %s" % (name, ", ".join(missing)))
+    return _apply_text(ar, base, files) if files else {}
+
+
+def verify_text(archive: str, plain: dict):
+    chk = os.path.join(UI, "verify")
+    shutil.rmtree(chk, ignore_errors=True)
+    bad = []
+    for n in plain:
+        with open(garbro_extract(archive, n, chk), "rb") as f:
+            if f.read() != plain[n]:
+                bad.append(n)
+    print("verify: %d/%d files read back byte-identical" % (len(plain) - len(bad), len(plain)))
+    if bad:
+        sys.exit("MISMATCH: " + ", ".join(bad))
 
 
 def cmd_pack_text(out: str | None = None, verify: bool = True):

@@ -1,10 +1,51 @@
 # UI translation — menus, buttons, system text
 
+> **Status 2026-10-31 — all image menus:** every CN sheet (24 `uipsd/cn/*_cn.pimg`) and 3 standalone
+> PNGs (`attention`, `scramble2`, `extra_watermark`) are drawn in Thai — 917 labels from
+> `tools/ui_labels.tsv`. Run `python tools/ui_render.py <sheet ...>` then `python tools/ui_assets.py pack-text`.
+> Left as drawn: the game logo (title_bg, aboutdialog, deactivelogo, eyecatch logo) and the Latin
+> copyright line. `python tools/ui_render.py survey <sheet>` crops every CN text block next to its EN twin
+> for writing new labels.
+>
+> Label `kind` = `title | heading | tab | button | gold` plus `+flags`: `grad` `outline` `shadow` `flat`
+> (paint), `center` `left` (align), `smooth` (diffusion fill, for text on artwork), `interp` (linear fill),
+> `whole` (erase the union box), `clearall` (layer is text only), `jponly` (compare with JP only, searching
+> ±32 px — for layers whose EN twin is laid out differently), `widen` (layer may grow up to
+> `ui_assets.WIDEN_MAX` px to the right; the packer writes the new width into the sheet), `bottom` (only
+> text blocks in the lower third — gesture icons). Layer keys are `name`, `name~N` (Nth group with that
+> name), `name#N`, `#N-M` or `#N,M` (text blocks in reading order).
+>
+> Gotcha: FreeMote's `-raw` resource keys are not always layer ids (`gesture_help` stores layer 104 as
+> key `"10"`); `build_sheet` maps layer → `#resource#N` from the sheet json → Nth resource.
+
+> **Status 2026-10-31 — image pilot:** System Config → Image page (`sys_base`, `sys_page0`,
+> 70 layers) is drawn in Thai by `python tools/ui_render.py sys_base sys_page0` and packed by
+> `python tools/ui_assets.py pack-text`, which now also rebuilds every sheet that has a folder in
+> `thai_work/ui/th/`. Spec: `docs/agent/specs/ui-image-pilot-system-config.md`.
+>
+> How `ui_render.py` works: the CN text is located by comparing the CN layer with its JP and EN
+> twins (CN must differ from both, and from a 9 px median of itself, so text shared by two
+> languages or semi-transparent pills does not fool it). The background is rebuilt by tiling a
+> text-free strip from the same rows, using the strip's own repeat period so the checker pattern
+> stays aligned; tab text on transparency is simply cleared. Thai is shaped with harfbuzz and
+> rasterized with FreeType (Pillow here has no libraqm, so it would stack ั + ้ wrongly).
+> Headings and the title use Noto Serif Thai (OFL, `thai_work/fonts/ui/`, downloaded from
+> google/fonts); buttons and tabs use Sarabun SemiBold. Wording lives in `tools/ui_labels.tsv`.
+>
+> Verified in game 2026-10-31: the engine loads FreeMote-rebuilt sheets, including layers rebuilt
+> from PNG (stored as TLG0-wrapped TLG5). `build_data` needs `thai_work/fonts/variants/*.ttf` and
+> `thai_work/dataxp3/font/*.otf`; both can be re-extracted from the shipped `data.xp3` and from
+> `data.xp3.bak` with `garbro_extract.ps1 -Filter "font/SourceHanSansSC-*"`.
+
 > **Status 2026-10-26:** image translation was cancelled. All text-based UI is translated
 > and packed into `data.xp3` with `python tools/ui_assets.py pack-text` (10 files,
 > read back byte-identical through GARbro). The translated files live in
 > `thai_work/ui/text/main/` — gitignored, because they keep the game's Japanese comments.
 > 68 flowchart choice labels from sex scenes are left in Chinese on purpose.
+>
+> `patch.xp3` carries its own copy of `help_sys_cn.txt` (identical to the CN original in
+> `data.xp3`) and the game reads it first. `pipeline_cn.py pack patch.xp3` therefore packs the
+> Thai `main/help_sys_cn.txt` into `patch.xp3` too (`ui_assets.SHADOWED`, rule R16).
 >
 > The size limit described below no longer applies to entries packed with
 > `xp3.Archive.replace_sized`: the cx cipher is a pure XOR, so `tools/xp3_keystream.ps1`
