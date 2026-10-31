@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/installer.gif" alt="ตัวติดตั้งแพตช์แปลไทย" width="820">
+  <img src="docs/screenshots/title.webp" alt="หน้าไตเติลภาษาไทย" width="820">
 </p>
 
 ---
@@ -29,6 +29,10 @@
 | **1** | โหลด `senrenbanka-thai-patch-v1.3.zip` จากหน้า [Releases](../../releases/latest) แล้วแตกไฟล์ไว้ที่ไหนก็ได้ — **ไม่ต้อง**แตกทับโฟลเดอร์เกม |
 | **2** | ดับเบิลคลิก `SenrenBanka-Thai-Patch.exe` แล้วกดถัดไป มันหาโฟลเดอร์เกมให้เอง |
 | **3** | เปิดเกม → **Config** → **Language** → เลือก **Chinese (Simplified)** → ได้ภาษาไทยทันที |
+
+<p align="center">
+  <img src="docs/installer.gif" alt="ตัวติดตั้งแพตช์แปลไทย" width="820">
+</p>
 
 <p align="center">
   <img src="docs/installer-locate.png" alt="หน้าหาโฟลเดอร์เกม" width="400">
@@ -52,6 +56,15 @@
 > (v1.2: แก้บทพูดที่เลื่อน ตัดคำหยาบ · [สรุปการตรวจ](docs/audit-2026-10.md))
 
 รายบทดูได้ที่ [PROGRESS.md](thai_work/PROGRESS.md) และ [PROGRESS_R18.md](thai_work/PROGRESS_R18.md)
+
+### ตัวอย่างในเกม
+
+<p align="center">
+  <img src="docs/screenshots/dialogue-mako.webp" alt="บทพูดภาษาไทย — มาโกะ" width="400">
+  <img src="docs/screenshots/dialogue-masaomi.webp" alt="บทพูดภาษาไทย — มาซาโอมิ" width="400">
+</p>
+
+<sub>ภาพหน้าจอจากเกม ลิขสิทธิ์ภาพเป็นของ YUZUSOFT / JUNOS inc. ใช้เพื่อแสดงผลการแปลเท่านั้น</sub>
 
 ---
 
