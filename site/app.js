@@ -64,7 +64,7 @@
     update();
   });
 
-  // Gallery lightbox (real screenshots only; mock slots have no button).
+  // Gallery lightbox.
   const box = document.querySelector('[data-lightbox]');
   if (box && typeof box.showModal === 'function') {
     const big = box.querySelector('img');
