@@ -113,6 +113,19 @@ Steam อัปเดตมาก็แค่ลงแพตช์ใหม่ �
 </details>
 
 <details>
+<summary><b>Windows ขึ้นเตือน "Windows protected your PC"</b></summary><br>
+
+ตัวติดตั้งเป็นโปรแกรมที่ไม่ได้เซ็นชื่อดิจิทัล (code signing) Windows SmartScreen จึงเตือนกับโปรแกรมใหม่ที่ยังมีคนโหลดไม่มาก
+ไม่ได้แปลว่าเจอไวรัส กด **More info** แล้วกด **Run anyway** ได้เลย
+
+ถ้าไม่สบายใจ:
+- เช็กว่าไฟล์ zip ตรงกับที่ปล่อยจริง ด้วยค่า SHA256 ในหน้า [Releases](../../releases/latest)
+  (PowerShell: `Get-FileHash senrenbanka-thai-patch-v1.3.1.zip`)
+- หรือใช้ `install.bat` ที่อยู่ในซิปแทน ผลลัพธ์เหมือนกัน และเปิดอ่านได้ทุกบรรทัด
+
+</details>
+
+<details>
 <summary><b>ปลอดภัยไหม? ทำอะไรกับเครื่องบ้าง?</b></summary><br>
 
 - **ไม่แตะอะไรนอกโฟลเดอร์เกม** ไม่เขียน registry ไม่ลงบริการ ไม่ต่อเน็ต ไม่เปิดพอร์ต
