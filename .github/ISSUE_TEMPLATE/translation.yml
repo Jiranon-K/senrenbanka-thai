@@ -1,0 +1,61 @@
+name: แจ้งคำแปลผิด / สำนวนแปลก
+description: บทพูดหรือเมนูที่แปลผิด อ่านแล้วแปลก ข้อความหาย หรือล้นกล่อง
+title: "[แปล] "
+labels: ["translation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ขอบคุณที่ช่วยแจ้งครับ คำแปลทั้งหมดแปลด้วย AI แล้วตรวจด้วยสคริปต์ จุดที่ผู้เล่นเจอจึงช่วยได้มาก
+        แนบภาพหน้าจอได้ด้วยการลากไฟล์มาวางในช่องด้านล่าง
+  - type: dropdown
+    id: kind
+    attributes:
+      label: ปัญหาแบบไหน
+      options:
+        - แปลผิดความหมาย
+        - สำนวนแข็ง / อ่านแล้วแปลก
+        - ชื่อหรือคำเรียกไม่ตรงกัน
+        - ข้อความหาย / ยังเป็นภาษาจีนหรืออังกฤษ
+        - ตัวอักษรขาด / ล้นกล่อง / สระลอย
+        - อื่น ๆ
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: อยู่ตรงไหน
+      description: เส้นทาง บท หรือหน้าเมนู เช่น "Murasame บท 3-2" หรือ "หน้าตั้งค่า แท็บเสียง"
+      placeholder: Yoshino บท 3-8
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: ภาพหน้าจอ
+      description: ลากภาพมาวางตรงนี้ ถ้ามีภาพภาษาอังกฤษของบรรทัดเดียวกันด้วยจะดีมาก
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: ข้อความที่เห็นในเกม
+      render: text
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: ควรแปลว่าอะไร (ถ้ามีไอเดีย)
+  - type: dropdown
+    id: r18
+    attributes:
+      label: ลงแพตช์ R18 ไว้ไหม
+      options:
+        - ไม่ได้ลง
+        - ลงไว้
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: เวอร์ชันแพตช์ไทย
+      placeholder: v1.3.1
