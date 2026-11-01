@@ -31,31 +31,6 @@
     update();
   });
 
-  // Install steps: ARIA tabs with arrow-key navigation.
-  document.querySelectorAll('[data-tabs]').forEach((root) => {
-    const tabs = [...root.querySelectorAll('[role=tab]')];
-    const select = (tab, focus) => {
-      tabs.forEach((t) => {
-        const on = t === tab;
-        t.setAttribute('aria-selected', String(on));
-        t.tabIndex = on ? 0 : -1;
-        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
-      });
-      if (focus) tab.focus();
-    };
-    tabs.forEach((tab, i) => {
-      tab.addEventListener('click', () => select(tab, false));
-      tab.addEventListener('keydown', (e) => {
-        const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
-        let next = null;
-        if (e.key in keys) next = tabs[(i + keys[e.key] + tabs.length) % tabs.length];
-        if (e.key === 'Home') next = tabs[0];
-        if (e.key === 'End') next = tabs[tabs.length - 1];
-        if (next) { e.preventDefault(); select(next, true); }
-      });
-    });
-  });
-
   // Gallery lightbox.
   const box = document.querySelector('[data-lightbox]');
   if (box && typeof box.showModal === 'function') {

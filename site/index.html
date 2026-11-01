@@ -6,7 +6,7 @@
 <title>Senren Banka แปลไทย — แพตช์ภาษาไทย 千恋＊万花 ดาวน์โหลดและวิธีติดตั้ง</title>
 <meta name="description" content="แพตช์แปลไทย (ม็อดภาษาไทย) สำหรับเกม Senren Banka (千恋＊万花) ของ Yuzusoft ฉบับ Steam แปลเนื้อเรื่องครบ 86 บททุกเส้นทาง รองรับแพตช์ R18 ติดตั้งด้วยดับเบิลคลิก ถอดคืนได้ ฟรี">
 <link rel="canonical" href="https://jiranon-k.github.io/senrenbanka-thai/">
-<meta name="theme-color" content="#17110f">
+<meta name="theme-color" content="#faf6ee">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
 <meta property="og:type" content="website">
@@ -23,8 +23,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600&display=swap&text=%E5%8D%83%E6%81%8B%EF%BC%8A%E4%B8%87%E8%8A%B1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Taviraj:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap&text=%E5%8D%83%E6%81%8B%EF%BC%8A%E4%B8%87%E8%8A%B1">
 <link rel="stylesheet" href="styles.css">
 
 <script type="application/ld+json">
@@ -51,8 +51,11 @@
 <header class="nav" data-nav>
   <div class="wrap nav__row">
     <a class="brand" href="./" aria-label="Senren Banka แปลไทย หน้าแรก">
-      <span class="brand__jp jp" lang="ja">千恋＊万花</span>
-      <span class="brand__th">แปลไทย</span>
+      <span class="hanko hanko--sm" aria-hidden="true">ไทย</span>
+      <span class="brand__text">
+        <span class="brand__jp jp" lang="ja">千恋＊万花</span>
+        <span class="brand__th">Thai patch</span>
+      </span>
     </a>
     <nav class="nav__menu" aria-label="เมนูหลัก">
       <a href="#install">วิธีติดตั้ง</a>
@@ -63,39 +66,53 @@
         <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
       </a>
     </nav>
-    <a class="btn btn--sm btn--line" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">ดาวน์โหลด</a>
+    <a class="btn btn--sm btn--primary" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">ดาวน์โหลด</a>
   </div>
 </header>
 
 <main id="main">
-  <!-- Hero: the patched title screen is the proof, so it is shown whole and never covered by copy. -->
+  <!-- Hero: copy on the left, the patched title screen on the right, shown whole and never covered by copy. -->
   <section class="hero" aria-labelledby="hero-title">
-    <div class="wrap hero__head">
-      <div>
-        <p class="chip"><span class="chip__dot" aria-hidden="true"></span>แพตช์แปลไทยโดยแฟนเกม · <span data-latest-tag>v1.3.1</span></p>
-        <h1 id="hero-title">Senren Banka<span class="h1__th">ฉบับภาษาไทย</span></h1>
-      </div>
-      <div class="hero__aside">
-        <p class="lead">แพตช์แปลไทยสำหรับ <span lang="ja" class="jp">千恋＊万花</span> ของ Yuzusoft ฉบับ Steam แปลเนื้อเรื่องครบทุกเส้นทาง ติดตั้งด้วยการดับเบิลคลิก และถอดคืนได้ทุกเมื่อ</p>
-        <div class="cta">
-          <a class="btn btn--primary" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">
-            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M10 3v9m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            ดาวน์โหลดแพตช์ฟรี
-          </a>
-          <a class="link-arrow" href="#install">ดูวิธีติดตั้ง <span aria-hidden="true">→</span></a>
+    <div class="wrap">
+      <div class="hero__grid">
+        <div class="hero__copy">
+          <p class="chip"><span class="chip__ver" data-latest-tag>v1.3.1</span>แพตช์แปลไทยโดยแฟนเกม · ฟรี</p>
+          <h1 id="hero-title">Senren Banka<span class="h1__th">ฉบับภาษาไทย</span></h1>
+          <p class="lead">แพตช์แปลไทยสำหรับ <span lang="ja" class="jp">千恋＊万花</span> ของ Yuzusoft ฉบับ Steam แปลเนื้อเรื่องครบทุกเส้นทาง ติดตั้งด้วยการดับเบิลคลิก และถอดคืนได้ทุกเมื่อ</p>
+          <div class="cta">
+            <a class="btn btn--primary" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">
+              <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M10 3v9m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              ดาวน์โหลดแพตช์ฟรี
+            </a>
+            <a class="link-arrow" href="#install">ดูวิธีติดตั้ง <span aria-hidden="true">→</span></a>
+          </div>
+          <p class="meta">ไฟล์ zip <span data-latest-size>57 MB</span> · Windows 10/11 · ต้องมีเกมแท้บน Steam</p>
         </div>
-        <p class="meta">ไฟล์ zip <span data-latest-size>57 MB</span> · Windows 10/11 · ต้องมีเกมแท้บน Steam</p>
-      </div>
-    </div>
 
-    <div class="wrap hero__stage">
-      <img class="ambient" src="assets/shots/title.webp" alt="" aria-hidden="true">
-      <figure class="screen">
-        <img src="assets/shots/title.webp" width="1600" height="900" alt="หน้าไตเติลของเกมหลังลงแพตช์ เมนูทั้งหมดเป็นภาษาไทย เช่น เริ่มเกมใหม่ โหลดเกม เล่นต่อ ผังเรื่อง และตั้งค่าระบบ" fetchpriority="high">
-        <span class="pin" style="--x:22.5%;--y:50.5%"><span class="pin__dot" aria-hidden="true"></span><span class="pin__label">เมนูเป็นภาษาไทยทั้งหมด</span></span>
-        <span class="pin pin--flip" style="--x:82.5%;--y:4.6%"><span class="pin__dot" aria-hidden="true"></span><span class="pin__label">ปุ่มภาษาขึ้นว่า “ภาษาไทย”</span></span>
-      </figure>
-      <p class="stage__cap">หน้าไตเติลหลังลงแพตช์ เมนูและปุ่มภาษาเป็นภาษาไทยทั้งหมด</p>
+        <div class="hero__stage">
+          <figure class="screen">
+            <img src="assets/shots/title.webp" width="1600" height="900" alt="หน้าไตเติลของเกมหลังลงแพตช์ เมนูทั้งหมดเป็นภาษาไทย เช่น เริ่มเกมใหม่ โหลดเกม เล่นต่อ ผังเรื่อง และตั้งค่าระบบ" fetchpriority="high">
+            <span class="pin" style="--x:22.5%;--y:50.5%"><span class="pin__dot" aria-hidden="true"></span><span class="pin__label">เมนูเป็นภาษาไทยทั้งหมด</span></span>
+            <span class="pin pin--flip" style="--x:82.5%;--y:4.6%"><span class="pin__dot" aria-hidden="true"></span><span class="pin__label">ปุ่มภาษาขึ้นว่า “ภาษาไทย”</span></span>
+          </figure>
+          <p class="stage__cap">หน้าไตเติลหลังลงแพตช์ เมนูและปุ่มภาษาเป็นภาษาไทยทั้งหมด</p>
+        </div>
+      </div>
+
+      <ul class="facts" aria-label="จุดเด่นของแพตช์">
+        <li class="fact">
+          <span class="fact__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span><span class="fact__title">แปลครบ 86 บท ทุกเส้นทาง</span><br><span class="fact__text">เล่นตั้งแต่ต้นจนจบเป็นภาษาไทย รวมเมนูและหน้าระบบ</span></span>
+        </li>
+        <li class="fact">
+          <span class="fact__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><span class="fact__title">ดับเบิลคลิกก็ติดตั้งได้</span><br><span class="fact__text">ตัวติดตั้งหาโฟลเดอร์เกมให้เอง ไม่แตะ .exe ไม่ต่อเน็ต</span></span>
+        </li>
+        <li class="fact">
+          <span class="fact__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12a8 8 0 1 0 2.3-5.7M4 4v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><span class="fact__title">ถอดคืนได้ทุกเมื่อ</span><br><span class="fact__text">สำรองไฟล์เดิมเป็น .bak ก่อนแปะเสมอ กดถอดแพตช์ก็กลับเป็นเดิม</span></span>
+        </li>
+      </ul>
     </div>
   </section>
 
@@ -104,7 +121,7 @@
     <div class="wrap">
       <header class="sec__head">
         <p class="kicker">ก่อน / หลังลงแพตช์</p>
-        <h2 id="compare-title">ลากเทียบต้นฉบับกับภาษาไทย</h2>
+        <h2 id="compare-title">ลากเทียบต้นฉบับกับภาษาไทย<span class="sub">Before / After</span></h2>
       </header>
       <div class="compare" style="--pos:50%" data-compare>
         <img src="assets/shots/compare-th.webp" width="1600" height="900" loading="lazy" alt="ฉากเดียวกันหลังลงแพตช์ บทพูดเป็นภาษาไทย">
@@ -121,65 +138,62 @@
   <!-- @end -->
 
   <section id="progress" class="sec" aria-labelledby="progress-title">
-    <div class="wrap progress">
-      <div class="progress__intro">
-        <p class="kicker">ความคืบหน้า</p>
-        <h2 id="progress-title">เนื้อเรื่องหลักแปลครบ <span class="num">86</span> จาก <span class="num">86</span> บท</h2>
-        <p>ครบทุกเส้นทาง เล่นได้ตั้งแต่ต้นจนจบเป็นภาษาไทย</p>
-        <ul class="routes" aria-label="เส้นทางที่แปลแล้ว">
-          <li>Common</li><li>Yoshino</li><li>Murasame</li><li>Mako</li><li>Lena</li><li>Sub</li>
-        </ul>
+    <div class="wrap">
+      <div class="progress__head">
+        <div>
+          <p class="kicker">ความคืบหน้า</p>
+          <h2 id="progress-title">เนื้อเรื่องหลักแปลครบ <span class="big num">86</span> จาก <span class="num">86</span> บท<span class="sub">Progress</span></h2>
+        </div>
+        <div>
+          <p>ครบทุกเส้นทาง เล่นได้ตั้งแต่ต้นจนจบเป็นภาษาไทย</p>
+          <ul class="routes" aria-label="เส้นทางที่แปลแล้ว">
+            <li>Common</li><li>Yoshino</li><li>Murasame</li><li>Mako</li><li>Lena</li><li>Sub</li>
+          </ul>
+        </div>
       </div>
       <div class="meters">
         <div class="meter">
-          <div class="meter__row"><h3>เนื้อเรื่องหลัก</h3><span class="meter__pct num">100%</span></div>
+          <h3>เนื้อเรื่องหลัก</h3>
+          <span class="meter__pct num">100%</span>
           <div class="meter__track"><span style="width:100%"></span></div>
           <p>86/86 บท</p>
         </div>
         <div class="meter">
-          <div class="meter__row"><h3>เมนูและระบบ</h3><span class="meter__pct num">100%</span></div>
+          <h3>เมนูและระบบ</h3>
+          <span class="meter__pct num">100%</span>
           <div class="meter__track"><span style="width:100%"></span></div>
           <p>ข้อความ ปุ่ม และหัวข้อที่เป็นรูปภาพ 917 จุด · โลโก้เกมคงไว้ตามเดิม</p>
         </div>
-        <div class="meter">
-          <div class="meter__row"><h3>ฉากเพิ่มเติม <span class="muted">(แพตช์ R18)</span></h3><span class="meter__pct num">82%</span></div>
+        <div class="meter meter--soft">
+          <h3>ฉากเพิ่มเติม <span class="muted">(แพตช์ R18)</span></h3>
+          <span class="meter__pct num">82%</span>
           <div class="meter__track"><span style="width:82%"></span></div>
           <p>45,806/55,846 บรรทัด · บรรทัดที่ยังไม่แปลขึ้นเป็นภาษาจีนเดิม เกมไม่พัง</p>
         </div>
-        <p class="ai-note"><b>แปลด้วย AI</b> (Claude) แล้วตรวจด้วยสคริปต์ สำนวนอาจแข็งหรือผิดบางจุด เจอตรงไหนแปลก <a href="https://github.com/Jiranon-K/senrenbanka-thai/issues">แจ้งที่ Issues</a> พร้อมภาพหน้าจอ</p>
       </div>
+      <p class="ai-note">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span><b>แปลด้วย AI</b> (Claude) แล้วตรวจด้วยสคริปต์ สำนวนอาจแข็งหรือผิดบางจุด เจอตรงไหนแปลก <a href="https://github.com/Jiranon-K/senrenbanka-thai/issues">แจ้งที่ Issues</a> พร้อมภาพหน้าจอ</span>
+      </p>
     </div>
   </section>
 
-  <section id="install" class="sec sec--paper" aria-labelledby="install-title">
+  <section id="install" class="sec sec--tint" aria-labelledby="install-title">
     <div class="wrap">
       <header class="sec__head">
         <p class="kicker">วิธีติดตั้ง</p>
-        <h2 id="install-title">ลงแพตช์ภาษาไทยใน 3 ขั้น</h2>
+        <h2 id="install-title">ลงแพตช์ภาษาไทยใน 3 ขั้น<span class="sub">How to install</span></h2>
         <p>ไม่ต้องแก้ไฟล์ .exe ไม่ต้องใช้ตัวโหลดพิเศษ ตัวติดตั้งหาโฟลเดอร์เกมให้เอง</p>
       </header>
 
-      <div class="steps" data-tabs>
-        <div class="steps__list" role="tablist" aria-label="ขั้นตอนการติดตั้ง">
-          <button class="step" type="button" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true">
-            <span class="step__n num">01</span>
-            <span class="step__body"><span class="step__title">ดาวน์โหลดแล้วแตกไฟล์</span>
-            <span class="step__text">โหลดไฟล์ zip จากหน้า Releases แล้วแตกไว้ที่ไหนก็ได้ ไม่ต้องแตกทับโฟลเดอร์เกม</span></span>
-          </button>
-          <button class="step" type="button" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1">
-            <span class="step__n num">02</span>
-            <span class="step__body"><span class="step__title">เปิดตัวติดตั้ง</span>
-            <span class="step__text">ดับเบิลคลิก <code>SenrenBanka-Thai-Patch.exe</code> แล้วกด “ถัดไป” จนจบ</span></span>
-          </button>
-          <button class="step" type="button" role="tab" id="tab-3" aria-controls="panel-3" aria-selected="false" tabindex="-1">
-            <span class="step__n num">03</span>
-            <span class="step__body"><span class="step__title">เลือกภาษาไทยในเกม</span>
-            <span class="step__text">เปิดเกม → Config → Language → เลือก <b>ภาษาไทย</b></span></span>
-          </button>
-        </div>
-
-        <div class="steps__panels">
-          <div class="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+      <ol class="steps" aria-label="ขั้นตอนการติดตั้ง">
+        <li class="step">
+          <span class="step__n num" aria-hidden="true">1</span>
+          <div>
+            <h3 class="step__title">ดาวน์โหลดแล้วแตกไฟล์</h3>
+            <p class="step__text">โหลดไฟล์ zip จากหน้า Releases แล้วแตกไว้ที่ไหนก็ได้ ไม่ต้องแตกทับโฟลเดอร์เกม</p>
+          </div>
+          <div class="step__aside">
             <div class="file">
               <div class="file__icon" aria-hidden="true">ZIP</div>
               <div class="file__info">
@@ -194,12 +208,26 @@
               <li>ตรวจเวอร์ชันเกมด้วย SHA256 และสำรองไฟล์เดิมเป็น <code>.bak</code> ก่อนแปะทุกครั้ง</li>
             </ul>
           </div>
-          <div class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+        </li>
+        <li class="step">
+          <span class="step__n num" aria-hidden="true">2</span>
+          <div>
+            <h3 class="step__title">เปิดตัวติดตั้ง</h3>
+            <p class="step__text">ดับเบิลคลิก <code>SenrenBanka-Thai-Patch.exe</code> แล้วกด “ถัดไป” จนจบ ตัวติดตั้งจะหาโฟลเดอร์เกมใน Steam ให้เอง</p>
+          </div>
+          <div class="step__aside">
             <figure class="shot shot--app">
               <img src="assets/installer/installer-locate.png" width="880" height="600" loading="lazy" alt="ตัวติดตั้งแพตช์ในขั้นหาโฟลเดอร์เกม พบโฟลเดอร์ SenrenBanka ใน SteamLibrary">
             </figure>
           </div>
-          <div class="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
+        </li>
+        <li class="step">
+          <span class="step__n num" aria-hidden="true">3</span>
+          <div>
+            <h3 class="step__title">เลือกภาษาไทยในเกม</h3>
+            <p class="step__text">เปิดเกม ไปที่ Config → Language แล้วเลือก <b>ภาษาไทย</b> เมนูและบทพูดจะเปลี่ยนเป็นภาษาไทยทันที</p>
+          </div>
+          <div class="step__aside">
             <!-- @requires shots/config-language.webp -->
             <figure class="shot">
               <img src="assets/shots/config-language.webp" width="1600" height="900" loading="lazy" alt="หน้า Config ของเกม ช่อง Language เลือกภาษาไทยไว้">
@@ -210,10 +238,11 @@
             </div>
             <!-- @end -->
           </div>
-        </div>
-      </div>
+        </li>
+      </ol>
 
       <aside class="callout" aria-label="ลำดับการลงเมื่อใช้แพตช์ R18">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 2.6 17.2A2 2 0 0 0 4.3 20h15.4a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <p><b>ใช้แพตช์ R18 ด้วย?</b> ลงตามลำดับ <span class="order">เกม → แพตช์ R18 → แพตช์ไทย</span> และห้ามรันตัวติดตั้ง R18 ซ้ำหลังลงไทย ไม่อย่างนั้นภาษาไทยจะหายทั้งเกม</p>
       </aside>
     </div>
@@ -223,7 +252,7 @@
     <div class="wrap">
       <header class="sec__head">
         <p class="kicker">ภาพในเกม</p>
-        <h2 id="screens-title">บทพูดและเมนูหลังลงแพตช์</h2>
+        <h2 id="screens-title">บทพูดและเมนูหลังลงแพตช์<span class="sub">Screenshots</span></h2>
       </header>
       <div class="gallery" data-gallery>
         <!-- @requires shots/dialogue-yoshino.webp -->
@@ -248,11 +277,11 @@
     </div>
   </section>
 
-  <section id="faq" class="sec sec--paper" aria-labelledby="faq-title">
+  <section id="faq" class="sec sec--tint" aria-labelledby="faq-title">
     <div class="wrap faq">
       <div class="faq__intro">
         <p class="kicker">คำถามที่พบบ่อย</p>
-        <h2 id="faq-title">ก่อนลง อ่านตรงนี้</h2>
+        <h2 id="faq-title">ก่อนลง อ่านตรงนี้<span class="sub">FAQ</span></h2>
         <p>ยังติดปัญหา? แจ้งพร้อมภาพหน้าจอ แล้วจะตามแก้ให้</p>
         <a class="help" href="https://github.com/Jiranon-K/senrenbanka-thai/issues">
           <span class="help__title">แจ้งปัญหาหรือคำแปลแปลก ๆ</span>
@@ -304,12 +333,10 @@
   </section>
 
   <section class="final" aria-labelledby="final-title">
-    <img class="ambient" src="assets/shots/title.webp" alt="" aria-hidden="true" loading="lazy">
-    <div class="wrap final__row">
-      <div>
-        <h2 id="final-title">พร้อมเล่นเป็นภาษาไทยแล้ว</h2>
-        <p>ฟรี · <span data-latest-tag>v1.3.1</span> · <span data-latest-size>57 MB</span> · Windows 10/11</p>
-      </div>
+    <div class="wrap final__box">
+      <span class="hanko" aria-hidden="true">แปลไทย</span>
+      <h2 id="final-title">พร้อมเล่นเป็นภาษาไทยแล้ว</h2>
+      <p>ฟรี · <span data-latest-tag>v1.3.1</span> · <span data-latest-size>57 MB</span> · Windows 10/11</p>
       <a class="btn btn--primary" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">
         <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M10 3v9m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         ดาวน์โหลดแพตช์ฟรี
