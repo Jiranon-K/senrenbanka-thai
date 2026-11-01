@@ -20,8 +20,6 @@
 #     docs/screenshots/ (ข้อยกเว้น R12 — ภาพหน้าจอเท่านั้น ห้ามไฟล์ asset ที่แตกจากเกม)
 !/docs/
 
-# 2c) site/ — หน้า GitHub Pages (HTML/CSS ของเราเอง) ภาพเกมถูกคัดลอกจาก docs/screenshots/ ตอน build
-#     ห้ามวางภาพเกมหรือภาพ crop ไว้ใน site/ โดยตรง (R12)
 !/site/
 /site/__pycache__/
 
