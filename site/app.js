@@ -13,7 +13,10 @@
       const zip = (rel.assets || []).find((a) => a.name.endsWith('.zip'));
       const set = (sel, text) => document.querySelectorAll(sel).forEach((el) => { el.textContent = text; });
       set('[data-latest-tag]', rel.tag_name);
-      if (zip) set('[data-latest-size]', `${Math.round(zip.size / 1048576)} MB`);
+      if (zip) {
+        set('[data-latest-size]', `${Math.round(zip.size / 1048576)} MB`);
+        set('[data-latest-name]', zip.name);
+      }
       if (rel.published_at) {
         const d = new Date(rel.published_at);
         set('[data-latest-date]', d.toLocaleDateString('th-TH-u-ca-gregory', { day: 'numeric', month: 'short', year: 'numeric' }));

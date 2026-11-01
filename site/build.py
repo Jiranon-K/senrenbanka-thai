@@ -7,7 +7,7 @@ REPO = Path(__file__).resolve().parent.parent
 SITE = REPO / "site"
 OUT = REPO / "_site"
 SOURCES = {"assets/shots/": REPO / "docs" / "screenshots", "assets/installer/": REPO / "docs"}
-REF = re.compile(r'(?:src="|url\(")(assets/[^"]+)"')
+REF = re.compile(r"(?<![\w/.-])(?:\./)?(assets/[\w./-]+\.\w+)|/senrenbanka-thai/(assets/[\w./-]+\.\w+)")
 
 
 def main() -> int:
@@ -20,7 +20,7 @@ def main() -> int:
 
     refs = set()
     for name in ("index.html", "styles.css"):
-        refs.update(REF.findall((SITE / name).read_text(encoding="utf-8")))
+        refs.update(a or b for a, b in REF.findall((SITE / name).read_text(encoding="utf-8")))
     for ref in sorted(refs):
         prefix = next((p for p in SOURCES if ref.startswith(p)), None)
         src = SOURCES[prefix] / ref[len(prefix):] if prefix else None
