@@ -350,6 +350,13 @@ span.gold { display: inline-block; }
 .compare .mock-tag { top: 46px; right: 14px; }
 .compare .scene__ribbon { top: 24%; }
 .compare .mock-tag--l { left: 14px; right: auto; }
+/* Step 3: the in-game language box, shown at its captured size (435x116) so it stays sharp. */
+.lang-shot { margin: 0; display: grid; justify-items: center; gap: 18px; padding: 28px 22px; background: var(--checker), #fffdf8; border: 1px solid var(--line-2); }
+.lang-shot img { width: 435px; max-width: 100%; box-shadow: 0 14px 28px -18px rgba(61, 44, 34, .55); }
+.lang-shot .path { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; font-size: 14.5px; }
+.lang-shot .path span:not(.path__sep) { padding: 4px 12px; border: 1px solid var(--line-2); background: #fff; }
+.lang-shot .path span.path__on { background: var(--shu); border-color: var(--shu); color: #fff8f0; font-weight: 600; }
+.lang-shot .path__sep { color: var(--muted); }
 .config-mock { display: grid; gap: 14px; padding: 22px; background: var(--checker), #fffdf8; border: 1px solid var(--line-2); }
 .config-mock__row { display: flex; flex-wrap: wrap; gap: 8px; }
 .config-mock__opt { padding: 6px 16px; border: 1px solid var(--line-2); background: #fff; font-size: 14.5px; }
