@@ -1,11 +1,11 @@
-// Senren Banka แปลไทย — progressive enhancements. The page reads fine without this file.
+// Senren Banka แปลไทย — progressive enhancements. Everything is visible and usable without this file.
 (() => {
   const REPO = 'Jiranon-K/senrenbanka-thai';
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Floating navbar gets a stronger shadow once the page leaves the very top.
+  // Nav gets a rule once the page leaves the very top.
   const nav = document.querySelector('[data-nav]');
-  const onScroll = () => nav.classList.toggle('is-solid', window.scrollY > 24);
+  const onScroll = () => nav.classList.toggle('is-solid', window.scrollY > 8);
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -24,91 +24,36 @@
     })
     .catch(() => {});
 
-  // Reveal on scroll: elements fade up the first time they enter the viewport.
-  const revealed = document.querySelectorAll('.reveal');
-  if (reduced || !('IntersectionObserver' in window)) {
-    revealed.forEach((el) => el.classList.add('in'));
-  } else {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (!e.isIntersecting) return;
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
-    revealed.forEach((el) => io.observe(el));
-  }
-
-  // Container scroll animation: the title screen lies flat as it reaches mid-viewport.
-  const tilt = document.querySelector('[data-tilt]');
-  if (tilt && !reduced) {
-    const MAX = 22;
-    let ticking = false;
-    const update = () => {
-      ticking = false;
-      const r = tilt.getBoundingClientRect();
-      const vh = window.innerHeight;
-      // 0 when the card's top is at the bottom edge, 1 when its centre reaches ~45% of the viewport.
-      const start = vh, end = vh * 0.45 - r.height / 2;
-      const p = Math.min(1, Math.max(0, (start - r.top) / (start - end)));
-      const ease = 1 - Math.pow(1 - p, 3);
-      tilt.style.setProperty('--rx', `${MAX * (1 - ease)}deg`);
-      tilt.style.setProperty('--s', `${0.92 + 0.08 * ease}`);
-    };
-    const req = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
-    window.addEventListener('scroll', req, { passive: true });
-    window.addEventListener('resize', req);
-    update();
-  } else if (tilt) {
-    tilt.style.setProperty('--rx', '0deg');
-    tilt.style.setProperty('--s', '1');
-  }
-
-  // Number ticker: counts up when the number scrolls into view.
-  document.querySelectorAll('[data-count]').forEach((el) => {
-    const target = Number(el.dataset.count);
-    if (reduced || !('IntersectionObserver' in window)) { el.textContent = target; return; }
-    const io = new IntersectionObserver((entries) => {
-      if (!entries[0].isIntersecting) return;
-      io.disconnect();
-      const t0 = performance.now(), dur = 1400;
-      const tick = (t) => {
-        const p = Math.min(1, (t - t0) / dur);
-        el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }, { threshold: 0.4 });
-    io.observe(el);
-  });
-
-  // Magic-card spotlight: each bento card tracks the cursor.
-  document.querySelectorAll('[data-bento] .card').forEach((card) => {
-    card.addEventListener('pointermove', (e) => {
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', `${e.clientX - r.left}px`);
-      card.style.setProperty('--my', `${e.clientY - r.top}px`);
+  // Dialogue text appears one grapheme at a time, like the game's text box.
+  // Graphemes keep Thai vowels and tone marks attached to their consonant.
+  // Every character is laid out from the start (opacity only), so the box never changes size.
+  const typer = document.querySelector('[data-type]');
+  if (typer && !reduced && 'Segmenter' in Intl) {
+    const seg = new Intl.Segmenter('th', { granularity: 'grapheme' });
+    const chars = [];
+    const walker = document.createTreeWalker(typer, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      const frag = document.createDocumentFragment();
+      for (const { segment } of seg.segment(node.data)) {
+        const s = document.createElement('span');
+        s.className = 'type-ch';
+        s.textContent = segment;
+        frag.appendChild(s);
+        chars.push(s);
+      }
+      node.replaceWith(frag);
     });
-  });
-
-  // Sticky scroll reveal: the step nearest the middle of the viewport owns the sticky panel.
-  const sticky = document.querySelector('[data-sticky]');
-  if (sticky) {
-    const steps = [...sticky.querySelectorAll('[data-step]')];
-    const panels = [...sticky.querySelectorAll('[data-panel]')];
-    const activate = (n) => {
-      steps.forEach((s) => s.classList.toggle('is-active', s.dataset.step === n));
-      panels.forEach((p) => p.classList.toggle('is-active', p.dataset.panel === n));
+    let i = 0;
+    const step = () => {
+      // two graphemes per frame tick keeps a ~1.5 s line, close to the game's default text speed
+      for (let k = 0; k < 2 && i < chars.length; k++) chars[i++].classList.add('on');
+      if (i < chars.length) setTimeout(step, 28);
     };
-    activate('1');
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => { if (e.isIntersecting) activate(e.target.dataset.step); });
-      }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
-      steps.forEach((s) => io.observe(s));
-    } else {
-      steps.forEach((s) => s.classList.add('is-active'));
-    }
+    setTimeout(step, 350);
+    // A click on the box finishes the line at once, as in the game.
+    typer.closest('.dialog').addEventListener('click', () => { chars.forEach((c) => c.classList.add('on')); i = chars.length; });
   }
 
   // Before/after slider: a native range input drives the split, so keyboard and touch work for free.
@@ -119,13 +64,13 @@
     update();
   });
 
-  // Gallery lightbox.
+  // Gallery lightbox (real screenshots only; mock slots have no button).
   const box = document.querySelector('[data-lightbox]');
   if (box && typeof box.showModal === 'function') {
     const big = box.querySelector('img');
-    document.querySelectorAll('[data-gallery] .tile__btn').forEach((tile) => {
-      tile.addEventListener('click', () => {
-        const img = tile.querySelector('img');
+    document.querySelectorAll('[data-gallery] .save__btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const img = btn.querySelector('img');
         big.src = img.currentSrc || img.src;
         big.alt = img.alt;
         box.showModal();
