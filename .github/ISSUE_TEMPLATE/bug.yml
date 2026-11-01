@@ -1,0 +1,45 @@
+name: ติดตั้งไม่ได้ / เกมมีปัญหา
+description: ตัวติดตั้งขึ้น error เกมเปิดไม่ขึ้น หรือเกมพังหลังลงแพตช์
+title: "[บั๊ก] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ลองดู [คำถามที่พบบ่อย](https://jiranon-k.github.io/senrenbanka-thai/#faq) ก่อนนะครับ ปัญหาส่วนใหญ่มีวิธีแก้อยู่แล้ว
+  - type: textarea
+    id: what
+    attributes:
+      label: เกิดอะไรขึ้น
+      description: ทำอะไรแล้วเจออะไร แนบภาพหน้าจอหรือข้อความ error ได้เลย
+    validations:
+      required: true
+  - type: dropdown
+    id: method
+    attributes:
+      label: ติดตั้งด้วยวิธีไหน
+      options:
+        - ตัวติดตั้ง (SenrenBanka-Thai-Patch.exe)
+        - install.bat
+    validations:
+      required: true
+  - type: dropdown
+    id: r18
+    attributes:
+      label: ลงแพตช์ R18 ไว้ไหม
+      options:
+        - ไม่ได้ลง
+        - ลงไว้ (ลง R18 ก่อนแพตช์ไทย)
+        - ลงไว้ (ลง R18 ทีหลังแพตช์ไทย)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: เวอร์ชันแพตช์ไทย
+      placeholder: v1.3.1
+  - type: input
+    id: os
+    attributes:
+      label: Windows
+      placeholder: Windows 11
