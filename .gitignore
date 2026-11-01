@@ -20,6 +20,10 @@
 #     docs/screenshots/ (ข้อยกเว้น R12 — ภาพหน้าจอเท่านั้น ห้ามไฟล์ asset ที่แตกจากเกม)
 !/docs/
 
+# 2c) site/ — หน้า GitHub Pages (HTML/CSS ของเราเอง) ภาพเกมถูกคัดลอกจาก docs/screenshots/ ตอน build
+#     ห้ามวางภาพเกมหรือภาพ crop ไว้ใน site/ โดยตรง (R12)
+!/site/
+
 # 3) tools/  — our pipeline scripts + guide (NOT 3rd-party binaries)
 !/tools/
 /tools/FreeMote/
@@ -63,3 +67,4 @@
 # thai_work/{json_cn,psb_cn,json_r18,psb_r18}/  decompiled scenarios (copyrighted)
 # thai_work/{dataxp3,scnxp3}/       archives ที่แตกออกมา (ที่อยู่ใน tools/paths.py)
 # thai_work/dist/                   ชุดติดตั้งที่ build ออกมา
+/_site/
