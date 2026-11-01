@@ -168,13 +168,23 @@ span.gold { display: inline-block; }
 .nav__dl:hover .lbox__v { color: var(--shu); }
 
 /* ===================== Hero: the title screen as a page ===================== */
-.hero { position: relative; padding: 56px 0 96px; overflow: hidden; background: radial-gradient(60% 70% at 85% 40%, var(--leaf), transparent 70%); }
+.hero { position: relative; isolation: isolate; padding: 56px 0 96px; overflow: hidden; background: var(--washi); }
+/* Dusk backdrop: the title screen blurred into warm light, washed out on the menu side, with drifting light orbs. */
+.hero::after { content: ""; position: absolute; inset: -60px; z-index: -1; background: url("assets/shots/title.webp") center / cover; filter: blur(28px) saturate(1.4) brightness(1.05); pointer-events: none; }
+.hero__bokeh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 70% 40%, transparent 40%, rgba(143, 46, 16, .14) 100%),
+    linear-gradient(90deg, rgba(253, 252, 247, .88) 22%, rgba(253, 252, 247, .3) 60%, rgba(253, 252, 247, .5)),
+    linear-gradient(to bottom, transparent 75%, var(--washi));
+}
+.hero__bokeh i { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: radial-gradient(circle, #fff6e8, rgba(255, 214, 190, .55) 40%, transparent 70%); mix-blend-mode: screen; opacity: .8; }
+@keyframes orb { from { transform: translate(0, 0); opacity: .55; } to { transform: translate(18px, -40px); opacity: 1; } }
 .hero::before { /* vermilion rail */
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 12px;
+  content: ""; z-index: 2; position: absolute; left: 0; top: 0; bottom: 0; width: 12px;
   background: linear-gradient(90deg, var(--shu-deep), var(--shu) 60%, #c95a34);
   box-shadow: 2px 0 0 #e8b39f;
 }
-.hero__grid { position: relative; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: start; }
+.hero__grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: start; }
 .eyebrow { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-2); font-size: 14.5px; }
 .eyebrow::before { content: ""; width: 16px; height: 16px; background: var(--sakura-pink) center / contain no-repeat; }
 .title { margin-top: 18px; }
@@ -227,6 +237,7 @@ span.gold { display: inline-block; }
 /* Entrances are scroll-driven (CSS animation-timeline), never JS-gated: the browser maps scroll
    position to progress, so an element in view is always drawn. Without support there is no motion. */
 @media (prefers-reduced-motion: no-preference) {
+  .hero__bokeh i { animation: orb var(--d) ease-in-out infinite alternate; }
   @supports (animation-timeline: view()) {
     .ribbon { animation: ribbon-in linear both; animation-timeline: view(); animation-range: entry 10% entry 90%; }
     .slide { animation: slide-in linear both; animation-timeline: view(); animation-range: entry 5% entry 70%; }
@@ -386,6 +397,7 @@ span.gold { display: inline-block; }
   .nav__row { justify-content: space-between; }
   .hero { padding: 36px 0 72px; }
   .hero::before { width: 6px; }
+  .hero__bokeh { background: linear-gradient(rgba(253, 252, 247, .86), rgba(253, 252, 247, .6) 60%, var(--washi)); } /* one column: keep the menu readable over the art */
   .gmenu { grid-template-columns: 1fr; }
   .gm__th { font-size: 23px; }
   .gm--primary .gm__th { font-size: 25px; }
