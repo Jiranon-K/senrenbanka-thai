@@ -23,6 +23,7 @@
 # 2c) site/ — หน้า GitHub Pages (HTML/CSS ของเราเอง) ภาพเกมถูกคัดลอกจาก docs/screenshots/ ตอน build
 #     ห้ามวางภาพเกมหรือภาพ crop ไว้ใน site/ โดยตรง (R12)
 !/site/
+/site/__pycache__/
 
 # 3) tools/  — our pipeline scripts + guide (NOT 3rd-party binaries)
 !/tools/
