@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jiranon-k.github.io/senrenbanka-thai/sitemap.xml
