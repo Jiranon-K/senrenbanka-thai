@@ -57,11 +57,47 @@
   }
 
   // Before/after slider: a native range input drives the split, so keyboard and touch work for free.
+  // English sits left of the seam; the dialogue below lights the language that holds more of the frame.
   document.querySelectorAll('[data-compare]').forEach((box) => {
     const range = box.querySelector('input[type=range]');
-    const update = () => box.style.setProperty('--pos', `${range.value}%`);
-    range.addEventListener('input', update);
-    update();
+    const script = box.parentElement.querySelector('[data-compare-script]');
+    const set = (v, anim = false) => {
+      v = Math.max(0, Math.min(100, v));
+      box.classList.toggle('is-anim', anim);
+      box.style.setProperty('--pos', `${v}%`);
+      box.style.setProperty('--p', v);
+      range.value = v;
+      if (script) {
+        const side = v > 50 ? 'en' : 'th';
+        script.dataset.side = side;
+        script.querySelector('.compare-script__en').classList.toggle('is-on', side === 'en');
+        script.querySelector('.compare-script__th').classList.toggle('is-on', side === 'th');
+      }
+    };
+    range.addEventListener('input', () => set(Number(range.value)));
+    box.addEventListener('pointerdown', () => box.classList.add('is-drag'));
+    window.addEventListener('pointerup', () => box.classList.remove('is-drag'));
+    // With a mouse, the seam follows the pointer without a press.
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      box.addEventListener('pointermove', (e) => {
+        if (e.buttons) return;
+        const r = box.getBoundingClientRect();
+        set((e.clientX - r.left) / r.width * 100);
+      });
+    }
+    set(Number(range.value));
+
+    // On first view the seam nudges once so it reads as draggable; it yields as soon as the visitor touches it.
+    if (reduced || !('IntersectionObserver' in window)) return;
+    let touched = false;
+    ['pointerdown', 'pointermove', 'keydown'].forEach((ev) => box.addEventListener(ev, () => { touched = true; }, { once: true }));
+    const io = new IntersectionObserver(([en]) => {
+      if (!en.isIntersecting) return;
+      io.disconnect();
+      [38, 62, 50].forEach((v, k) => setTimeout(() => { if (!touched) set(v, true); }, 300 + k * 560));
+      setTimeout(() => box.classList.remove('is-anim'), 300 + 3 * 560 + 200);
+    }, { threshold: 0.5 });
+    io.observe(box);
   });
 
   // Gallery lightbox.
