@@ -1,15 +1,12 @@
-// Senren Banka แปลไทย — progressive enhancements. Everything is visible and usable without this file.
 (() => {
   const REPO = 'Jiranon-K/senrenbanka-thai';
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Nav gets a rule once the page leaves the very top.
   const nav = document.querySelector('[data-nav]');
   const onScroll = () => nav.classList.toggle('is-solid', window.scrollY > 8);
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  // Keep version, size and date current without rebuilding the page.
   fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
     .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
     .then((rel) => {
@@ -24,9 +21,6 @@
     })
     .catch(() => {});
 
-  // Dialogue text appears one grapheme at a time, like the game's text box.
-  // Graphemes keep Thai vowels and tone marks attached to their consonant.
-  // Every character is laid out from the start (opacity only), so the box never changes size.
   const typer = document.querySelector('[data-type]');
   if (typer && !reduced && 'Segmenter' in Intl) {
     const seg = new Intl.Segmenter('th', { granularity: 'grapheme' });
@@ -47,17 +41,13 @@
     });
     let i = 0;
     const step = () => {
-      // two graphemes per frame tick keeps a ~1.5 s line, close to the game's default text speed
       for (let k = 0; k < 2 && i < chars.length; k++) chars[i++].classList.add('on');
       if (i < chars.length) setTimeout(step, 28);
     };
     setTimeout(step, 350);
-    // A click on the box finishes the line at once, as in the game.
     typer.closest('.dialog').addEventListener('click', () => { chars.forEach((c) => c.classList.add('on')); i = chars.length; });
   }
 
-  // Before/after slider: a native range input drives the split, so keyboard and touch work for free.
-  // English sits left of the seam; the dialogue below lights the language that holds more of the frame.
   document.querySelectorAll('[data-compare]').forEach((box) => {
     const range = box.querySelector('input[type=range]');
     const script = box.parentElement.querySelector('[data-compare-script]');
@@ -67,27 +57,26 @@
       box.style.setProperty('--pos', `${v}%`);
       box.style.setProperty('--p', v);
       range.value = v;
-      if (script) {
-        const side = v > 50 ? 'en' : 'th';
-        script.dataset.side = side;
-        script.querySelector('.compare-script__en').classList.toggle('is-on', side === 'en');
-        script.querySelector('.compare-script__th').classList.toggle('is-on', side === 'th');
-      }
+      if (script) script.dataset.side = v > 50 ? 'en' : 'th';
     };
     range.addEventListener('input', () => set(Number(range.value)));
     box.addEventListener('pointerdown', () => box.classList.add('is-drag'));
     window.addEventListener('pointerup', () => box.classList.remove('is-drag'));
-    // With a mouse, the seam follows the pointer without a press.
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      let frame = 0;
+      let x = 0;
       box.addEventListener('pointermove', (e) => {
         if (e.buttons) return;
-        const r = box.getBoundingClientRect();
-        set((e.clientX - r.left) / r.width * 100);
+        x = e.clientX;
+        frame ||= requestAnimationFrame(() => {
+          frame = 0;
+          const r = box.getBoundingClientRect();
+          set((x - r.left) / r.width * 100);
+        });
       });
     }
     set(Number(range.value));
 
-    // On first view the seam nudges once so it reads as draggable; it yields as soon as the visitor touches it.
     if (reduced || !('IntersectionObserver' in window)) return;
     let touched = false;
     ['pointerdown', 'pointermove', 'keydown'].forEach((ev) => box.addEventListener(ev, () => { touched = true; }, { once: true }));
@@ -100,18 +89,17 @@
     io.observe(box);
   });
 
-  // Gallery lightbox.
-  const box = document.querySelector('[data-lightbox]');
-  if (box && typeof box.showModal === 'function') {
-    const big = box.querySelector('img');
+  const lightbox = document.querySelector('[data-lightbox]');
+  if (lightbox && typeof lightbox.showModal === 'function') {
+    const big = lightbox.querySelector('img');
     document.querySelectorAll('[data-gallery] .save__btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const img = btn.querySelector('img');
         big.src = img.currentSrc || img.src;
         big.alt = img.alt;
-        box.showModal();
+        lightbox.showModal();
       });
     });
-    box.addEventListener('click', (e) => { if (e.target === box) box.close(); });
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.close(); });
   }
 })();

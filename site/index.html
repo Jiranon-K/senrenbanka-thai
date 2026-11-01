@@ -48,7 +48,6 @@
 <body>
 <a class="skip" href="#main">ข้ามไปเนื้อหา</a>
 
-<!-- Icon set drawn after the title-screen menu icons: filled, rust gradient. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <linearGradient id="rust" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d26d24"/><stop offset="1" stop-color="#8f3a08"/></linearGradient>
@@ -82,7 +81,6 @@
 </header>
 
 <main id="main">
-  <!-- Hero: laid out like the game's title screen. Rail on the left edge, a menu, the screen on the right. -->
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero__bokeh" aria-hidden="true">
       <i style="--x:6%;--y:72%;--s:120px;--d:7s"></i><i style="--x:34%;--y:14%;--s:90px;--d:9s"></i><i style="--x:56%;--y:84%;--s:180px;--d:11s"></i><i style="--x:72%;--y:6%;--s:150px;--d:8s"></i><i style="--x:90%;--y:60%;--s:110px;--d:10s"></i><i style="--x:46%;--y:40%;--s:70px;--d:6s"></i><i style="--x:96%;--y:20%;--s:80px;--d:9s"></i>
@@ -152,7 +150,6 @@
     </div>
   </section>
 
-  <!-- Progress: the System Config screen. Sliders show how much is translated. -->
   <section id="progress" class="sec sec--paper" aria-labelledby="progress-title">
     <div class="wrap">
       <header class="chap">
@@ -202,7 +199,6 @@
     </div>
   </section>
 
-  <!-- Compare: the same frame before and after the patch. -->
   <section id="compare" class="sec" aria-labelledby="compare-title">
     <div class="wrap">
       <header class="chap">
@@ -218,18 +214,17 @@
         </div>
         <span class="compare__tag compare__tag--l">English</span>
         <span class="compare__tag compare__tag--r">ภาษาไทย</span>
-        <span class="compare__line" aria-hidden="true"><span class="compare__knob"><svg viewBox="-12 -12 24 24" aria-hidden="true"><g fill="currentColor"><path id="crest" d="M0-1.6C-3-4-4-9-1.2-11L0-9.6 1.2-11C4-9 3-4 0-1.6z"/><use href="#crest" transform="rotate(72)"/><use href="#crest" transform="rotate(144)"/><use href="#crest" transform="rotate(216)"/><use href="#crest" transform="rotate(288)"/></g></svg></span></span>
+        <span class="compare__line" aria-hidden="true"><span class="compare__knob"><svg viewBox="-12 -12 24 24" aria-hidden="true"><g fill="currentColor"><use href="#petal"/><use href="#petal" transform="rotate(72)"/><use href="#petal" transform="rotate(144)"/><use href="#petal" transform="rotate(216)"/><use href="#petal" transform="rotate(288)"/></g></svg></span></span>
         <input class="compare__range" type="range" min="0" max="100" value="50" step="0.5" aria-label="เลื่อนเพื่อเทียบภาพต้นฉบับกับภาษาไทย">
       </div>
       <div class="dialog compare-script" data-compare-script data-side="th">
         <p class="dialog__name">【 Murasame 】</p>
         <p class="dialog__line compare-script__en" lang="en"><span class="cap">English</span><span>「 Master! It's morning! Hurry up and get out of bed! 」</span></p>
-        <p class="dialog__line compare-script__th is-on"><span class="cap">ภาษาไทย</span><span>「 นายท่าน! เช้าแล้ว! รีบลุกจากที่นอนได้แล้ว! 」</span></p>
+        <p class="dialog__line compare-script__th"><span class="cap">ภาษาไทย</span><span>「 นายท่าน! เช้าแล้ว! รีบลุกจากที่นอนได้แล้ว! 」</span></p>
       </div>
     </div>
   </section>
 
-  <!-- Install: the Flowchart screen. Diamond nodes on a dashed line. -->
   <section id="install" class="sec sec--paper" aria-labelledby="install-title">
     <div class="wrap">
       <header class="chap">
@@ -284,7 +279,7 @@
           <div class="node__media">
             <figure class="lang-shot">
               <img src="assets/shots/config-language.webp" width="435" height="116" loading="lazy" alt="กล่อง Language ในเกม เลือกเป็นภาษาไทยไว้">
-              <figcaption class="path" aria-label="ลำดับเมนูในเกม Config ไปที่ Language แล้วเลือกภาษาไทย"><span>Config</span><span class="path__sep" aria-hidden="true">→</span><span>Language</span><span class="path__sep" aria-hidden="true">→</span><span class="path__on">ภาษาไทย</span></figcaption>
+              <figcaption class="path" aria-label="ลำดับเมนูในเกม Config ไปที่ Language แล้วเลือกภาษาไทย"><span class="path__step">Config</span><span class="path__sep" aria-hidden="true">→</span><span class="path__step">Language</span><span class="path__sep" aria-hidden="true">→</span><span class="path__step path__step--on">ภาษาไทย</span></figcaption>
             </figure>
           </div>
         </li>
@@ -300,7 +295,6 @@
     </div>
   </section>
 
-  <!-- Gallery: the Save / Load screen. Five slots, two large on top, three below. -->
   <section id="screens" class="sec" aria-labelledby="screens-title">
     <div class="wrap">
       <header class="chap">
@@ -319,7 +313,6 @@
     </div>
   </section>
 
-  <!-- FAQ: the choice screen. Each question is a choice bar; the answer opens as a dialogue box. -->
   <section id="faq" class="sec sec--paper" aria-labelledby="faq-title">
     <div class="wrap">
       <header class="chap">
@@ -372,7 +365,6 @@
     </div>
   </section>
 
-  <!-- Final: the language box from the title screen, at full size. -->
   <section class="final" aria-labelledby="final-title">
     <div class="wrap">
       <div class="lbox">
