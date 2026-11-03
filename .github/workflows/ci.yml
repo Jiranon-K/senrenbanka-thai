@@ -18,3 +18,6 @@ jobs:
       # Needs no game files; the cases that do skip themselves.
       - name: Pipeline tests
         run: python tools/test_pipeline.py
+      # Fails on a missing site asset or a var(--token) that nothing defines.
+      - name: Site build
+        run: python site/build.py
