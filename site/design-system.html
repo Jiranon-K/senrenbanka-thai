@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>ระบบดีไซน์ — Senren Banka แปลไทย</title>
+<meta name="description" content="Token, component และกติกา motion ของหน้าแพตช์แปลไทย Senren Banka">
+<meta name="theme-color" content="#fdfcf7">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@700;800&family=Sarabun:wght@400;500;600;700&family=Cinzel:wght@600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="design-system.css">
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><linearGradient id="rust" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d26d24"/><stop offset="1" stop-color="#8f3a08"/></linearGradient>
+  <path id="petal" d="M0-1.6C-3-4-4-9-1.2-11L0-9.6 1.2-11C4-9 3-4 0-1.6z"/></defs>
+  <symbol id="i-sakura" viewBox="-12 -12 24 24"><g fill="url(#rust)"><use href="#petal"/><use href="#petal" transform="rotate(72)"/><use href="#petal" transform="rotate(144)"/><use href="#petal" transform="rotate(216)"/><use href="#petal" transform="rotate(288)"/></g><circle r="1.8" fill="#fbe3c8"/></symbol>
+</svg>
+
+<header class="nav" data-nav>
+  <div class="wrap nav__row">
+    <a class="brand" href="./" aria-label="กลับหน้าแพตช์">
+      <svg class="brand__mark" aria-hidden="true"><use href="#i-sakura"/></svg>
+      <span class="brand__text"><span class="brand__en" lang="en">Design<span>＊</span>System</span><span class="brand__th">หน้าแพตช์แปลไทย</span></span>
+    </a>
+    <nav class="nav__menu" id="site-menu" aria-label="เมนูหลัก" data-nav-menu>
+      <a href="#colour">สี</a>
+      <a href="#type">ตัวอักษร</a>
+      <a href="#space">ระยะและ motion</a>
+      <a href="#components">Component</a>
+      <a href="#sources">แหล่งอ้างอิง</a>
+      <a class="btn nav__sheet-dl" href="./">กลับหน้าแพตช์</a>
+      <span class="nav__ind" aria-hidden="true" data-nav-ind></span>
+    </nav>
+    <a class="lbox nav__dl" href="./"><span class="lbox__k">Back :</span><span class="lbox__v">หน้าแพตช์</span></a>
+    <button class="nav__toggle" type="button" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="site-menu" data-nav-toggle><i></i><i></i><i></i></button>
+  </div>
+  <div class="nav__scrim" aria-hidden="true" data-nav-scrim></div>
+  <div class="nav__progress" aria-hidden="true"></div>
+</header>
+
+<main id="main">
+  <section class="sec" aria-labelledby="ds-title">
+    <div class="wrap">
+      <header class="chap">
+        <div class="ribbon"><span class="ribbon__no">Design system</span><span class="ribbon__cap" aria-hidden="true">Senren＊Banka</span></div>
+        <h1 id="ds-title" class="title"><span class="title__th gold">ระบบดีไซน์</span></h1>
+        <span class="cap">Tokens · Components · Motion</span>
+        <p class="lead">หน้านี้ใช้ <code>styles.css</code> ตัวเดียวกับหน้าแพตช์ ค่า token ที่เห็นถูกอ่านจาก CSS ตอนเปิดหน้า จึงไม่มีทางไม่ตรงกับโค้ด ภาพรวมคือสกินแบบ UI ของตัวเกม (กระดาษวาชิ แดงชู ทองคำ ซากุระ) บนชั้น interaction ที่ยืมแนวคิดจากไลบรารี component ชั้นนำ</p>
+      </header>
+    </div>
+  </section>
+
+  <section id="colour" class="sec sec--paper" aria-labelledby="colour-title">
+    <div class="wrap">
+      <header class="chap">
+        <div class="ribbon"><span class="ribbon__no">Colour</span><span class="ribbon__cap" aria-hidden="true">Senren＊Banka</span></div>
+        <h2 id="colour-title"><span class="gold">สี</span></h2>
+        <span class="cap">Primitives and semantic roles</span>
+        <p class="lead">สองชั้น: primitive ตั้งชื่อตามของจริงในเกม (วาชิ ชู ทอง) ส่วน semantic บอกหน้าที่ Component เขียนด้วย semantic เท่านั้น เปลี่ยนธีมทีหลังจึงแก้ที่ชั้นเดียว</p>
+      </header>
+
+      <div class="ds-group" style="margin-top:0">
+        <h3>Primitive</h3>
+        <div class="ds-grid">
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--washi)"></div><b>--washi</b><code data-token="--washi"></code><small>พื้นหน้าหลัก</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--washi-2)"></div><b>--washi-2</b><code data-token="--washi-2"></code><small>พื้นสลับส่วน</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--washi-3)"></div><b>--washi-3</b><code data-token="--washi-3"></code><small>ราง/พื้นเว้า</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--paper)"></div><b>--paper</b><code data-token="--paper"></code><small>พื้นการ์ด</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--ink)"></div><b>--ink</b><code data-token="--ink"></code><small>ตัวอักษรหลัก</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--ink-2)"></div><b>--ink-2</b><code data-token="--ink-2"></code><small>ตัวอักษรรอง</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--muted)"></div><b>--muted</b><code data-token="--muted"></code><small>หมายเหตุ</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--shu)"></div><b>--shu</b><code data-token="--shu"></code><small>แดงชู: สีเน้นหลัก</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--shu-deep)"></div><b>--shu-deep</b><code data-token="--shu-deep"></code><small>แดงเข้ม: กดค้าง/เงา</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--coral)"></div><b>--coral</b><code data-token="--coral"></code><small>ริบบิ้น เส้นประ</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--rose)"></div><b>--rose</b><code data-token="--rose"></code><small>คำเตือน</small></div>
+          <div class="ds-sw"><div class="ds-sw__chip" style="--sw:var(--gold-2)"></div><b>--gold-2</b><code data-token="--gold-2"></code><small>ทอง: หัวข้อ (ไล่เฉด)</small></div>
+        </div>
+      </div>
+
+      <div class="ds-group">
+        <h3>Semantic</h3>
+        <div class="ds-scroll"><table class="ds-table">
+          <thead><tr><th>Token</th><th>ค่าที่ได้</th><th>ใช้เมื่อ</th></tr></thead>
+          <tbody>
+            <tr><td><code>--c-bg</code></td><td><code data-token="--c-bg"></code></td><td>พื้นหน้า</td></tr>
+            <tr><td><code>--c-bg-alt</code></td><td><code data-token="--c-bg-alt"></code></td><td>พื้นสลับส่วน (<code>.sec--paper</code>)</td></tr>
+            <tr><td><code>--c-surface</code></td><td><code data-token="--c-surface"></code></td><td>การ์ด ช่องกรอก ปุ่มรอง</td></tr>
+            <tr><td><code>--c-text</code> · <code>--c-text-2</code> · <code>--c-text-muted</code></td><td><code data-token="--c-text"></code> · <code data-token="--c-text-2"></code> · <code data-token="--c-text-muted"></code></td><td>เนื้อหา · คำอธิบาย · หมายเหตุ</td></tr>
+            <tr><td><code>--c-accent</code> · <code>--c-accent-strong</code></td><td><code data-token="--c-accent"></code> · <code data-token="--c-accent-strong"></code></td><td>ลิงก์ ปุ่มหลัก สถานะที่เลือก · ตอน hover/กด</td></tr>
+            <tr><td><code>--c-border</code> · <code>--c-border-strong</code></td><td><code data-token="--c-border"></code> · <code data-token="--c-border-strong"></code></td><td>เส้นแบ่ง · กรอบการ์ด</td></tr>
+            <tr><td><code>--c-glow</code></td><td><code data-token="--c-glow"></code></td><td>RGB สำหรับแสง beam และ spotlight (ใช้กับ <code>rgba(var(--c-glow), a)</code>)</td></tr>
+          </tbody>
+        </table></div>
+        <p class="ds-note">ตัวหนังสือเนื้อหาทุกคู่สีผ่าน WCAG AA (4.5:1) ส่วนหัวข้อสีทองไล่เฉดเป็นตัวใหญ่หนา ใช้เกณฑ์ตัวใหญ่ (3:1)</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="type" class="sec" aria-labelledby="type-title">
+    <div class="wrap">
+      <header class="chap">
+        <div class="ribbon"><span class="ribbon__no">Type</span><span class="ribbon__cap" aria-hidden="true">Senren＊Banka</span></div>
+        <h2 id="type-title"><span class="gold">ตัวอักษร</span></h2>
+        <span class="cap">Four families, one scale</span>
+        <p class="lead">Serif ไทยสำหรับหัวข้อ (เหมือนกล่องบทพูดในเกม) Sarabun สำหรับเนื้อความ Cinzel สำหรับป้ายภาษาอังกฤษตัวพิมพ์ใหญ่ และ Serif ญี่ปุ่นเฉพาะชื่อเกม</p>
+      </header>
+      <div class="ds-demo ds-demo--col ds-type">
+        <p class="title__th gold" style="font-size:var(--fs-hero)">ฉบับภาษาไทย <small style="font-size:14px;font-family:var(--sans);-webkit-text-fill-color:var(--c-text-muted)">--fs-hero · Noto Serif Thai 800</small></p>
+        <h3 style="font-family:var(--serif);font-size:var(--fs-xl)">หัวข้อขั้นตอน <small style="font-size:14px;font-family:var(--sans);font-weight:400;color:var(--c-text-muted)">--fs-xl · Noto Serif Thai 700</small></h3>
+        <p style="font-size:var(--fs-md)">เนื้อความ อ่านสบาย บรรทัดละไม่เกินราว 40 ตัวอักษรไทย <small style="font-size:14px;color:var(--c-text-muted)">--fs-md · Sarabun 400, line-height 1.75</small></p>
+        <p style="font-size:var(--fs-sm);color:var(--c-text-muted)">หมายเหตุและคำบรรยายภาพ <small>--fs-sm · Sarabun</small></p>
+        <p><span class="cap">Translation progress</span> <small style="color:var(--c-text-muted)">.cap · Cinzel 600 · 11px · letter-spacing .32em</small></p>
+        <p><span lang="ja" class="jp" style="font-size:var(--fs-xl)">千恋＊万花</span> <small style="color:var(--c-text-muted)">.jp · Noto Serif JP 600 (โหลดเฉพาะ 5 ตัวอักษรนี้)</small></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="space" class="sec sec--paper" aria-labelledby="space-title">
+    <div class="wrap">
+      <header class="chap">
+        <div class="ribbon"><span class="ribbon__no">Space &amp; motion</span><span class="ribbon__cap" aria-hidden="true">Senren＊Banka</span></div>
+        <h2 id="space-title"><span class="gold">ระยะและ motion</span></h2>
+        <span class="cap">4px base · 150–420ms</span>
+      </header>
+      <div class="ds-group" style="margin-top:0">
+        <h3>ระยะ (4px base)</h3>
+        <div class="ds-space">
+          <div><b>--sp-1</b><code data-token="--sp-1"></code><i style="--w:var(--sp-1)"></i></div>
+          <div><b>--sp-2</b><code data-token="--sp-2"></code><i style="--w:var(--sp-2)"></i></div>
+          <div><b>--sp-3</b><code data-token="--sp-3"></code><i style="--w:var(--sp-3)"></i></div>
+          <div><b>--sp-4</b><code data-token="--sp-4"></code><i style="--w:var(--sp-4)"></i></div>
+          <div><b>--sp-5</b><code data-token="--sp-5"></code><i style="--w:var(--sp-5)"></i></div>
+          <div><b>--sp-6</b><code data-token="--sp-6"></code><i style="--w:var(--sp-6)"></i></div>
+          <div><b>--sp-7</b><code data-token="--sp-7"></code><i style="--w:var(--sp-7)"></i></div>
+          <div><b>--sp-8</b><code data-token="--sp-8"></code><i style="--w:var(--sp-8)"></i></div>
+          <div><b>--sp-9</b><code data-token="--sp-9"></code><i style="--w:var(--sp-9)"></i></div>
+        </div>
+      </div>
+      <div class="ds-group">
+        <h3>กติกา motion</h3>
+        <div class="ds-scroll"><table class="ds-table">
+          <thead><tr><th>Token</th><th>ค่า</th><th>ใช้กับ</th></tr></thead>
+          <tbody>
+            <tr><td><code>--dur-1</code></td><td><code data-token="--dur-1"></code></td><td>เปลี่ยนสี hover ของจุดเล็กๆ</td></tr>
+            <tr><td><code>--dur-2</code></td><td><code data-token="--dur-2"></code></td><td>thumb ของ segmented, แผงเมนู, ยกการ์ด, เปิด/ปิด FAQ</td></tr>
+            <tr><td><code>--dur-3</code></td><td><code data-token="--dur-3"></code></td><td>reveal ตอนเลื่อนถึง (เลื่อน 18px + จาง)</td></tr>
+            <tr><td><code>--ease</code> · <code>--ease-io</code></td><td><code data-token="--ease"></code> · <code data-token="--ease-io"></code></td><td>ออกตัวเร็วหยุดนุ่ม (ส่วนใหญ่) · เลื่อนไปกลับสองทาง (thumb, ตัวชี้ nav)</td></tr>
+            <tr><td><code>--beam-dur</code></td><td><code data-token="--beam-dur"></code></td><td>แสงวิ่งรอบปุ่มดาวน์โหลด (วนซ้ำ ใช้กับ CTA หลักเท่านั้น)</td></tr>
+          </tbody>
+        </table></div>
+        <p class="ds-note">กฎ: motion ต้องไม่บังเนื้อหาและไม่เกิน 420ms ยกเว้น beam ตอนผู้ใช้ตั้ง reduced motion ทุกอย่างหยุด เนื้อหาแสดงครบ ไม่มีอะไรซ่อนรอจนกว่า JS จะมาเปิด (<code>html.js</code> เป็นตัวเปิดสถานะซ่อน)</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="components" class="sec" aria-labelledby="comp-title">
+    <div class="wrap">
+      <header class="chap">
+        <div class="ribbon"><span class="ribbon__no">Components</span><span class="ribbon__cap" aria-hidden="true">Senren＊Banka</span></div>
+        <h2 id="comp-title"><span class="gold">Component</span></h2>
+        <span class="cap">Live, from styles.css</span>
+      </header>
+
+      <div class="ds-group" style="margin-top:0">
+        <h3>ปุ่ม <code>.btn</code></h3>
+        <p><code>.beam</code> เติมแสงวิ่งรอบกรอบ ใช้ได้ทั้ง <code>.btn</code> และ <code>.lbox</code> แต่ควรมีหน้าละไม่เกินสองจุดที่เป็นปุ่มหลัก</p>
+        <div class="ds-demo">
+          <a class="btn beam" href="#components">ดาวน์โหลดแพตช์ฟรี</a>
+          <a class="btn" href="#components">ปุ่มหลัก</a>
+          <a class="btn btn--ghost" href="#components">ปุ่มรอง</a>
+          <a class="btn btn--sm" href="#components">ปุ่มเล็ก</a>
+        </div>
+      </div>
+
+      <div class="ds-group">
+        <h3>กรอบ <code>.lbox</code> · <code>.dialog</code> · <code>.panel</code></h3>
+        <div class="ds-demo">
+          <div class="lbox" style="min-width:220px"><span class="lbox__k">Language :</span><span class="lbox__v">ภาษาไทย</span></div>
+          <div class="dialog" style="flex:1 1 280px"><p class="dialog__name">【 ชื่อผู้พูด 】</p><p class="dialog__line">「 กล่องบทพูดใช้กับข้อความที่ต้องการให้อ่าน เช่น หมายเหตุและคำตอบ FAQ 」</p></div>
+        </div>
+      </div>
+
+      <div class="ds-group">
+        <h3>ปุ่มสลับ <code>.seg</code></h3>
+        <p>ตัวเลือกที่ไม่ซ้อนกัน 2–4 ตัว แถบสีแดงเลื่อนไปหาตัวที่เลือก (200–260ms) ปุ่มเป็น <code>aria-pressed</code> ฟัง event <code>seg:change</code></p>
+        <div class="ds-demo ds-demo--col">
+          <div class="seg" role="group" aria-label="ตัวอย่างปุ่มสลับ" data-seg>
+            <span class="seg__thumb" aria-hidden="true"></span>
+            <button class="seg__btn" type="button" aria-pressed="true" data-value="a">ตัวเลือก A</button>
+            <button class="seg__btn" type="button" aria-pressed="false" data-value="b">ตัวเลือก B</button>
+            <button class="seg__btn" type="button" aria-pressed="false" data-value="c">ตัวเลือก C</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-group">
+        <h3>การ์ดที่มีแสงตามเมาส์ <code>[data-spot]</code></h3>
+        <p>ใส่ <code>data-spot</code> บนการ์ดใดก็ได้ แสงอุ่นและขอบเรืองจะตามตำแหน่งเมาส์ (เฉพาะอุปกรณ์ที่ hover ได้ ไม่มีผลบนมือถือ)</p>
+        <div class="ds-demo">
+          <ul class="routes" style="grid-template-columns:repeat(3,minmax(0,1fr));width:100%">
+            <li class="slot" data-spot><span><span class="slot__no">No.01</span><br><span class="slot__name">Common</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.02</span><br><span class="slot__name">Yoshino</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.03</span><br><span class="slot__name">Murasame</span></span><span class="slot__ok">แปลครบ</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ds-group">
+        <h3>มาตรวัด <code>.slider</code></h3>
+        <p>ในหน้าแพตช์ ตัวเลขนับขึ้นและแถบเติมเมื่อเลื่อนมาถึง (<code>.config .slider</code>) ค่าตั้งด้วย <code>--v</code></p>
+        <div class="ds-demo ds-demo--col">
+          <div class="panel">
+            <div class="panel__head"><span class="gold">ตัวอย่าง</span><span class="cap">Meter</span></div>
+            <div class="slider" style="--v:82%">
+              <p class="slider__label">ฉากเพิ่มเติม <small>(ตัวอย่าง)</small></p>
+              <span class="slider__val num">82%</span>
+              <div class="slider__track" aria-hidden="true"><span class="slider__fill"></span><span class="slider__knob"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-group">
+        <h3>คำถาม <code>.choice</code></h3>
+        <p>เป็น <code>&lt;details&gt;</code> จริง ใช้ได้แม้ไม่มี JS มี <code>id</code> ทุกข้อให้ลิงก์ตรง (เช่น <a href="./#faq-smartscreen">#faq-smartscreen</a>) เปิด/ปิดแบบ 260ms</p>
+        <div class="ds-demo ds-demo--col">
+          <div class="choices">
+            <details class="choice" id="ds-faq-1"><summary>ตัวอย่างคำถามที่หนึ่ง</summary><div class="dialog"><div class="dialog__line"><p>คำตอบอยู่ในกล่องบทพูด ย่อหน้าและรายการใช้ได้ตามปกติ</p></div></div></details>
+            <details class="choice" id="ds-faq-2"><summary>ตัวอย่างคำถามที่สอง</summary><div class="dialog"><div class="dialog__line"><p>กดซ้ำระหว่างอนิเมชันได้ จะย้อนกลับจากตำแหน่งปัจจุบัน</p></div></div></details>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-group">
+        <h3>ส่วนที่มีเฉพาะหน้าแพตช์</h3>
+        <div class="ds-scroll"><table class="ds-table">
+          <thead><tr><th>Component</th><th>Hook</th><th>ทำอะไร</th></tr></thead>
+          <tbody>
+            <tr><td>แถบ nav</td><td><code>[data-nav]</code></td><td>แถบความคืบหน้าการอ่าน, ตัวชี้ section ที่เลื่อนตาม, แผงเมนูมือถือ (≤900px)</td></tr>
+            <tr><td>Dock มือถือ</td><td><code>[data-dock]</code></td><td>ปุ่มดาวน์โหลดติดขอบล่าง โผล่หลังเลื่อนพ้นปุ่มในฮีโร่ ซ่อนเมื่อถึงปุ่มท้ายหน้า</td></tr>
+            <tr><td>ขั้นตอนติดตั้ง</td><td><code>.flow</code> · <code>.node</code></td><td>เส้น beam เติมตามการเลื่อน ขั้นที่ผ่านแล้วเป็นสีเต็ม</td></tr>
+            <tr><td>เทียบก่อน/หลัง</td><td><code>[data-compare]</code></td><td>ลากเส้น, เอาเมาส์ผ่าน, คีย์บอร์ด หรือปุ่ม <code>.seg</code></td></tr>
+            <tr><td>แกลเลอรี</td><td><code>[data-gallery]</code> · <code>[data-lightbox]</code></td><td>ขยายภาพ, ลูกศร/ปัดซ้ายขวา/ปุ่มลูกศรคีย์บอร์ด, ตัวนับ</td></tr>
+            <tr><td>ลิงก์ดาวน์โหลด</td><td><code>[data-latest-url]</code></td><td>อ่าน release ล่าสุดจาก GitHub แล้วชี้ลิงก์ตรงไปไฟล์ zip (เก็บแคช 30 นาที)</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sources" class="sec sec--paper" aria-labelledby="src-title">
+    <div class="wrap">
+      <header class="chap">
+        <div class="ribbon"><span class="ribbon__no">Sources</span><span class="ribbon__cap" aria-hidden="true">Senren＊Banka</span></div>
+        <h2 id="src-title"><span class="gold">แหล่งอ้างอิง</span></h2>
+        <span class="cap">Patterns, not code</span>
+        <p class="lead">แนวคิดมาจากหน้า component ที่คนอื่นออกแบบไว้ แต่โค้ดทุกบรรทัดเขียนใหม่ในสแตกของเรา (HTML/CSS/JS ล้วน) ไม่ได้คัดลอกซอร์สหรือ asset หน้าที่อ่านไม่ได้ระบุสัญญาอนุญาตของ component จึงใช้เฉพาะแนวคิดเชิงพฤติกรรม</p>
+      </header>
+      <div class="ds-scroll"><table class="ds-table">
+        <thead><tr><th>ของเรา</th><th>แนวคิดที่ยืม</th><th>ต้นทาง</th></tr></thead>
+        <tbody>
+          <tr><td><code>.beam</code> บนปุ่มดาวน์โหลด</td><td>แสงวิ่งรอบกรอบ ใช้กับ CTA เดียวเพื่อดึงสายตา</td><td><a href="https://magicui.design/docs/components/border-beam">Magic UI · Border Beam</a>, <a href="https://magicui.design/docs/components/shimmer-button">Shimmer Button</a></td></tr>
+          <tr><td>ตัวเลข % นับขึ้นบนมาตรวัด</td><td>นับจากศูนย์เมื่อเลื่อนมาถึง ครั้งเดียว ชะลอตอนท้าย</td><td><a href="https://magicui.design/docs/components/number-ticker">Magic UI · Number Ticker</a>, <a href="https://animata.design/docs/text/counter">Animata · Counter</a></td></tr>
+          <tr><td>เส้น beam และขั้นที่ผ่านแล้วในขั้นตอนติดตั้ง</td><td>เส้นเติมตามการเลื่อน จุดหมายขั้นสว่างขึ้นเมื่อถึง</td><td><a href="https://animata.design/docs/progress/animatedtimeline">Animata · Animated Timeline</a>, <a href="https://ui.aceternity.com/components/timeline">Aceternity · Timeline</a></td></tr>
+          <tr><td><code>.seg</code> และตัวชี้ใน nav</td><td>แถบเลื่อนอันเดียวย้ายไปหาตัวที่เลือก</td><td><a href="https://coss.com/ui/docs/components/segmented-control">coss ui · Segmented Control</a> (ปลายทางของ originui.com)</td></tr>
+          <tr><td><code>[data-spot]</code></td><td>แสงและขอบเรืองตามตำแหน่งเมาส์</td><td><a href="https://reactbits.dev/components/spotlight-card">React Bits · Spotlight Card</a>, <a href="https://animata.design/docs/card/glowing-card">Animata · Glowing Card</a></td></tr>
+          <tr><td>reveal ตอนเลื่อน</td><td>เลื่อนขึ้นเล็กน้อยพร้อมจาง เป็นลำดับ</td><td><a href="https://animata.design/docs/text/scroll-reveal">Animata · Scroll Reveal</a> (ใช้เฉพาะแนวคิดลำดับ)</td></tr>
+        </tbody>
+      </table></div>
+      <p class="ds-note">อ่านแล้วไม่นำมาใช้: Aceternity Sticky Scroll Reveal (ซ้อนเนื้อหาไว้ตามตำแหน่งเลื่อน ทำให้ข้ามอ่านยาก) และ Motion Primitives (ตอนค้นคว้าเซิร์ฟเวอร์ตอบ 403 จึงไม่ได้อ้างอิงอะไรจากที่นั่น) ดูรายละเอียดและการตรวจสอบใน <code>docs/design/site-design-system.md</code></p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__grid">
+    <div><p class="footer__brand">ระบบดีไซน์ของหน้าแพตช์แปลไทย</p><p>แก้ token ที่ <code>site/styles.css</code> ส่วนบนสุด แล้วหน้านี้และหน้าแพตช์เปลี่ยนตามกันทั้งคู่</p></div>
+    <ul class="footer__links"><li><a href="./">หน้าแพตช์</a></li><li><a href="https://github.com/Jiranon-K/senrenbanka-thai">GitHub</a></li></ul>
+  </div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

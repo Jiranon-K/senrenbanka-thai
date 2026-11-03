@@ -1,0 +1,35 @@
+/* Only the scaffolding of the style-guide page. Every component shown here comes from styles.css. */
+.ds-grid { display: grid; gap: var(--sp-4); grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); }
+.ds-sw { display: grid; gap: var(--sp-2); padding: var(--sp-2); background: var(--c-surface); border: 1px solid var(--c-border-strong); }
+.ds-sw__chip { height: 56px; border: 1px solid rgba(61, 44, 34, .15); background: var(--sw); }
+.ds-sw b { font-size: var(--fs-sm); line-height: 1.3; word-break: break-all; }
+.ds-sw code { background: none; padding: 0; color: var(--c-text-muted); }
+.ds-sw small { color: var(--c-text-muted); font-size: 13px; line-height: 1.4; }
+
+.ds-group { margin-top: var(--sp-7); }
+.ds-group > h3 { font-family: var(--serif); font-size: var(--fs-xl); margin-bottom: var(--sp-4); }
+.ds-group > p { color: var(--c-text-2); max-width: 46em; margin-bottom: var(--sp-4); }
+
+.ds-demo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-5); padding: var(--sp-5); background: var(--checker), var(--c-surface); border: 1px solid var(--c-border-strong); }
+.ds-demo > * { min-width: 0; }
+.ds-demo--col { display: grid; align-items: start; }
+.ds-demo .choices, .ds-demo .panel, .ds-demo .seg { width: 100%; margin: 0; }
+.ds-demo .seg { max-width: 480px; }
+
+.ds-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); line-height: 1.55; background: var(--c-surface); border: 1px solid var(--c-border-strong); }
+.ds-table th, .ds-table td { padding: var(--sp-3) var(--sp-4); text-align: left; vertical-align: top; border-bottom: 1px solid var(--c-border); }
+.ds-table th { font-weight: 600; color: var(--c-text); background: var(--c-bg-alt); }
+.ds-table td:first-child { white-space: nowrap; }
+.ds-scroll { overflow-x: auto; }
+.ds-scroll > .ds-table { min-width: 640px; }
+
+.ds-space { display: grid; gap: var(--sp-2); }
+.ds-space div { display: grid; grid-template-columns: 72px 64px minmax(0, 1fr); align-items: center; gap: var(--sp-3); font-size: var(--fs-sm); }
+.ds-space i { display: block; height: 14px; background: var(--c-accent); width: var(--w); }
+
+.ds-type > * + * { margin-top: var(--sp-4); }
+.ds-note { margin-top: var(--sp-4); font-size: var(--fs-sm); color: var(--c-text-muted); }
+
+@media (max-width: 720px) {
+  .ds-demo { padding: var(--sp-4); gap: var(--sp-4); }
+}
