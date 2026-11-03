@@ -21,6 +21,7 @@
 <meta property="og:image:alt" content="หน้าไตเติลเกม Senren Banka ที่เมนูเป็นภาษาไทย">
 <meta name="twitter:card" content="summary_large_image">
 
+<script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@700;800&family=Sarabun:wght@400;500;600;700&family=Cinzel:wght@600;700&display=swap">
@@ -67,17 +68,23 @@
       <svg class="brand__mark" aria-hidden="true"><use href="#i-sakura"/></svg>
       <span class="brand__text"><span class="brand__en" lang="en">Senren<span>＊</span>Banka</span><span class="brand__th">ฉบับภาษาไทย</span></span>
     </a>
-    <nav class="nav__menu" aria-label="เมนูหลัก">
+    <nav class="nav__menu" id="site-menu" aria-label="เมนูหลัก" data-nav-menu>
       <a href="#progress">ความคืบหน้า</a>
+      <a href="#compare">ก่อน/หลัง</a>
       <a href="#install">วิธีติดตั้ง</a>
       <a href="#screens">ภาพในเกม</a>
       <a href="#faq">คำถาม</a>
+      <a class="btn nav__sheet-dl" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url>ดาวน์โหลดแพตช์</a>
+      <span class="nav__ind" aria-hidden="true" data-nav-ind></span>
     </nav>
-    <a class="lbox nav__dl" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">
+    <a class="lbox nav__dl" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url>
       <span class="lbox__k">Download :</span>
       <span class="lbox__v">ภาษาไทย <span data-latest-tag>v1.3.1</span></span>
     </a>
+    <button class="nav__toggle" type="button" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="site-menu" data-nav-toggle><i></i><i></i><i></i></button>
   </div>
+  <div class="nav__scrim" aria-hidden="true" data-nav-scrim></div>
+  <div class="nav__progress" aria-hidden="true"></div>
 </header>
 
 <main id="main">
@@ -100,7 +107,7 @@
         </h1>
 
         <ul class="gmenu" aria-label="เมนู">
-          <li><a class="gm gm--primary lbox" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">
+          <li><a class="gm gm--primary lbox beam" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url data-hero-cta>
             <svg class="gm__icon" aria-hidden="true"><use href="#i-sakura"/></svg>
             <span class="gm__th gold">ดาวน์โหลดแพตช์</span>
             <span class="cap">Download · <span data-latest-size>57 MB</span></span>
@@ -183,12 +190,12 @@
 
         <div class="side">
           <ul class="routes" aria-label="เส้นทางที่แปลแล้ว">
-            <li class="slot"><span><span class="slot__no">No.01</span><br><span class="slot__name">Common</span></span><span class="slot__ok">แปลครบ</span></li>
-            <li class="slot"><span><span class="slot__no">No.02</span><br><span class="slot__name">Yoshino</span></span><span class="slot__ok">แปลครบ</span></li>
-            <li class="slot"><span><span class="slot__no">No.03</span><br><span class="slot__name">Murasame</span></span><span class="slot__ok">แปลครบ</span></li>
-            <li class="slot"><span><span class="slot__no">No.04</span><br><span class="slot__name">Mako</span></span><span class="slot__ok">แปลครบ</span></li>
-            <li class="slot"><span><span class="slot__no">No.05</span><br><span class="slot__name">Lena</span></span><span class="slot__ok">แปลครบ</span></li>
-            <li class="slot"><span><span class="slot__no">No.06</span><br><span class="slot__name">Sub</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.01</span><br><span class="slot__name">Common</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.02</span><br><span class="slot__name">Yoshino</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.03</span><br><span class="slot__name">Murasame</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.04</span><br><span class="slot__name">Mako</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.05</span><br><span class="slot__name">Lena</span></span><span class="slot__ok">แปลครบ</span></li>
+            <li class="slot" data-spot><span><span class="slot__no">No.06</span><br><span class="slot__name">Sub</span></span><span class="slot__ok">แปลครบ</span></li>
           </ul>
           <div class="dialog">
             <p class="dialog__name">【 หมายเหตุ 】</p>
@@ -205,8 +212,14 @@
         <div class="ribbon"><span class="ribbon__no">Chapter 2</span><span class="ribbon__cap" aria-hidden="true">Senren＊Banka</span></div>
         <h2 id="compare-title"><span class="gold">ก่อนและหลังลงแพตช์</span></h2>
         <span class="cap">Before / After</span>
-        <p class="lead">ลากเส้นกลางภาพเพื่อเทียบต้นฉบับกับภาษาไทย บทพูดด้านล่างจะไฮไลต์ภาษาที่เห็นมากกว่า</p>
+        <p class="lead">ลากเส้นกลางภาพ หรือกดปุ่มด้านล่างเพื่อสลับดูทีละภาษา บทพูดใต้ภาพจะไฮไลต์ภาษาที่เห็นมากกว่า</p>
       </header>
+      <div class="seg" role="group" aria-label="เลือกภาษาที่จะดู" data-seg data-compare-seg>
+        <span class="seg__thumb" aria-hidden="true"></span>
+        <button class="seg__btn" type="button" aria-pressed="false" data-value="100">ต้นฉบับ English</button>
+        <button class="seg__btn" type="button" aria-pressed="true" data-value="50">เลื่อนเทียบ</button>
+        <button class="seg__btn" type="button" aria-pressed="false" data-value="0">ภาษาไทย</button>
+      </div>
       <div class="compare" style="--pos:50%;--p:50" data-compare>
         <img src="assets/shots/compare-th.webp" width="1600" height="900" loading="lazy" alt="ฉากเดียวกันหลังลงแพตช์ บทพูดเป็นภาษาไทย">
         <div class="compare__before">
@@ -235,7 +248,7 @@
       </header>
 
       <ol class="flow" aria-label="ขั้นตอนการติดตั้ง">
-        <li class="node slide">
+        <li class="node">
           <span class="node__n" aria-hidden="true"><span>1</span></span>
           <div class="node__body">
             <h3 class="node__title gold">ดาวน์โหลดแล้วแตกไฟล์</h3>
@@ -243,13 +256,13 @@
             <p class="node__text">โหลดไฟล์ zip จากหน้า Releases แล้วแตกไว้ที่ไหนก็ได้ ไม่ต้องแตกทับโฟลเดอร์เกม</p>
           </div>
           <div class="node__media">
-            <div class="file">
+            <div class="file" data-spot>
               <div class="file__icon" aria-hidden="true">ZIP</div>
               <div class="file__info">
                 <p class="file__name" data-latest-name>senrenbanka-thai-patch-v1.3.1.zip</p>
                 <p class="file__meta"><span data-latest-size>57 MB</span> · อัปเดต <span data-latest-date>31 ต.ค. 2026</span></p>
               </div>
-              <a class="btn btn--sm" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">ดาวน์โหลด</a>
+              <a class="btn btn--sm" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url>ดาวน์โหลด</a>
             </div>
             <ul class="checks">
               <li>มี <code>SenrenBanka-Thai-Patch.exe</code> และ <code>install.bat</code> / <code>uninstall.bat</code> สำหรับคนที่ไม่อยากใช้ตัวติดตั้ง</li>
@@ -258,7 +271,7 @@
             </ul>
           </div>
         </li>
-        <li class="node slide">
+        <li class="node">
           <span class="node__n" aria-hidden="true"><span>2</span></span>
           <div class="node__body">
             <h3 class="node__title gold">เปิดตัวติดตั้ง</h3>
@@ -269,7 +282,7 @@
             <figure class="shot"><img src="assets/installer/installer-locate.png" width="880" height="600" loading="lazy" alt="ตัวติดตั้งแพตช์ในขั้นหาโฟลเดอร์เกม พบโฟลเดอร์ SenrenBanka ใน SteamLibrary"></figure>
           </div>
         </li>
-        <li class="node slide">
+        <li class="node">
           <span class="node__n" aria-hidden="true"><span>3</span></span>
           <div class="node__body">
             <h3 class="node__title gold">เลือกภาษาไทยในเกม</h3>
@@ -303,11 +316,11 @@
         <span class="cap">Data load</span>
       </header>
       <div class="saves" data-gallery>
-        <figure class="save save--big"><div class="save__head"><span class="save__no">No.01</span><span class="save__name">มาโกะ</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: มาโกะ"><img src="assets/shots/dialogue-mako-night.webp" width="1600" height="900" loading="lazy" alt="บทพูดภาษาไทยของมาโกะ ฉากกลางคืน"></button><figcaption>บทพูด · Chapter 4-2</figcaption></figure>
-        <figure class="save save--big"><div class="save__head"><span class="save__no">No.02</span><span class="save__name">ผังเรื่อง</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: ผังเรื่อง"><img src="assets/shots/flowchart.webp" width="1600" height="818" loading="lazy" alt="หน้าผังเรื่องภาษาไทย ปุ่มเส้นทางและชื่อตอนเป็นภาษาไทย"></button><figcaption>หน้าผังเรื่อง</figcaption></figure>
-        <figure class="save"><div class="save__head"><span class="save__no">No.03</span><span class="save__name">โยชิโนะ</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: โยชิโนะ"><img src="assets/shots/dialogue-yoshino.webp" width="1600" height="900" loading="lazy" alt="บทพูดภาษาไทยของโยชิโนะ ที่ศาลเจ้า"></button><figcaption>บทพูด · Chapter 3-8</figcaption></figure>
-        <figure class="save"><div class="save__head"><span class="save__no">No.04</span><span class="save__name">มุราซาเมะ</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: มุราซาเมะ"><img src="assets/shots/dialogue-murasame.webp" width="1600" height="900" loading="lazy" alt="บทพูดภาษาไทยของมุราซาเมะ ฉากภาพพิเศษ"></button><figcaption>บทพูด · Chapter 3-2</figcaption></figure>
-        <figure class="save"><div class="save__head"><span class="save__no">No.05</span><span class="save__name">ตัวเลือก</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: ตัวเลือก"><img src="assets/shots/choice.webp" width="1600" height="900" loading="lazy" alt="ฉากตัวเลือก ข้อความตัวเลือกเป็นภาษาไทย"></button><figcaption>ตัวเลือก · Chapter 1-1</figcaption></figure>
+        <figure data-spot class="save save--big"><div class="save__head"><span class="save__no">No.01</span><span class="save__name">มาโกะ</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: มาโกะ"><img src="assets/shots/dialogue-mako-night.webp" width="1600" height="900" loading="lazy" alt="บทพูดภาษาไทยของมาโกะ ฉากกลางคืน"></button><figcaption>บทพูด · Chapter 4-2</figcaption></figure>
+        <figure data-spot class="save save--big"><div class="save__head"><span class="save__no">No.02</span><span class="save__name">ผังเรื่อง</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: ผังเรื่อง"><img src="assets/shots/flowchart.webp" width="1600" height="818" loading="lazy" alt="หน้าผังเรื่องภาษาไทย ปุ่มเส้นทางและชื่อตอนเป็นภาษาไทย"></button><figcaption>หน้าผังเรื่อง</figcaption></figure>
+        <figure data-spot class="save"><div class="save__head"><span class="save__no">No.03</span><span class="save__name">โยชิโนะ</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: โยชิโนะ"><img src="assets/shots/dialogue-yoshino.webp" width="1600" height="900" loading="lazy" alt="บทพูดภาษาไทยของโยชิโนะ ที่ศาลเจ้า"></button><figcaption>บทพูด · Chapter 3-8</figcaption></figure>
+        <figure data-spot class="save"><div class="save__head"><span class="save__no">No.04</span><span class="save__name">มุราซาเมะ</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: มุราซาเมะ"><img src="assets/shots/dialogue-murasame.webp" width="1600" height="900" loading="lazy" alt="บทพูดภาษาไทยของมุราซาเมะ ฉากภาพพิเศษ"></button><figcaption>บทพูด · Chapter 3-2</figcaption></figure>
+        <figure data-spot class="save"><div class="save__head"><span class="save__no">No.05</span><span class="save__name">ตัวเลือก</span></div><button class="save__btn" type="button" aria-label="ขยายภาพ: ตัวเลือก"><img src="assets/shots/choice.webp" width="1600" height="900" loading="lazy" alt="ฉากตัวเลือก ข้อความตัวเลือกเป็นภาษาไทย"></button><figcaption>ตัวเลือก · Chapter 1-1</figcaption></figure>
       </div>
       <p class="credit">ภาพหน้าจอจากเกม ลิขสิทธิ์ภาพเป็นของ YUZUSOFT / JUNOS inc. ใช้เพื่อแสดงผลการแปลเท่านั้น</p>
     </div>
@@ -321,25 +334,25 @@
         <span class="cap">Frequently asked</span>
       </header>
       <div class="choices">
-        <details class="choice">
+        <details class="choice" id="faq-cn-slot">
           <summary>ทำไมตัวเลือก “ภาษาไทย” อยู่ในช่องของภาษาจีน?</summary>
           <div class="dialog"><div class="dialog__line"><p>เกมเก็บบทพูดแต่ละบรรทัดเป็นช่องภาษาเรียงกัน (ญี่ปุ่น / อังกฤษ / จีน / จีนไต้หวัน) แพตช์นี้ใส่คำแปลไทยลงในช่องจีน (Simplified) เปลี่ยนชื่อช่องเป็น “ภาษาไทย” และสลับฟอนต์เป็นฟอนต์ไทย</p>
           <p>ข้อดีคือไม่ต้องแก้ตัวเกม ไม่ยุ่งกับ .exe และเมื่อ Steam อัปเดตก็แค่ลงแพตช์ใหม่</p></div></div>
         </details>
-        <details class="choice">
+        <details class="choice" id="faq-r18">
           <summary>ลงแพตช์ R18 ไว้แล้ว ใช้ได้ไหม?</summary>
           <div class="dialog"><div class="dialog__line"><p>ได้ ซิปเดียวใช้ได้ทั้งสองแบบ ตัวติดตั้งตรวจเองว่าลงแพตช์ R18 ไว้หรือไม่ ลำดับที่ถูกต้องคือ <b>เกม → แพตช์ R18 → แพตช์ไทย</b></p>
           <p>ถ้าเผลอรันตัวติดตั้ง R18 ซ้ำหลังลงไทย ให้ถอดแพตช์ไทย → ลง R18 → ลงไทยใหม่</p></div></div>
         </details>
-        <details class="choice">
+        <details class="choice" id="faq-uninstall">
           <summary>ถอดแพตช์ออกยังไง?</summary>
           <div class="dialog"><div class="dialog__line"><p>เปิดตัวติดตั้งแล้วกด <b>“ถอดแพตช์”</b> หรือดับเบิลคลิก <code>uninstall.bat</code> ไฟล์ต้นฉบับถูกสำรองเป็น <code>.bak</code> ไว้ก่อนแปะทับเสมอ จึงไม่ต้องโหลดเกมใหม่</p></div></div>
         </details>
-        <details class="choice">
+        <details class="choice" id="faq-update">
           <summary>อัปเดตจากเวอร์ชันเก่าต้องทำยังไง?</summary>
           <div class="dialog"><div class="dialog__line"><p>กด “ถอดแพตช์” ก่อน แล้วค่อยลงเวอร์ชันใหม่</p></div></div>
         </details>
-        <details class="choice">
+        <details class="choice" id="faq-safe">
           <summary>ปลอดภัยไหม? ทำอะไรกับเครื่องบ้าง?</summary>
           <div class="dialog"><div class="dialog__line"><ul>
             <li>ไม่แตะอะไรนอกโฟลเดอร์เกม ไม่เขียน registry ไม่ต่อเน็ต</li>
@@ -348,7 +361,7 @@
             <li>โค้ดทั้งหมด<a href="https://github.com/Jiranon-K/senrenbanka-thai">เปิดอยู่บน GitHub</a> ตรวจได้ทุกบรรทัด</li>
           </ul></div></div>
         </details>
-        <details class="choice">
+        <details class="choice" id="faq-still-cn">
           <summary>ลงแล้วยังเป็นภาษาจีนหรือภาษาอังกฤษอยู่</summary>
           <div class="dialog"><div class="dialog__line"><ol>
             <li>ตรวจว่าเลือก <b>ภาษาไทย</b> ใน Config → Language แล้ว</li>
@@ -356,12 +369,12 @@
             <li>ถ้าเป็นแค่บางบรรทัด คือบทพูดฉาก H ในแพตช์ R18 ที่ยังแปลไม่ถึง</li>
           </ol></div></div>
         </details>
-        <details class="choice">
+        <details class="choice" id="faq-smartscreen">
           <summary>Windows ขึ้นเตือน “Windows protected your PC”</summary>
           <div class="dialog"><div class="dialog__line"><p>ตัวติดตั้งไม่ได้เซ็นชื่อดิจิทัล Windows SmartScreen จึงเตือนกับโปรแกรมใหม่ที่ยังมีคนโหลดไม่มาก ไม่ได้แปลว่าเจอไวรัส กด <b>More info</b> แล้วกด <b>Run anyway</b> ได้เลย</p>
           <p>ถ้าไม่สบายใจ เช็กค่า SHA256 ของไฟล์ zip กับหน้า <a href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">Releases</a> หรือใช้ <code>install.bat</code> ในซิปแทน ผลลัพธ์เหมือนกันและเปิดอ่านได้ทุกบรรทัด</p></div></div>
         </details>
-        <details class="choice">
+        <details class="choice" id="faq-need-game">
           <summary>ต้องมีเกมแท้ไหม?</summary>
           <div class="dialog"><div class="dialog__line"><p>ต้องมี แพตช์เป็นไฟล์ส่วนต่าง (binary diff) ถ้าไม่มีไฟล์เกมแท้ในเครื่องจะใช้งานไม่ได้ เกมมีขายบน <a href="https://store.steampowered.com/app/1144400/SenrenBanka/">Steam</a></p></div></div>
         </details>
@@ -377,7 +390,7 @@
         <h2 id="final-title" class="lbox__v gold">ภาษาไทย</h2>
         <p>ฟรี · <span data-latest-tag>v1.3.1</span> · <span data-latest-size>57 MB</span> · Windows 10/11 · ต้องมีเกมแท้บน Steam</p>
         <div class="actions">
-          <a class="btn" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest">
+          <a class="btn beam" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url data-final-cta>
             <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M10 3v9m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             ดาวน์โหลดแพตช์ฟรี
           </a>
@@ -400,9 +413,15 @@
       <li><a href="https://github.com/Jiranon-K/senrenbanka-thai/releases">Releases</a></li>
       <li><a href="https://github.com/Jiranon-K/senrenbanka-thai/issues">แจ้งปัญหา</a></li>
       <li><a href="https://store.steampowered.com/app/1144400/SenrenBanka/">ซื้อเกมบน Steam</a></li>
+      <li><a href="design-system.html">ระบบดีไซน์ของหน้านี้</a></li>
     </ul>
   </div>
 </footer>
+
+<div class="dock" data-dock>
+  <div class="dock__info"><b>ภาษาไทย <span data-latest-tag>v1.3.1</span></b><span>ฟรี · <span data-latest-size>57 MB</span> · Windows</span></div>
+  <a class="btn btn--sm" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url>ดาวน์โหลด</a>
+</div>
 
 <dialog class="lightbox" data-lightbox aria-label="ภาพขยาย">
   <form method="dialog">
@@ -410,7 +429,16 @@
       <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
   </form>
-  <img alt="">
+  <div class="lightbox__stage">
+    <img alt="" data-lb-img>
+    <button class="lightbox__nav lightbox__nav--prev" type="button" aria-label="ภาพก่อนหน้า" data-lb-prev>
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="m12 4-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="lightbox__nav lightbox__nav--next" type="button" aria-label="ภาพถัดไป" data-lb-next>
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="m8 4 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <p class="lightbox__cap" aria-live="polite"><span class="lightbox__name" data-lb-name></span><span class="lightbox__count" data-lb-count></span></p>
 </dialog>
 
 <script src="app.js" defer></script>
