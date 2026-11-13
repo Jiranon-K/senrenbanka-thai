@@ -88,71 +88,65 @@
 </header>
 
 <main id="main">
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="hero__bokeh" aria-hidden="true">
-      <i style="--x:6%;--y:72%;--s:120px;--d:7s"></i><i style="--x:34%;--y:14%;--s:90px;--d:9s"></i><i style="--x:56%;--y:84%;--s:180px;--d:11s"></i><i style="--x:72%;--y:6%;--s:150px;--d:8s"></i><i style="--x:90%;--y:60%;--s:110px;--d:10s"></i><i style="--x:46%;--y:40%;--s:70px;--d:6s"></i><i style="--x:96%;--y:20%;--s:80px;--d:9s"></i>
+  <section class="hero" aria-labelledby="hero-title" data-hero>
+    <div class="hero__media">
+      <img class="hero__img" src="assets/shots/title.webp" width="1600" height="900" alt="หน้าไตเติลของเกม Senren Banka หลังลงแพตช์ มีตัวละครหญิงสี่คนในชุดญี่ปุ่นเรียงกัน" fetchpriority="high">
+      <div class="hero__bokeh" aria-hidden="true">
+        <i style="--x:6%;--y:72%;--s:120px;--d:7s"></i><i style="--x:34%;--y:14%;--s:90px;--d:9s"></i><i style="--x:56%;--y:84%;--s:180px;--d:11s"></i><i style="--x:72%;--y:6%;--s:150px;--d:8s"></i><i style="--x:90%;--y:60%;--s:110px;--d:10s"></i><i style="--x:46%;--y:40%;--s:70px;--d:6s"></i><i style="--x:96%;--y:20%;--s:80px;--d:9s"></i>
+      </div>
     </div>
+    <div class="hero__veil" aria-hidden="true"></div>
     <div class="petals" aria-hidden="true">
       <i style="--l:8%;--d:17s;--w:-3s;--s:12px"></i><i style="--l:22%;--d:21s;--w:-11s"></i>
       <i style="--l:41%;--d:15s;--w:-6s;--s:10px"></i><i style="--l:57%;--d:19s;--w:-1s;--s:16px"></i>
       <i style="--l:68%;--d:23s;--w:-14s;--s:11px"></i><i style="--l:79%;--d:18s;--w:-8s"></i>
       <i style="--l:88%;--d:20s;--w:-4s;--s:13px"></i><i style="--l:95%;--d:16s;--w:-12s;--s:9px"></i>
     </div>
-    <div class="wrap hero__grid">
-      <div>
-        <p class="eyebrow">แพตช์แปลไทยโดยแฟนเกม · ฟรี · <span data-latest-tag>v1.3.1</span></p>
-        <h1 id="hero-title" class="title">
-          <span class="title__en">Senren<span>＊</span>Banka</span>
-          <span class="title__th gold">ฉบับภาษาไทย</span>
-        </h1>
 
-        <ul class="gmenu" aria-label="เมนู">
-          <li><a class="gm gm--primary lbox beam" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url data-hero-cta>
-            <svg class="gm__icon" aria-hidden="true"><use href="#i-sakura"/></svg>
-            <span class="gm__th gold">ดาวน์โหลดแพตช์</span>
-            <span class="cap">Download · <span data-latest-size>57 MB</span></span>
-          </a></li>
-          <li><a class="gm" href="#install">
-            <svg class="gm__icon" aria-hidden="true"><use href="#i-box"/></svg>
-            <span class="gm__th gold">วิธีติดตั้ง</span>
-            <span class="cap">How to install</span>
-          </a></li>
-          <li><a class="gm" href="#progress">
-            <svg class="gm__icon" aria-hidden="true"><use href="#i-flow"/></svg>
-            <span class="gm__th gold">ความคืบหน้า</span>
-            <span class="cap">Progress</span>
-          </a></li>
-          <li><a class="gm" href="#screens">
-            <svg class="gm__icon" aria-hidden="true"><use href="#i-mark"/></svg>
-            <span class="gm__th gold">ภาพในเกม</span>
-            <span class="cap">Gallery</span>
-          </a></li>
-          <li><a class="gm" href="#faq">
-            <svg class="gm__icon" aria-hidden="true"><use href="#i-book"/></svg>
-            <span class="gm__th gold">คำถามที่พบบ่อย</span>
-            <span class="cap">FAQ</span>
-          </a></li>
-          <li><a class="gm" href="https://github.com/Jiranon-K/senrenbanka-thai">
-            <svg class="gm__icon" aria-hidden="true"><use href="#i-gear"/></svg>
-            <span class="gm__th gold">ซอร์สโค้ด</span>
-            <span class="cap">GitHub</span>
-          </a></li>
-        </ul>
-        <p class="hero__note">ไฟล์ zip <span data-latest-size>57 MB</span> · Windows 10/11 · ต้องมีเกมแท้บน Steam</p>
+    <div class="wrap hero__layout">
+      <h1 id="hero-title" class="title">
+        <span class="title__ln" style="--k:0"><span class="title__en">Senren<span>＊</span>Banka</span></span>
+        <span class="title__ln" style="--k:1"><span class="title__th gold">ฉบับภาษาไทย</span></span>
+      </h1>
+
+      <div class="hero__actions">
+        <a class="btn beam" href="https://github.com/Jiranon-K/senrenbanka-thai/releases/latest" data-latest-url data-hero-cta>
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M10 3v9m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ดาวน์โหลดแพตช์
+        </a>
+        <a class="ringlink" href="#install">
+          <span class="ringlink__ring" aria-hidden="true">
+            <svg viewBox="0 0 20 20"><path d="M10 4v12m0 0-5-5m5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 20 20"><path d="M10 4v12m0 0-5-5m5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          วิธีติดตั้ง
+        </a>
       </div>
 
-      <div class="stage">
-        <figure class="frame">
-          <img src="assets/shots/title.webp" width="1600" height="900" alt="หน้าไตเติลของเกมหลังลงแพตช์ เมนูทั้งหมดเป็นภาษาไทย เช่น เริ่มเกมใหม่ โหลดเกม เล่นต่อ ผังเรื่อง และตั้งค่าระบบ" fetchpriority="high">
-          <span class="pin" style="--x:22.5%;--y:50.5%"><span class="pin__dot" aria-hidden="true"></span><span class="pin__label">เมนูเป็นภาษาไทยทั้งหมด</span></span>
-          <span class="pin pin--flip" style="--x:82.5%;--y:4.6%"><span class="pin__dot" aria-hidden="true"></span><span class="pin__label">ปุ่มภาษาขึ้นว่า “ภาษาไทย”</span></span>
-        </figure>
-        <div class="dialog">
-          <p class="dialog__name">【 แพตช์แปลไทย 】</p>
-          <p class="dialog__line"><span class="sr">แพตช์แปลไทยสำหรับ 千恋＊万花 ของ Yuzusoft ฉบับ Steam แปลเนื้อเรื่องครบ 86 บททุกเส้นทาง ติดตั้งด้วยการดับเบิลคลิก และถอดคืนได้ทุกเมื่อ</span><span aria-hidden="true" data-type>「 แพตช์แปลไทยสำหรับ <span lang="ja" class="jp">千恋＊万花</span> ของ Yuzusoft ฉบับ Steam แปลเนื้อเรื่องครบ 86 บททุกเส้นทาง ติดตั้งด้วยการดับเบิลคลิก และถอดคืนได้ทุกเมื่อ 」</span></p>
-          <span class="dialog__next" aria-hidden="true"></span>
-        </div>
-        <p class="stage__cap">หน้าไตเติลหลังลงแพตช์ เมนูและปุ่มภาษาเป็นภาษาไทยทั้งหมด</p>
+      <div class="dialog hero__dialog">
+        <p class="dialog__name">【 แพตช์แปลไทย 】</p>
+        <p class="dialog__line"><span class="sr">แพตช์แปลไทยสำหรับ 千恋＊万花 ของ Yuzusoft ฉบับ Steam แปลเนื้อเรื่องครบ 86 บททุกเส้นทาง ติดตั้งด้วยการดับเบิลคลิก และถอดคืนได้ทุกเมื่อ</span><span aria-hidden="true" data-type>「 แพตช์แปลไทยสำหรับ <span lang="ja" class="jp">千恋＊万花</span> ของ Yuzusoft ฉบับ Steam แปลเนื้อเรื่องครบ 86 บททุกเส้นทาง ติดตั้งด้วยการดับเบิลคลิก และถอดคืนได้ทุกเมื่อ 」</span></p>
+        <span class="dialog__next" aria-hidden="true"></span>
+      </div>
+
+      <a class="lbox reel" href="#compare">
+        <span class="reel__thumb"><img src="assets/shots/compare-th.webp" width="1600" height="900" alt="" decoding="async"></span>
+        <span class="reel__text"><span class="lbox__k">Before / After :</span><span class="reel__v">ดูก่อน/หลังลงแพตช์</span></span>
+        <span class="reel__go" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M10 4v12m0 0-5-5m5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
+    </div>
+
+    <div class="hero__bar">
+      <div class="wrap hero__bar-row">
+        <a class="cue" href="#progress" aria-label="เลื่อนลงไปดูเนื้อหา"><span class="cue__line" aria-hidden="true"></span><span class="cap">Scroll to explore</span></a>
+        <ul class="hero__facts" aria-label="ข้อมูลแพตช์">
+          <li>ฟรี</li>
+          <li>แปลโดยแฟนเกม</li>
+          <li data-latest-tag>v1.3.1</li>
+          <li>ไฟล์ zip <span data-latest-size>57 MB</span></li>
+          <li>Windows 10/11</li>
+          <li>ต้องมีเกมแท้บน Steam</li>
+        </ul>
       </div>
     </div>
   </section>

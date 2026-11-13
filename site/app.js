@@ -141,15 +141,42 @@
     dock.classList.toggle('is-on', pastHero && !atEnd);
   };
 
+  const hero = $('[data-hero]');
+  const heroFrame = (y) => {
+    if (!hero || reduced()) return;
+    const h = hero.offsetHeight;
+    if (y > h * 1.2) return;
+    hero.style.setProperty('--hero-p', h > 0 ? clamp(y / h, 0, 1).toFixed(4) : 0);
+  };
+  if (hero && finePointer) {
+    let raf = 0;
+    let px = 0;
+    let py = 0;
+    const lean = () => {
+      raf = 0;
+      hero.style.setProperty('--hx', px.toFixed(3));
+      hero.style.setProperty('--hy', py.toFixed(3));
+    };
+    hero.addEventListener('pointermove', (e) => {
+      if (reduced()) return;
+      const r = hero.getBoundingClientRect();
+      px = clamp((e.clientX - r.left) / r.width * 2 - 1, -1, 1);
+      py = clamp((e.clientY - r.top) / r.height * 2 - 1, -1, 1);
+      raf ||= requestAnimationFrame(lean);
+    }, { passive: true });
+    hero.addEventListener('pointerleave', () => { px = 0; py = 0; raf ||= requestAnimationFrame(lean); });
+  }
+
   let queued = false;
   const frame = () => {
     queued = false;
+    const y = window.scrollY;
     if (nav) {
-      const y = window.scrollY;
       const max = document.documentElement.scrollHeight - innerHeight;
       nav.classList.toggle('is-solid', y > 8);
       nav.style.setProperty('--read', max > 0 ? clamp(y / max, 0, 1).toFixed(4) : 0);
     }
+    heroFrame(y);
     spy();
     flow();
     updateDock();
@@ -223,7 +250,7 @@
       for (let k = 0; k < 2 && i < chars.length; k++) chars[i++].classList.add('on');
       if (i < chars.length) setTimeout(step, 28);
     };
-    setTimeout(step, 350);
+    setTimeout(step, 1100);
     typer.closest('.dialog').addEventListener('click', () => { chars.forEach((c) => c.classList.add('on')); i = chars.length; });
   }
 
