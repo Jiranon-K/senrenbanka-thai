@@ -97,6 +97,7 @@
             <tr><td><code>--c-accent</code> · <code>--c-accent-strong</code></td><td><code data-token="--c-accent"></code> · <code data-token="--c-accent-strong"></code></td><td>ลิงก์ ปุ่มหลัก สถานะที่เลือก · ตอน hover/กด</td></tr>
             <tr><td><code>--c-border</code> · <code>--c-border-strong</code></td><td><code data-token="--c-border"></code> · <code data-token="--c-border-strong"></code></td><td>เส้นแบ่ง · กรอบการ์ด</td></tr>
             <tr><td><code>--c-glow</code></td><td><code data-token="--c-glow"></code></td><td>RGB สำหรับแสง beam และ spotlight (ใช้กับ <code>rgba(var(--c-glow), a)</code>)</td></tr>
+            <tr><td><code>--c-bg-rgb</code></td><td><code data-token="--c-bg-rgb"></code></td><td>RGB ของพื้นหน้า สำหรับม่านจางของ Hero และแถบล่าง (ใช้กับ <code>rgba(var(--c-bg-rgb), a)</code>)</td></tr>
           </tbody>
         </table></div>
         <p class="ds-note">ตัวหนังสือเนื้อหาทุกคู่สีผ่าน WCAG AA (4.5:1) ส่วนหัวข้อสีทองไล่เฉดเป็นตัวใหญ่หนา ใช้เกณฑ์ตัวใหญ่ (3:1)</p>
@@ -113,6 +114,7 @@
         <p class="lead">Serif ไทยสำหรับหัวข้อ (เหมือนกล่องบทพูดในเกม) Sarabun สำหรับเนื้อความ Cinzel สำหรับป้ายภาษาอังกฤษตัวพิมพ์ใหญ่ และ Serif ญี่ปุ่นเฉพาะชื่อเกม</p>
       </header>
       <div class="ds-demo ds-demo--col ds-type">
+        <p class="title__th gold" style="font-size:var(--fs-display)">ฉบับภาษาไทย <small style="font-size:14px;font-family:var(--sans);-webkit-text-fill-color:var(--c-text-muted)">--fs-display · หัวเรื่องของ Hero · Noto Serif Thai 800</small></p>
         <p class="title__th gold" style="font-size:var(--fs-hero)">ฉบับภาษาไทย <small style="font-size:14px;font-family:var(--sans);-webkit-text-fill-color:var(--c-text-muted)">--fs-hero · Noto Serif Thai 800</small></p>
         <h3 style="font-family:var(--serif);font-size:var(--fs-xl)">หัวข้อขั้นตอน <small style="font-size:14px;font-family:var(--sans);font-weight:400;color:var(--c-text-muted)">--fs-xl · Noto Serif Thai 700</small></h3>
         <p style="font-size:var(--fs-md)">เนื้อความ อ่านสบาย บรรทัดละไม่เกินราว 40 ตัวอักษรไทย <small style="font-size:14px;color:var(--c-text-muted)">--fs-md · Sarabun 400, line-height 1.75</small></p>
@@ -154,9 +156,10 @@
             <tr><td><code>--dur-3</code></td><td><code data-token="--dur-3"></code></td><td>reveal ตอนเลื่อนถึง (เลื่อน 18px + จาง)</td></tr>
             <tr><td><code>--ease</code> · <code>--ease-io</code></td><td><code data-token="--ease"></code> · <code data-token="--ease-io"></code></td><td>ออกตัวเร็วหยุดนุ่ม (ส่วนใหญ่) · เลื่อนไปกลับสองทาง (thumb, ตัวชี้ nav)</td></tr>
             <tr><td><code>--beam-dur</code></td><td><code data-token="--beam-dur"></code></td><td>แสงวิ่งรอบปุ่มดาวน์โหลด (วนซ้ำ ใช้กับ CTA หลักเท่านั้น)</td></tr>
+            <tr><td>Hero intro</td><td>0.7 ถึง 1.4 วินาที เล่นครั้งเดียว</td><td>ภาพซูมเข้าตั้งแต่ 1.1 เท่า, หัวเรื่องโผล่ทีละบรรทัด, ปุ่ม กล่องบทพูด และการ์ดไหลเข้าตามลำดับ (CSS keyframes ล้วน ไม่ต้องรอ JS)</td></tr>
           </tbody>
         </table></div>
-        <p class="ds-note">กฎ: motion ต้องไม่บังเนื้อหาและไม่เกิน 420ms ยกเว้น beam ตอนผู้ใช้ตั้ง reduced motion ทุกอย่างหยุด เนื้อหาแสดงครบ ไม่มีอะไรซ่อนรอจนกว่า JS จะมาเปิด (<code>html.js</code> เป็นตัวเปิดสถานะซ่อน)</p>
+        <p class="ds-note">กฎ: motion ต้องไม่บังเนื้อหาและไม่เกิน 420ms ยกเว้น beam และ Hero intro (เล่นครั้งเดียวตอนโหลด) ตอนผู้ใช้ตั้ง reduced motion ทุกอย่างหยุด เนื้อหาแสดงครบ ไม่มีอะไรซ่อนรอจนกว่า JS จะมาเปิด (<code>html.js</code> เป็นตัวเปิดสถานะซ่อน)</p>
       </div>
     </div>
   </section>
