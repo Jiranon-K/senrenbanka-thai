@@ -69,9 +69,8 @@ patterns written from first principles.
 - Download: buttons link straight to the release zip (from the GitHub API, cached for the
   session), falling back to the Releases page. A mobile dock keeps the button in reach.
 - Hero: the title screenshot runs full-bleed on the right and fades into washi on the left; the
-  headline sits top-left, the primary action and an install ring-link under it, the dialog box
-  bottom-left, a before/after preview card (`.reel`, a `.lbox` with a `compare-th` thumbnail)
-  bottom-right, and a hairline bar with a scroll cue and the patch facts along the bottom. The
+  headline and the primary action with an install ring-link under it sit centred vertically,
+  the dialog box bottom-left, and a hairline bar with a scroll cue and the patch facts along the bottom. The
   composition follows fitosauna.com; colours, type, frames and the dialog box stay ours. The
   six-item title-screen menu left the hero (the nav already links every section), and the two
   pins on the screenshot went with it because the menu is cropped out of view.
