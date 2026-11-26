@@ -19,7 +19,10 @@
 </p>
 
 <p align="center">
-  <img src="docs/banner-personal.webp" alt="แปลไว้เล่นเอง — แฟนแพตช์ทำคนเดียว แปลด้วย AI ไม่ใช่งานแปลมืออาชีพ" width="820">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/banner-personal-dark.webp">
+    <img src="docs/banner-personal-light.webp" alt="แปลไว้เล่นเอง — แฟนแพตช์ทำคนเดียว แปลด้วย AI ไม่ใช่งานแปลมืออาชีพ" width="820">
+  </picture>
 </p>
 
 > [!NOTE]
