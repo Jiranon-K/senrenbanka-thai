@@ -115,6 +115,10 @@ class GlossaryTerms(unittest.TestCase):
     def test_forbidden_needs_the_japanese_term(self):
         self.assertEqual(rules_hit(record("「เรนทาโร่มาแล้ว」"), "N2"), [])
 
+    def test_forbidden_that_extends_the_correct_term_fires(self):
+        self.assertEqual(rules_hit(record("「เก็นจูโร่มาแล้ว」", "「玄十郎が来た」"), "N2"), ["N2"])
+        self.assertEqual(rules_hit(record("「เก็นจูโรมาแล้ว」", "「玄十郎が来た」"), "N2"), [])
+
 
 class Form(unittest.TestCase):
     def test_brackets_must_match(self):
@@ -151,9 +155,80 @@ class Form(unittest.TestCase):
         self.assertEqual(rules_hit(record("「ทดสอบ」", jp="%84;「これは試験です」"), "F4"), [])
         self.assertEqual(rules_hit(record("%84;「ทดสอบ」", jp="%84;「これは試験です」"), "F4"), [])
 
-    def test_literal_line_breaks(self):
-        self.assertEqual(rules_hit(record("「ทดสอบ」", jp="「これは\\n試験です」"), "F4"), ["F4"])
+    def test_structural_line_breaks(self):
+        two_speakers = "「へ？」\\n「は？」"
+        self.assertEqual(rules_hit(record("「เฮ?」 「หา?」", jp=two_speakers), "F4"), ["F4"])
+        self.assertEqual(rules_hit(record("「เฮ?」\\n「หา?」", jp=two_speakers), "F4"), [])
+
+    def test_a_japanese_wrapping_break_need_not_be_copied(self):
+        self.assertEqual(rules_hit(record("「ทดสอบ」", jp="「これは\\n試験です」"), "F4"), [])
         self.assertEqual(rules_hit(record("「ทด\\nสอบ」", jp="「これは\\n試験です」"), "F4"), [])
+
+    def test_thai_must_not_add_line_breaks(self):
+        self.assertEqual(rules_hit(record("「ทด\\nสอบ」"), "F4"), ["F4"])
+
+    def test_emphasis_brackets_keep_their_count(self):
+        emphasised = "これは【試験】です"
+        self.assertEqual(rules_hit(record("นี่คือ【การทดสอบ】", jp=emphasised), "F4"), [])
+        self.assertEqual(rules_hit(record("นี่คือการทดสอบ", jp=emphasised), "F4"), ["F4"])
+        self.assertEqual(rules_hit(record("「นี่คือ【การทดสอบ】」"), "F4"), ["F4"])
+
+
+class LineBreakPlacement(unittest.TestCase):
+    WRAPPED = "「これはとても長い試験の\\n文です」"
+
+    def test_particle_alone_after_the_break(self):
+        for thai in ("「นี่คือประโยคทดสอบที่ยาวมาก\\nค่ะ」", "「นี่คือประโยคทดสอบที่ยาวมาก\\nนะ!?」",
+                     "「นี่คือประโยคทดสอบที่ยาวมาก\\nเลยค่ะ」"):
+            self.assertEqual(rules_hit(record(thai, jp=self.WRAPPED), "F6"), ["F6"], thai)
+
+    def test_break_at_the_very_end(self):
+        self.assertEqual(rules_hit(record("นี่คือประโยคทดสอบที่ยาวมาก\\n", jp="これは\\n試験です"),
+                                   "F6"), ["F6"])
+
+    def test_short_head_before_the_break(self):
+        self.assertEqual(rules_hit(record("「นี่\\nคือประโยคทดสอบที่ยาวมาก」", jp=self.WRAPPED), "F6"),
+                         ["F6"])
+
+    def test_break_at_a_phrase_boundary_passes(self):
+        self.assertEqual(rules_hit(record("「นี่คือประโยคทดสอบ\\nที่ยาวมากค่ะ」", jp=self.WRAPPED),
+                                   "F6"), [])
+
+    def test_short_exclamation_after_a_finished_sentence_passes(self):
+        for thai in ("「นี่คือประโยคทดสอบ……\\nอ้าว!」", "「นี่คือประโยคทดสอบ!\\nเอ๊ะ」"):
+            self.assertEqual(rules_hit(record(thai, jp=self.WRAPPED), "F6"), [], thai)
+
+    def test_separate_quoted_utterances_pass(self):
+        self.assertEqual(rules_hit(record("「เฮ?」\\n「หา?」", jp="「へ？」\\n「は？」"), "F6"), [])
+
+    def test_line_without_a_break_passes(self):
+        self.assertEqual(rules_hit(record("「ค่ะ」"), "F6"), [])
+
+
+class RoyalVocabulary(unittest.TestCase):
+    def test_royal_prefix_on_a_commoner(self):
+        self.assertEqual(rules_hit(record("「คุณครูทรงยุ่งอยู่ค่ะ」", jp="「先生は忙しいです」"), "C5"),
+                         ["C5"])
+
+    def test_royal_prefix_for_a_deity_passes(self):
+        self.assertEqual(rules_hit(record("คนที่เทพธิดาทรงรัก", jp="女神様の思い人"), "C5"), [])
+        self.assertEqual(rules_hit(record("「โปรดอย่าทรงล้อเล่น」", jp="「ムラサメ様、お戯れを」"), "C5"), [])
+
+    def test_shape_and_memory_words_pass(self):
+        for thai in ("「ทรงผมใหม่สวยค่ะ」", "「ความทรงจำดีๆ ค่ะ」", "「รูปทรงแปลกค่ะ」", "「ทรงตัวไม่อยู่ค่ะ」",
+                     "「ทรงพลังมากค่ะ」", "「เป็นทรงกลมค่ะ」", "「ผมทรงนี้ค่ะ」"):
+            self.assertEqual(rules_hit(record(thai), "C5"), [], thai)
+
+
+class WordsFromOutsideTheSetting(unittest.TestCase):
+    def test_thai_chinese_family_word(self):
+        self.assertEqual(rules_hit(record("「อาตี๋ก็รู้สึกเหมือนกันนะ」"), "L2"), ["L2"])
+
+    def test_dated_exclamation(self):
+        self.assertEqual(rules_hit(record("「ไอ้หยา แย่แล้ว」"), "L2"), ["L2"])
+
+    def test_plain_self_pronoun_passes(self):
+        self.assertEqual(rules_hit(record("「ฉันก็รู้สึกเหมือนกันนะ」"), "L2"), [])
 
 
 class Summarization(unittest.TestCase):
@@ -193,7 +268,8 @@ class Command(unittest.TestCase):
 
     def test_every_rule_is_registered(self):
         self.assertEqual(sorted(lint.RULES),
-                         ["C1", "C3", "F1", "F2", "F3", "F4", "F5", "N1", "N2", "S2"])
+                         ["C1", "C3", "C5", "F1", "F2", "F3", "F4", "F5", "F6", "L2", "N1", "N2",
+                          "S2"])
 
 
 if __name__ == "__main__":

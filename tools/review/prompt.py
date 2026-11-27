@@ -56,7 +56,10 @@ You receive Thai lines with the Japanese original, and findings attached to some
   a finding asks for a full retranslation; then translate the whole line from the Japanese.
 - Follow the rules, the character table and the glossary above.
 - Keep the same opening and closing bracket as the Japanese line, leave no kana or kanji,
-  drop ruby readings, and keep a literal backslash-n only where the Japanese has one.
+  and drop ruby readings.
+- A literal backslash-n between two quoted utterances stays where it is. Any other
+  backslash-n in the Japanese is Japanese line wrapping: never add one to a Thai line that
+  has none, and never leave a particle or a few letters alone after one.
 - When a finding is mistaken and the current Thai is already right, return it unchanged.
 - Return `idx` and `th` only, one entry per line that carries findings."""
 

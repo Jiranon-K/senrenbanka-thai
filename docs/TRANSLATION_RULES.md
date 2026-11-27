@@ -29,6 +29,7 @@ pipeline live in [RULES.md](RULES.md) and are a different list.
 | C2 | Each speaker keeps the self-pronoun, particle and voice in the character table. Murasame speaks archaic but cute Thai (ข้า, เจ้า, นายท่าน) with no modern polite particle and no loanwords. Mako and Yoshino speak modern polite Thai with no archaic particles. Lena's odd Japanese becomes consistent, slightly stiff and over-formal Thai, never male particles and never random misspelling. Register is never coarser than the Japanese: no กู, มึง or vulgar words unless the Japanese is itself vulgar. | reviewer |
 | C3 | Kinship follows the side of the family, taken from evidence only. Genjuurou is the maternal grandfather of Masaomi (ตา, คุณตา) and the paternal grandfather of Rentarou and Koharu (ปู่, คุณปู่). Their father is the elder brother of Masaomi's mother (ลุง to Masaomi). A third party speaking to one of them uses that person's term. A relative whose side is not evidenced is queued for the owner and never guessed. An unrelated elderly person is คุณตา or คุณยาย. | lint, reviewer |
 | C4 | Address terms follow the Japanese of that exact line: surname or given name, with or without a title. さん is คุณ in front of the name, 様 is ท่าน (お嬢様 is คุณหนู), ちゃん stays จัง after the name, a bare name stays bare. Never stack คุณ on a kept suffix. When a line is about the form of address itself (dropping さん, asking for a nickname), the change must be visible in Thai, and narration must not make the switch earlier than the Japanese does. | reviewer |
+| C5 | Royal vocabulary belongs to deities and royalty only. The verb prefix ทรง is never used for a teacher, an elder or any other ordinary person, however polite the Japanese is; politeness is carried by ท่าน, คุณ and the polite particle. | lint |
 
 ## Jokes and wordplay
 
@@ -44,7 +45,7 @@ pipeline live in [RULES.md](RULES.md) and are a different list.
 | ID | Rule | Enforcer |
 |---|---|---|
 | L1 | Use natural, contemporary Thai that people say today. Casual lines may use current colloquial words that have stayed in use for years (โคตร, ชิล, เนียน, มโน, ฟิน, เว่อร์). Stiff literal phrasing is a fault where the Japanese is casual. | reviewer |
-| L2 | Slang level matches the Japanese line. Plain Japanese stays plain Thai. Narration and Murasame never use slang. Chat spellings and 555 never appear. Dated forms are not used: ตู, เอ็ง, ยัยบ๊อง, ตาบ้า, อะจ๊าก, ไอ้หยา. | reviewer |
+| L2 | Slang level matches the Japanese line. Plain Japanese stays plain Thai. Narration and Murasame never use slang. Chat spellings and 555 never appear. Dated forms are not used: ตู, เอ็ง, ยัยบ๊อง, ตาบ้า, อะจ๊าก, ไอ้หยา. Thai-Chinese family words (อาตี๋, อาหมวย, อาเฮีย, อาเจ๊, อาม่า, อากง) never stand in for a Japanese pronoun or name. | lint (the Thai-Chinese family words, ยัยบ๊อง, อะจ๊าก, ไอ้หยา), reviewer |
 | L3 | Ritual set phrases are translated by function (いただきます, ただいま, お疲れ様), unless a joke depends on the Japanese form. | reviewer |
 | L4 | Screams, gasps and sound effects become Thai sound words that fit the emotion, not a syllable copy of the kana. Lengthening repeats a final letter a few times and matches the length of the voiced line. | reviewer |
 
@@ -64,8 +65,9 @@ pipeline live in [RULES.md](RULES.md) and are a different list.
 | F1 | A Thai line opens and closes with the same quote bracket as its Japanese line, and has none when the Japanese has none. | lint |
 | F2 | No kana or kanji remains in a Thai line. | lint |
 | F3 | A Thai line is not empty when its Japanese line has words. | lint |
-| F4 | Size tags and literal `\n` keep their count. Ruby readings are dropped. | lint |
+| F4 | Size tags keep their count. Ruby readings are dropped. A literal `\n` between two quoted utterances is kept. Any other `\n` in the Japanese is Japanese line wrapping: the Thai line may drop it, and never has more than the Japanese. Emphasis brackets `【】` appear in the Thai line exactly as often as in its Japanese line. | lint |
 | F5 | A Thai line uses only characters the game font draws: Thai, ASCII, and the punctuation `「」『』【】（）、。・〜～…―—！？♪“”‘’`. A Japanese censor mark such as ○ becomes `*`, and ☆ becomes ♪. | lint |
+| F6 | A literal `\n` never strands a fragment. No line is left empty, and a piece shorter than six letters stands alone only after a finished sentence or as its own quoted utterance. A line that fits the text box without the break has none. | lint (fragments); the fit is measured by hand against the 1154 px text box |
 
 ## Project conventions that are never a defect
 

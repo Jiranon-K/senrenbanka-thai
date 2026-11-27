@@ -58,6 +58,26 @@ RUBY = re.compile(r"\[[^\]]*\]")
 FORMAT_TAG = re.compile(r"%\d+;")
 LEADING_FORMAT_TAGS = re.compile(r"^(?:%\d+;)+")
 LITERAL_LINE_BREAK = "\\n"
+UTTERANCE_BREAK = re.compile(r"[」』]\s*\\n\s*[「『]")
+EMPHASIS_BRACKETS = ("【", "】")
+QUOTE_OPENERS = ("「", "『")
+QUOTE_BRACKETS = frozenset("「」『』（）()")
+THAI_COMBINING_MARKS = frozenset("ัิีึืฺุู็่้๊๋์ํ๎")
+SENTENCE_ENDINGS = tuple("…!?！？♪～~―—。.")
+MINIMUM_SEGMENT_LETTERS = 6
+
+ROYAL_PREFIX = "ทรง"
+NOT_ROYAL_BEFORE = ("ความ", "รูป", "ทรวด", "เป็น", "เปลี่ยน", "เสีย", "ผม", "ร่าง", "คน", "เข้า")
+NOT_ROYAL_AFTER = ("จำ", "พลัง", "ตัว", "กลม", "ผม", "เดิม", "สี่", "สาม", "แบน", "ลูก", "ดู", "ก็",
+                   "นี้", "นั้น", "ไหน", "อะไร", "ของ", "ที่", "เสน่ห์", "อิทธิพล", "คุณ", "เจ้า",
+                   "กระบอก", "เหลี่ยม", "รี", "สูง", "」", "』", " ")
+ROYAL_PREFIX_PATTERN = re.compile(
+    "".join("(?<!%s)" % prefix for prefix in NOT_ROYAL_BEFORE)
+    + ROYAL_PREFIX + "(?!%s|$)" % "|".join(re.escape(suffix) for suffix in NOT_ROYAL_AFTER))
+REVERED_IN_JAPANESE = ("女神", "神様", "神さま", "祟り神", "姫", "殿下", "陛下", "ムラサメ様", "叢雨様")
+
+WORDS_FROM_OUTSIDE_THE_SETTING = ("อาตี๋", "อาหมวย", "อาเฮีย", "อาเจ๊", "อาม่า", "อากง",
+                                  "ยัยบ๊อง", "อะจ๊าก", "ไอ้หยา")
 
 THAI_BLOCK_START, THAI_BLOCK_END = 0x0E00, 0x0E7F
 PRINTABLE_ASCII_START, PRINTABLE_ASCII_END = 0x20, 0x7E
@@ -141,12 +161,29 @@ def glossary_term_missing(record: Record, tables: Tables) -> list[Finding]:
             if entry.th not in thai_without_longer_terms(record.th, entry, matched)]
 
 
+def thai_outside_the_correct_term(thai: str, entry: GlossaryEntry, wrong: str) -> str:
+    return thai if entry.th in wrong else thai.replace(entry.th, "")
+
+
 def glossary_forbidden_rendering(record: Record, tables: Tables) -> list[Finding]:
     return [finding(record, "N2", MAJOR, "forbidden rendering %s for %s, use %s"
                     % (wrong, entry.en, entry.th))
             for entry in glossary_matches(record.jp, tables.glossary)
             for wrong in entry.forbidden
-            if wrong in record.th.replace(entry.th, "")]
+            if wrong in thai_outside_the_correct_term(record.th, entry, wrong)]
+
+
+def royal_vocabulary(record: Record, tables: Tables) -> list[Finding]:
+    if any(revered in record.jp for revered in REVERED_IN_JAPANESE):
+        return []
+    return [finding(record, "C5", MAJOR, "royal verb prefix ทรง where the Japanese names no "
+                    "deity or royalty")] if ROYAL_PREFIX_PATTERN.search(record.th) else []
+
+
+def words_from_outside_the_setting(record: Record, tables: Tables) -> list[Finding]:
+    used = [word for word in WORDS_FROM_OUTSIDE_THE_SETTING if word in record.th]
+    return [finding(record, "L2", MAJOR, "word that never fits this setting: " + " ".join(used))] \
+        if used else []
 
 
 def wrapping_brackets(text: str) -> tuple[str, str] | None:
@@ -199,9 +236,45 @@ def format_tags(record: Record, tables: Tables) -> list[Finding]:
     problems = []
     if thai_tags not in (japanese_tags, japanese_tags - droppable):
         problems.append("%d format tags in Japanese, %d in Thai" % (japanese_tags, thai_tags))
-    if record.jp.count(LITERAL_LINE_BREAK) != record.th.count(LITERAL_LINE_BREAK):
-        problems.append("literal line break count differs")
+    if len(UTTERANCE_BREAK.findall(record.jp)) != len(UTTERANCE_BREAK.findall(record.th)):
+        problems.append("line breaks between quoted utterances differ")
+    elif record.th.count(LITERAL_LINE_BREAK) > record.jp.count(LITERAL_LINE_BREAK):
+        problems.append("more literal line breaks than the Japanese")
+    if any(record.jp.count(bracket) != record.th.count(bracket)
+           for bracket in EMPHASIS_BRACKETS):
+        problems.append("emphasis bracket count differs")
     return [finding(record, "F4", MINOR, "; ".join(problems))] if problems else []
+
+
+def letters(segment: str) -> int:
+    return sum(1 for character in segment
+               if character not in THAI_COMBINING_MARKS and character not in QUOTE_BRACKETS
+               and not character.isspace())
+
+
+def is_quoted_utterance(segment: str) -> bool:
+    return segment.strip().startswith(QUOTE_OPENERS)
+
+
+def ends_a_sentence(segment: str) -> bool:
+    return segment.rstrip().endswith(SENTENCE_ENDINGS)
+
+
+def splits_a_clause(before: str, after: str) -> bool:
+    return not ends_a_sentence(before) and min(letters(before), letters(after)) \
+        < MINIMUM_SEGMENT_LETTERS
+
+
+def orphaned_line_break(record: Record, tables: Tables) -> list[Finding]:
+    segments = record.th.split(LITERAL_LINE_BREAK)
+    if len(segments) < 2 or all(is_quoted_utterance(segment) for segment in segments):
+        return []
+    if any(not letters(segment) for segment in segments):
+        return [finding(record, "F6", MAJOR, "a literal line break leaves an empty line")]
+    if any(splits_a_clause(before, after) for before, after in zip(segments, segments[1:])):
+        return [finding(record, "F6", MAJOR, "a literal line break leaves fewer than %d letters "
+                        "of an unfinished sentence alone on a line" % MINIMUM_SEGMENT_LETTERS)]
+    return []
 
 
 def bare_text(text: str) -> str:
@@ -226,6 +299,8 @@ def possible_summarization(record: Record, tables: Tables) -> list[Finding]:
 RULES = {
     "C1": speaker_sex,
     "C3": kinship_side,
+    "C5": royal_vocabulary,
+    "L2": words_from_outside_the_setting,
     "N1": glossary_term_missing,
     "N2": glossary_forbidden_rendering,
     "F1": quote_brackets,
@@ -233,6 +308,7 @@ RULES = {
     "F3": thai_empty,
     "F4": format_tags,
     "F5": undrawable_characters,
+    "F6": orphaned_line_break,
     "S2": possible_summarization,
 }
 
