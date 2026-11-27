@@ -37,7 +37,7 @@ body:
     id: version
     attributes:
       label: เวอร์ชันแพตช์ไทย
-      placeholder: v1.4
+      placeholder: v1.4.1
   - type: input
     id: os
     attributes:
