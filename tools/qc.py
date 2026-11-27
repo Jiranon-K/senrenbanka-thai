@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os, sys, csv, json, re
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fontTools.ttLib import TTFont
 import paths as P
 import scenario
+import tsv
 
 CORPUS = {
     "all-ages": (P.JSON_CN, P.CSV_CN, scenario.ALL_AGES),
@@ -40,6 +40,8 @@ def main():
                 if ord(c)>0x7e and ord(c) not in cmap and not (0x0e00<=ord(c)<=0x0e7f):
                     miss[c]=miss.get(c,0)+1
         for b in layout.blocks(d):
+            if tsv.is_control({"jp": b[scenario.JP][1]}):
+                continue
             chk(b[scenario.CN][1])
         for x in layout.choices(d):
             chk(x["language"][scenario.CN]["text"])

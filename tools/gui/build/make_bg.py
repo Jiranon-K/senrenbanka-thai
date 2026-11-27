@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import argparse
@@ -8,7 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import imgtool as I                                          # noqa: E402
+import imgtool as I
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GUI = os.path.dirname(HERE)

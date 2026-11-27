@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
+USAGE = """
 ui_assets.py — find every UI image that carries localized text, and hand it out
 for translation.
 
@@ -373,5 +372,5 @@ if __name__ == "__main__":
     elif cmd == "pack-text":
         cmd_pack_text(sys.argv[2] if len(sys.argv) > 2 else None)
     else:
-        print(__doc__)
+        print(USAGE)
         sys.exit(2)

@@ -44,7 +44,6 @@
   --sakura-white: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cg fill='%23ffffff'%3E%3Cpath id='p' d='M0-1.6C-3-4-4-9-1.2-11L0-9.6 1.2-11C4-9 3-4 0-1.6z'/%3E%3Cuse href='%23p' transform='rotate(72)'/%3E%3Cuse href='%23p' transform='rotate(144)'/%3E%3Cuse href='%23p' transform='rotate(216)'/%3E%3Cuse href='%23p' transform='rotate(288)'/%3E%3C/g%3E%3C/svg%3E");
   --petal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 24'%3E%3Cpath d='M10 23C4 19 1 13 2.5 7 4 2.5 7.5 1 10 4c2.5-3 6-1.5 7.5 3C19 13 16 19 10 23z' fill='%23f2aeb0'/%3E%3C/svg%3E");
 
-  /* Semantic layer: components read these, never the primitives above. */
   --c-bg: var(--washi);
   --c-bg-alt: var(--washi-2);
   --c-surface: var(--paper);
@@ -59,28 +58,23 @@
   --c-glow: 255, 214, 170;
   --c-bg-rgb: var(--washi-rgb);
 
-  /* Space, 4px base. */
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
   --sp-6: 32px; --sp-7: 48px; --sp-8: 72px; --sp-9: 104px;
 
-  /* Type scale. */
   --fs-xs: 12px; --fs-sm: 14.5px; --fs-md: 17px; --fs-lg: 20px; --fs-xl: 26px;
   --fs-2xl: clamp(30px, 3.6vw, 44px);
   --fs-hero: clamp(44px, 5vw, 70px);
   --fs-display: clamp(46px, 6.8vw, 104px);
   --fs-display-en: clamp(31px, 4.7vw, 72px);
 
-  /* Motion: 150-400ms for state changes, one long loop for the CTA beam. */
   --dur-3: 420ms;
   --ease-io: cubic-bezier(.65, 0, .35, 1);
   --beam-dur: 5.5s;
 
-  /* Elevation. */
   --sh-1: 0 14px 30px -24px rgba(61, 44, 34, .5);
   --sh-2: 0 20px 40px -28px rgba(61, 44, 34, .55);
   --sh-pop: 0 18px 40px -24px rgba(30, 20, 10, .7);
 
-  /* Layers. */
   --z-nav: 30;
   --z-dock: 28;
 }
@@ -187,7 +181,6 @@ span.gold { display: inline-block; }
 .nav__menu a:not(.btn):hover { color: var(--c-accent); }
 .nav__menu a:not(.btn):not([aria-current]):hover::after { transform: scaleX(1); }
 .nav__menu a[aria-current] { color: var(--c-accent); font-weight: 600; }
-/* One shared underline slides to the active link instead of each link drawing its own. */
 .nav__ind { position: absolute; left: 0; bottom: 0; height: 2px; width: var(--ind-w, 0); background: var(--c-accent); transform: translateX(var(--ind-x, 0)); opacity: 0; transition: transform var(--dur-2) var(--ease-io), width var(--dur-2) var(--ease-io), opacity var(--dur-1); pointer-events: none; }
 .nav__ind.is-on { opacity: 1; }
 .nav__sheet-dl { display: none; }
@@ -287,14 +280,11 @@ span.gold { display: inline-block; }
   .hero__bokeh i { animation: orb var(--d) ease-in-out infinite alternate; }
 }
 
-/* Reveal on scroll. Only hides content when JS is running (html.js), so no-JS readers see everything.
-   Uses the individual `translate` property so it never fights a card's own hover `transform`. */
 .js [data-reveal] { opacity: 0; translate: 0 18px; transition: opacity var(--dur-3) var(--ease) calc(var(--i, 0) * 70ms), translate var(--dur-3) var(--ease) calc(var(--i, 0) * 70ms); }
 .js [data-reveal].is-in { opacity: 1; translate: none; }
 .ribbon { transition: transform var(--dur-3) var(--ease), clip-path var(--dur-3) var(--ease); }
 .js .chap[data-reveal]:not(.is-in) .ribbon { transform: translateX(-36px); clip-path: polygon(0 0, 0 0, 0 50%, 0 100%, 0 100%); }
 
-/* Border beam: a light that circles a CTA frame. A masked conic-gradient whose start angle is animated. */
 @property --beam { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 .beam::before {
   content: ""; position: absolute; inset: var(--beam-in, -3px); padding: var(--beam-w, 3px); border-radius: inherit; pointer-events: none;
@@ -307,7 +297,6 @@ span.gold { display: inline-block; }
 @media (prefers-reduced-motion: reduce) { .beam::before { display: none; } }
 @keyframes beam { to { --beam: 360deg; } }
 
-/* Spotlight: a warm light and a thin edge glow follow the pointer. Hover devices only. */
 @media (hover: hover) and (pointer: fine) {
   [data-spot] { position: relative; isolation: isolate; }
   [data-spot]::before, [data-spot]::after { content: ""; position: absolute; pointer-events: none; opacity: 0; transition: opacity var(--dur-2) var(--ease); }
@@ -316,14 +305,12 @@ span.gold { display: inline-block; }
   [data-spot]:hover::before, [data-spot]:hover::after { opacity: 1; }
 }
 
-/* Segmented control: one thumb slides between equal-width options. */
 .seg { --n: 3; --i: 0; position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); max-width: 480px; margin: 0 auto var(--sp-5); padding: 4px; background: var(--washi-3); border: 1px solid var(--c-border-strong); border-radius: 4px; box-shadow: inset 0 1px 2px rgba(61, 44, 34, .12); }
 .seg__thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n)); border-radius: 2px; background: linear-gradient(180deg, #c84a22, var(--c-accent) 60%, var(--c-accent-strong)); box-shadow: inset 0 0 0 1px rgba(255, 236, 214, .55), 0 2px 0 rgba(110, 34, 10, .3); transform: translateX(calc(var(--i) * 100%)); transition: transform var(--dur-2) var(--ease-io); }
 .seg__btn { position: relative; z-index: 1; min-height: 44px; padding: 0 var(--sp-2); border: 0; background: none; font: 600 15px/1.2 var(--sans); color: var(--c-text-2); cursor: pointer; border-radius: 2px; transition: color var(--dur-2) var(--ease); }
 .seg__btn:hover { color: var(--c-accent); }
 .seg__btn[aria-pressed="true"], .seg__btn[aria-pressed="true"]:hover { color: var(--c-on-accent); }
 
-/* Mobile download dock: appears once the hero CTA has scrolled away. */
 .dock { display: none; }
 
 .config { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: start; }
@@ -353,7 +340,6 @@ span.gold { display: inline-block; }
 
 .flow { position: relative; display: grid; gap: 28px; list-style: none; margin: 0; padding: 0; }
 .flow::before { content: ""; position: absolute; left: 27px; top: 30px; bottom: 30px; width: 0; border-left: 2px dashed var(--coral); }
-/* Scroll beam: JS sets --flow-p (0..1) so the line fills as the reader moves down the steps. */
 .flow::after { content: ""; position: absolute; left: 26px; top: 30px; width: 4px; height: calc((100% - 60px) * var(--flow-p, 0)); border-radius: 2px; background: linear-gradient(var(--coral), var(--c-accent)); box-shadow: 0 0 10px rgba(180, 60, 24, .4); pointer-events: none; }
 .node { position: relative; display: grid; grid-template-columns: 56px minmax(0, 5fr) minmax(0, 6fr); gap: 0 32px; align-items: start; }
 .node__n { position: relative; z-index: 1; display: grid; place-items: center; width: 56px; height: 56px; font-family: var(--caps); font-weight: 700; font-size: 20px; color: #fff8f0; background: var(--shu); outline: 2px solid var(--shu); outline-offset: 3px; box-shadow: inset 0 0 0 2px rgba(255, 236, 214, .6); transform: rotate(45deg); }
@@ -496,7 +482,6 @@ html:has(.lightbox[open]) { overflow: hidden; }
   .save--big:first-child { grid-column: 1 / -1; }
   .nav__menu { gap: 18px; }
 }
-/* Tablet and below: the link row becomes a sheet under the header, opened by the menu button. */
 @media (max-width: 900px) {
   .nav__toggle { display: grid; margin-left: 0; }
   .nav__dl { margin-left: auto; }

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os, sys, csv, json, re, time, argparse, urllib.request, urllib.error
 import functools
 from concurrent.futures import ThreadPoolExecutor

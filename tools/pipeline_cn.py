@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-r"""
+USAGE = r"""
 Senren Banka Thai PRODUCTION pipeline (CN-slot strategy, keystream packing).
 
 Strategy (proven working on the real game):
@@ -80,4 +79,4 @@ def cmd_pack():
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     {"decompile": cmd_decompile, "export": cmd_export, "import": cmd_import,
-     "recompile": cmd_recompile, "pack": cmd_pack}.get(cmd, lambda: print(__doc__))()
+     "recompile": cmd_recompile, "pack": cmd_pack}.get(cmd, lambda: print(USAGE))()

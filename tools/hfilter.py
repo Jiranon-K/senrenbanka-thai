@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
+USAGE = """
 hfilter.py — mark which R18 script lines belong to sexual scenes, so mt.py never
 sends them for translation.
 
@@ -132,4 +131,4 @@ if __name__ == "__main__":
     elif len(sys.argv) > 2 and sys.argv[1] == "show":
         cmd_show(sys.argv[2])
     else:
-        print(__doc__)
+        print(USAGE)

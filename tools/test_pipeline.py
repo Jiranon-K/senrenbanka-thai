@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import json
@@ -13,10 +12,10 @@ import zlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.stdout.reconfigure(encoding="utf-8")
 
-import paths as P                                             # noqa: E402
-import scenario                                               # noqa: E402
-import xp3                                                    # noqa: E402
-import freemote                                               # noqa: E402
+import paths as P
+import scenario
+import xp3
+import freemote
 
 fails = []
 skipped = []
@@ -561,7 +560,7 @@ def test_freemote_pimg():
 
 def _has_pil(label):
     try:
-        import PIL  # noqa: F401
+        import PIL
         return True
     except ImportError:
         skip(label, "ไม่มี Pillow")
@@ -681,6 +680,13 @@ def test_screenshots_rule():
     chk("docs/screenshots มีแต่ไฟล์ภาพ", [f for f in files if not f.lower().endswith((".webp", ".png", ".jpg"))], [])
 
 
+def test_no_comments():
+    print("=" * 70)
+    print("code rules — โค้ดไม่มีคอมเมนต์หรือ docstring")
+    from code_rules import comments
+    chk("ไม่มีไฟล์ที่ยังมีคอมเมนต์หรือ docstring", comments.files_with_comments(), [])
+
+
 def test_ui_text_shadowing():
     print("=" * 70)
     print("ui text — ไฟล์เมนูไทยใน data.xp3 ไม่ถูก archive อื่นบัง")
@@ -711,9 +717,30 @@ def test_ui_text_shadowing():
             [n for n in hit if n not in U.SHADOWED.get(t.file, {})], [])
 
 
+def test_thai_shared_with_later_slots():
+    print("=" * 70)
+    print("corpus — บทที่ล้นช่องเดิมใช้ข้อความไทยร่วมกับช่องภาษาถัดจาก CN (RULES.md R17)")
+    import corpus
+
+    def block():
+        return [[None, "jp"], ["A", "en"], ["A", "cn"], ["A", "tw"], ["A", "ko"]]
+
+    shared = block()
+    corpus.write_thai(shared, "thai", True)
+    chk("ช่อง CN, TW, KO ได้ข้อความไทยเดียวกัน", [slot[1] for slot in shared],
+        ["jp", "en", "thai", "thai", "thai"])
+    chk("ชื่อผู้พูดของช่องอื่นไม่ถูกแตะ", [slot[0] for slot in shared], [None, "A", "A", "A", "A"])
+    alone = block()
+    corpus.write_thai(alone, "thai", False)
+    chk("บททั่วไปเขียนเฉพาะช่อง CN", [slot[1] for slot in alone],
+        ["jp", "en", "thai", "tw", "ko"])
+    chk("บทที่ใช้ข้อความร่วมมีเฉพาะที่ประกาศไว้", sorted(corpus.SHARES_THAI_WITH_LATER_SLOTS), ["114"])
+
+
 def main():
     test_layouts_differ()
     test_corpus_layouts()
+    test_thai_shared_with_later_slots()
     test_walk_order()
     test_json_files()
     test_targets_table()
@@ -731,6 +758,7 @@ def main():
     test_ui_labels()
     test_ui_render_helpers()
     test_screenshots_rule()
+    test_no_comments()
 
     print("=" * 70)
     if skipped:

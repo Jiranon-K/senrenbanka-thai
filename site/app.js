@@ -6,8 +6,6 @@
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  /* Latest release: tag, size, date, and a direct link to the zip. Cached for the session so a
-     shared IP (60 anonymous API calls an hour) does not turn every page view into a request. */
   const CACHE_KEY = 'sbtp.release';
   const readCache = () => {
     try {
@@ -47,7 +45,6 @@
       .catch(() => {});
   }
 
-  /* Segmented control: one thumb slides between options. Generic; callers listen for `seg:change`. */
   $$('[data-seg]').forEach((el) => {
     const btns = $$('.seg__btn', el);
     const select = (i) => {
@@ -63,11 +60,9 @@
     select(Math.max(0, btns.findIndex((b) => b.getAttribute('aria-pressed') === 'true')));
   });
 
-  /* Style-guide page: print each token's computed value so the docs cannot drift from the CSS. */
   const rootStyle = getComputedStyle(document.documentElement);
   $$('[data-token]').forEach((el) => { el.textContent = rootStyle.getPropertyValue(el.dataset.token).trim(); });
 
-  /* Navigation: mobile sheet, reading progress, and a scrollspy with one sliding underline. */
   const nav = $('[data-nav]');
   const menu = $('[data-nav-menu]');
   const toggle = $('[data-nav-toggle]');
@@ -118,7 +113,6 @@
     placeIndicator();
   };
 
-  /* Install steps: a beam fills the line as the reader scrolls, and each step lights up once reached. */
   const flowEl = $('.flow');
   const steps = flowEl ? $$('.node', flowEl) : [];
   const flow = () => {
@@ -130,7 +124,6 @@
     steps.forEach((n) => n.classList.toggle('is-reached', n.getBoundingClientRect().top + 28 <= line));
   };
 
-  /* Mobile dock: shows once the hero CTA has scrolled away, hides while the closing CTA is on screen. */
   const dock = $('[data-dock]');
   const heroCta = $('[data-hero-cta]');
   const finalCta = $('[data-final-cta]');
@@ -187,8 +180,6 @@
   document.fonts?.ready.then(placeIndicator);
   frame();
 
-  /* Reveal on scroll, plus a count-up on the progress meters. Skipped entirely under reduced motion,
-     and the CSS only hides content once an element has been marked here, so nothing can stay hidden. */
   const countUp = (el, delay = 0) => {
     const to = parseFloat(el.textContent);
     if (!Number.isFinite(to)) return;
@@ -226,7 +217,6 @@
     });
   }
 
-  /* Hero dialog: types itself out, tap to skip. */
   const typer = $('[data-type]');
   if (typer && !reduced() && 'Segmenter' in Intl) {
     const seg = new Intl.Segmenter('th', { granularity: 'grapheme' });
@@ -254,7 +244,6 @@
     typer.closest('.dialog').addEventListener('click', () => { chars.forEach((c) => c.classList.add('on')); i = chars.length; });
   }
 
-  /* Before/after slider: drag, hover, keyboard, or the segmented buttons. */
   $$('[data-compare]').forEach((box) => {
     const range = $('input[type=range]', box);
     const script = $('[data-compare-script]', box.parentElement);
@@ -299,7 +288,6 @@
     io.observe(box);
   });
 
-  /* Spotlight: hand the pointer position to the card so CSS can paint the glow there. */
   if (finePointer) {
     document.addEventListener('pointermove', (e) => {
       const el = e.target.closest?.('[data-spot]');
@@ -310,7 +298,6 @@
     }, { passive: true });
   }
 
-  /* Gallery lightbox: previous/next, arrow keys, swipe, caption and counter. */
   const lb = $('[data-lightbox]');
   if (lb && typeof lb.showModal === 'function') {
     const big = $('[data-lb-img]', lb);
@@ -361,7 +348,6 @@
     });
   }
 
-  /* FAQ: animate open/close, and let a URL hash (#faq-smartscreen) open one answer directly. */
   const faqToggle = (d, open) => {
     const body = $('.dialog', d);
     d._want = open;

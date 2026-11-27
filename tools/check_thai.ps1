@@ -1,16 +1,4 @@
-﻿<#
-  check_thai.ps1 - คำสั่งเดียวจบ: "เกมจะแสดงภาษาไทยได้จริงไหม"
-
-  1. หาว่า archive ไหนชนะลำดับโหลดสำหรับสคริปต์บทพูด (check_shadowing.ps1)
-  2. ถอด archive นั้นด้วย GARbro
-  3. นับสตริงไทยในสคริปต์จริง (verify_thai.py)
-  4. ตรวจว่าฟอนต์ใน data.xp3 มี glyph ไทยหรือยัง
-
-  exit 0 = PASS · 1 = FAIL · 2 = PARTIAL (ไทยขึ้น แต่บางบทยังไม่ได้แปล)
-
-    powershell -File tools\check_thai.ps1 -GameDir "E:\SteamLibrary\steamapps\common\SenrenBanka"
-#>
-param(
+﻿param(
     [Parameter(Mandatory=$true)][string]$GameDir,
     [string]$Python = "$env:LOCALAPPDATA\Programs\Python\Python313\python.exe"
 )
@@ -18,7 +6,6 @@ $ErrorActionPreference = "Stop"
 $tools = $PSScriptRoot
 $tmp = Join-Path $env:TEMP "senren_thai_check"
 
-# ลำดับโหลดจากต่ำไปสูง - archive ท้ายสุดที่มีไฟล์นั้นคือตัวที่เกมใช้จริง
 $order = @("scn.xp3", "patch_extra.xp3", "patch.xp3", "adult.xp3")
 $winner = $null
 foreach ($n in $order) { if (Test-Path (Join-Path $GameDir $n)) { $winner = $n } }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
+from __future__ import annotations
+
+USAGE = """
 tsv.py — งานประจำวันกับ thai_work/th/<stem>.tsv (ไฟล์ที่คนแปลนั่งพิมพ์จริง)
 
     python tools/tsv.py dump  <prefix>    เขียน th/<prefix>.src.tsv ให้เอาไปแปล
@@ -17,7 +18,6 @@ tsv.py — งานประจำวันกับ thai_work/th/<stem>.tsv (�
 
 `align` เดิมล็อกฉาก 010 ไว้ในโค้ด ตอนนี้รับ prefix เหมือนอีกสองคำสั่ง
 """
-from __future__ import annotations
 
 import csv
 import re
@@ -26,7 +26,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import paths as P                                             # noqa: E402
+import paths as P
 
 csv.field_size_limit(10 ** 9)
 
@@ -130,7 +130,7 @@ COMMANDS = {"dump": cmd_dump, "merge": cmd_merge, "align": cmd_align}
 
 def main() -> int:
     if len(sys.argv) < 3 or sys.argv[1] not in COMMANDS:
-        print(__doc__)
+        print(USAGE)
         return 2
     return COMMANDS[sys.argv[1]](sys.argv[2])
 

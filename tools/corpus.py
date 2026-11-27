@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import csv
@@ -12,10 +11,20 @@ import freemote
 import paths as P
 import scenario
 import targets
+import tsv
 import ui_assets
 import xp3
 
 CN = scenario.CN
+
+SHARES_THAI_WITH_LATER_SLOTS = frozenset({"114"})
+
+
+def write_thai(block: list, thai: str, share_later_slots: bool) -> None:
+    block[CN][1] = thai
+    if share_later_slots:
+        for later_slot in block[CN + 1:]:
+            later_slot[1] = thai
 
 
 @dataclass(frozen=True)
@@ -68,10 +77,11 @@ def apply(c: Corpus, sub: str | None = None) -> tuple[int, int]:
         with open(jf, encoding="utf-8") as f:
             d = json.load(f)
         n = cn = 0
+        share_later_slots = tsv.prefix(name) in SHARES_THAI_WITH_LATER_SLOTS
         for i, b in enumerate(c.layout.blocks(d)):
             r = be and be.get(i)
             if r and r["th"].strip():
-                b[CN][1] = r["th"]
+                write_thai(b, r["th"], share_later_slots)
                 if r["speaker_en"].strip():
                     b[CN][0] = r["speaker_en"]
                 n += 1

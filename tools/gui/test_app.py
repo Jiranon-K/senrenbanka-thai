@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import ctypes
 import ctypes.wintypes as wt
 import os
@@ -14,13 +13,13 @@ import tkinter.font as tkfont
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.stdout.reconfigure(encoding="utf-8")
 
-import anim as A                                              # noqa: E402
-import app as gui                                             # noqa: E402
-import core                                                   # noqa: E402
-import assets                                                 # noqa: E402
-import theme as T                                             # noqa: E402
-import winui                                                  # noqa: E402
-import widgets as W                                           # noqa: E402
+import anim as A
+import app as gui
+import core
+import assets
+import theme as T
+import winui
+import widgets as W
 
 results, failed, skipped = [], [], []
 
