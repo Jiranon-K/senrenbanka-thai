@@ -61,6 +61,9 @@ class KinshipSide(unittest.TestCase):
         self.assertEqual(rules_hit(record("「ปู่ของเธอใจดีนะ」", "「君のお祖父ちゃんは優しい」",
                                           "Masaomi"), "C3"), [])
 
+    def test_a_formal_grandfather_word_may_be_another_family(self):
+        self.assertEqual(rules_hit(record("เธอโตมากับคุณปู่", "彼女は祖父に育てられた", ""), "C3"), [])
+
     def test_cousins_must_not_say_maternal(self):
         for thai in ("「คุณตาโกรธแล้ว」", "「โดนตาดุอีกแล้ว」", "「ตา!」"):
             for speaker in ("Rentarou", "Koharu"):
@@ -120,6 +123,13 @@ class Form(unittest.TestCase):
         self.assertEqual(rules_hit(record("「ทดสอบ」", jp="これは試験です"), "F1"), ["F1"])
         self.assertEqual(rules_hit(record("「ทดสอบ」"), "F1"), [])
         self.assertEqual(rules_hit(record("「ทดสอบ」", jp="%84;「これは試験です」"), "F1"), [])
+
+    def test_narration_with_an_inner_quotation_is_not_judged(self):
+        narration = "『試験』と言われた。"
+        self.assertEqual(rules_hit(record("โดนบอกว่า『ทดสอบ』", jp=narration), "F1"), [])
+        self.assertEqual(rules_hit(record("『ทดสอบ』คือคำที่โดนบอก", jp=narration), "F1"), [])
+        self.assertEqual(rules_hit(record("(ทดสอบ)", jp="これは試験です"), "F1"), [])
+        self.assertEqual(rules_hit(record("『โดนบอกว่าทดสอบ』", jp=narration), "F1"), ["F1"])
 
     def test_japanese_left_in_thai(self):
         self.assertEqual(rules_hit(record("「ทดสอบです」"), "F2"), ["F2"])
