@@ -28,7 +28,7 @@ chk() {
   if [ "$got" = "$3" ]; then echo "    PASS  $1"
   else echo "    FAIL  $1"; echo "          want $3"; echo "          got  $got"; FAILED=1; fi
 }
-hlink() { cmd //c mklink //H "$(cygpath -w "$1")" "$(cygpath -w "$2")" >/dev/null; }
+hlink() { MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL="*" cmd /c mklink /H "$(cygpath -w "$1")" "$(cygpath -w "$2")" >/dev/null; }
 
 setup() {
   rm -rf "$1"; mkdir -p "$1"
@@ -42,7 +42,7 @@ setup() {
   return 0
 }
 
-run_bat() { ( cd "$1" && cmd //c "$(cygpath -w "$1/$2")" < /dev/null > _log.txt 2>&1; echo $? ) }
+run_bat() { ( cd "$1" && MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL="*" cmd /c "$(cygpath -w "$1/$2")" < /dev/null > _log.txt 2>&1; echo $? ) }
 
 echo "=================== TEST 1: R18 mode (patch + data + adult + patch_extra) ==================="
 D="$BASE/r18"; setup "$D" r18

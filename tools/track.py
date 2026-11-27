@@ -39,8 +39,11 @@ def translated_counts():
 def cmd_scan():
     prog = json.load(open(P.PROGRESS, encoding="utf-8")) if os.path.exists(P.PROGRESS) else {}
     tc = translated_counts()
+    scenario_files = sorted(glob.glob(os.path.join(P.EXTRACT_SCN, "*.ks.scn")))
+    if not scenario_files:
+        sys.exit("no *.ks.scn under %s: extract scn.xp3 first; nothing was written" % P.EXTRACT_SCN)
     scenarios=[]
-    for fp in sorted(glob.glob(os.path.join(P.EXTRACT_SCN, "*.ks.scn"))):
+    for fp in scenario_files:
         scn = os.path.basename(fp); stem = scn[:-4]
         jname = stem + ".json"
         nb, nc = counts(stem)

@@ -737,6 +737,22 @@ def test_thai_shared_with_later_slots():
     chk("บทที่ใช้ข้อความร่วมมีเฉพาะที่ประกาศไว้", sorted(corpus.SHARES_THAI_WITH_LATER_SLOTS), ["114"])
 
 
+def test_translation_lint():
+    print("=" * 70)
+    print("translation rules — ไม่มีข้อผิดระดับ major จากตัวตรวจเชิงกล (docs/TRANSLATION_RULES.md)")
+    from review import lint
+    from review.shapes import MAJOR
+    from review.workspace import load_records, repository_workspace
+    workspace = repository_workspace()
+    if not os.path.isfile(workspace.strings_csv):
+        return skip("translation lint", "ไม่มี strings_cn.csv (ไฟล์บทเกม ไม่อยู่ใน repo)")
+    tables = lint.load_tables(workspace, lint.SUMMARIZATION_RATIO)
+    findings = lint.lint_records(load_records(workspace), tables)
+    chk("ไม่มี Finding ระดับ major",
+        sorted("%s %s:%s" % (found.rule, found.chapter, found.idx)
+               for found in findings if found.severity == MAJOR), [])
+
+
 def main():
     test_layouts_differ()
     test_corpus_layouts()
@@ -759,6 +775,7 @@ def main():
     test_ui_render_helpers()
     test_screenshots_rule()
     test_no_comments()
+    test_translation_lint()
 
     print("=" * 70)
     if skipped:
