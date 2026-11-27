@@ -1,6 +1,6 @@
 # Senren Banka — Thai Translation Progress
 
-**86/86 packed · 10 verified**
+**86/86 packed · 7 verified**
 
 
 ## Common  (13/13 packed)
@@ -114,7 +114,7 @@
 | 508a・サブ－こはるんver1.00.ks.scn | 171 | 0 |  | 📦 packed |
 | 508b・サブ－芦花姉ver1.00.ks.scn | 260 | 0 |  | 📦 packed |
 | 509・サブ－分岐ver1.00.ks.scn | 213 | 0 |  | 📦 packed |
-| 511・サブ－小春（初体験）ver1.00.ks.scn | 379 | 0 | 🔞 | ✅ verified |
-| 512・サブ－小春（その後）ver1.00.ks.scn | 326 | 0 | 🔞 | ✅ verified |
-| 521・サブ－芦花（初体験）ver1.00.ks.scn | 588 | 0 | 🔞 | ✅ verified |
+| 511・サブ－小春（初体験）ver1.00.ks.scn | 379 | 0 | 🔞 | 📦 packed |
+| 512・サブ－小春（その後）ver1.00.ks.scn | 326 | 0 | 🔞 | 📦 packed |
+| 521・サブ－芦花（初体験）ver1.00.ks.scn | 588 | 0 | 🔞 | 📦 packed |
 | 522・サブ－芦花（その後）ver1.00.ks.scn | 268 | 0 | 🔞 | ✅ verified |
