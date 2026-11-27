@@ -711,9 +711,30 @@ def test_ui_text_shadowing():
             [n for n in hit if n not in U.SHADOWED.get(t.file, {})], [])
 
 
+def test_thai_shared_with_later_slots():
+    print("=" * 70)
+    print("corpus — บทที่ล้นช่องเดิมใช้ข้อความไทยร่วมกับช่องภาษาถัดจาก CN (RULES.md R17)")
+    import corpus
+
+    def block():
+        return [[None, "jp"], ["A", "en"], ["A", "cn"], ["A", "tw"], ["A", "ko"]]
+
+    shared = block()
+    corpus.write_thai(shared, "thai", True)
+    chk("ช่อง CN, TW, KO ได้ข้อความไทยเดียวกัน", [slot[1] for slot in shared],
+        ["jp", "en", "thai", "thai", "thai"])
+    chk("ชื่อผู้พูดของช่องอื่นไม่ถูกแตะ", [slot[0] for slot in shared], [None, "A", "A", "A", "A"])
+    alone = block()
+    corpus.write_thai(alone, "thai", False)
+    chk("บททั่วไปเขียนเฉพาะช่อง CN", [slot[1] for slot in alone],
+        ["jp", "en", "thai", "tw", "ko"])
+    chk("บทที่ใช้ข้อความร่วมมีเฉพาะที่ประกาศไว้", sorted(corpus.SHARES_THAI_WITH_LATER_SLOTS), ["114"])
+
+
 def main():
     test_layouts_differ()
     test_corpus_layouts()
+    test_thai_shared_with_later_slots()
     test_walk_order()
     test_json_files()
     test_targets_table()
