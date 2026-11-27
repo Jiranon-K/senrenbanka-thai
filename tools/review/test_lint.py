@@ -115,6 +115,10 @@ class GlossaryTerms(unittest.TestCase):
     def test_forbidden_needs_the_japanese_term(self):
         self.assertEqual(rules_hit(record("「เรนทาโร่มาแล้ว」"), "N2"), [])
 
+    def test_forbidden_that_extends_the_correct_term_fires(self):
+        self.assertEqual(rules_hit(record("「เก็นจูโร่มาแล้ว」", "「玄十郎が来た」"), "N2"), ["N2"])
+        self.assertEqual(rules_hit(record("「เก็นจูโรมาแล้ว」", "「玄十郎が来た」"), "N2"), [])
+
 
 class Form(unittest.TestCase):
     def test_brackets_must_match(self):

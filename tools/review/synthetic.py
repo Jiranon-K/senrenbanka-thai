@@ -26,6 +26,7 @@ GLOSSARY = (
     GlossaryEntry("miko", ("巫女",), "มิโกะ", "", ()),
     GlossaryEntry("Shrine Princess", ("巫女姫",), "องค์หญิงมิโกะ", "", ()),
     GlossaryEntry("Rentarou", ("廉太郎",), "เร็นทาโร่", "", ("เรนทาโร่", "เร็นทาโร")),
+    GlossaryEntry("Genjuurou", ("玄十郎",), "เก็นจูโร", "", ("เก็นจูโร่",)),
     GlossaryEntry("exorcist", ("陰陽師", "祓い屋"), "นักปราบผี", "", ()),
     GlossaryEntry("ayakashi", (), "อายากาชิ", "", ()),
 )

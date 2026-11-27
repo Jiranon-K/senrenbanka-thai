@@ -141,12 +141,16 @@ def glossary_term_missing(record: Record, tables: Tables) -> list[Finding]:
             if entry.th not in thai_without_longer_terms(record.th, entry, matched)]
 
 
+def thai_outside_the_correct_term(thai: str, entry: GlossaryEntry, wrong: str) -> str:
+    return thai if entry.th in wrong else thai.replace(entry.th, "")
+
+
 def glossary_forbidden_rendering(record: Record, tables: Tables) -> list[Finding]:
     return [finding(record, "N2", MAJOR, "forbidden rendering %s for %s, use %s"
                     % (wrong, entry.en, entry.th))
             for entry in glossary_matches(record.jp, tables.glossary)
             for wrong in entry.forbidden
-            if wrong in record.th.replace(entry.th, "")]
+            if wrong in thai_outside_the_correct_term(record.th, entry, wrong)]
 
 
 def wrapping_brackets(text: str) -> tuple[str, str] | None:
