@@ -160,6 +160,17 @@ class Form(unittest.TestCase):
         self.assertEqual(rules_hit(record("「ทด\\nสอบ」", jp="「これは\\n試験です」"), "F4"), [])
 
 
+class WordsFromOutsideTheSetting(unittest.TestCase):
+    def test_thai_chinese_family_word(self):
+        self.assertEqual(rules_hit(record("「อาตี๋ก็รู้สึกเหมือนกันนะ」"), "L2"), ["L2"])
+
+    def test_dated_exclamation(self):
+        self.assertEqual(rules_hit(record("「ไอ้หยา แย่แล้ว」"), "L2"), ["L2"])
+
+    def test_plain_self_pronoun_passes(self):
+        self.assertEqual(rules_hit(record("「ฉันก็รู้สึกเหมือนกันนะ」"), "L2"), [])
+
+
 class Summarization(unittest.TestCase):
     LONG = "「" + "これは長い試験の文です" * 3 + "」"
 
@@ -197,7 +208,7 @@ class Command(unittest.TestCase):
 
     def test_every_rule_is_registered(self):
         self.assertEqual(sorted(lint.RULES),
-                         ["C1", "C3", "F1", "F2", "F3", "F4", "F5", "N1", "N2", "S2"])
+                         ["C1", "C3", "F1", "F2", "F3", "F4", "F5", "L2", "N1", "N2", "S2"])
 
 
 if __name__ == "__main__":

@@ -59,6 +59,9 @@ FORMAT_TAG = re.compile(r"%\d+;")
 LEADING_FORMAT_TAGS = re.compile(r"^(?:%\d+;)+")
 LITERAL_LINE_BREAK = "\\n"
 
+WORDS_FROM_OUTSIDE_THE_SETTING = ("อาตี๋", "อาหมวย", "อาเฮีย", "อาเจ๊", "อาม่า", "อากง",
+                                  "ยัยบ๊อง", "อะจ๊าก", "ไอ้หยา")
+
 THAI_BLOCK_START, THAI_BLOCK_END = 0x0E00, 0x0E7F
 PRINTABLE_ASCII_START, PRINTABLE_ASCII_END = 0x20, 0x7E
 GAME_FONT_SYMBOLS = frozenset("「」『』【】（）、。・〜～…―—！？♪“”‘’")
@@ -153,6 +156,12 @@ def glossary_forbidden_rendering(record: Record, tables: Tables) -> list[Finding
             if wrong in thai_outside_the_correct_term(record.th, entry, wrong)]
 
 
+def words_from_outside_the_setting(record: Record, tables: Tables) -> list[Finding]:
+    used = [word for word in WORDS_FROM_OUTSIDE_THE_SETTING if word in record.th]
+    return [finding(record, "L2", MAJOR, "word that never fits this setting: " + " ".join(used))] \
+        if used else []
+
+
 def wrapping_brackets(text: str) -> tuple[str, str] | None:
     opening, closing = mt.opener(text), mt.closer(text)
     return (opening, closing) if OUTER_BRACKETS.get(opening) == closing else None
@@ -230,6 +239,7 @@ def possible_summarization(record: Record, tables: Tables) -> list[Finding]:
 RULES = {
     "C1": speaker_sex,
     "C3": kinship_side,
+    "L2": words_from_outside_the_setting,
     "N1": glossary_term_missing,
     "N2": glossary_forbidden_rendering,
     "F1": quote_brackets,

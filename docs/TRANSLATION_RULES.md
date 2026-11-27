@@ -44,7 +44,7 @@ pipeline live in [RULES.md](RULES.md) and are a different list.
 | ID | Rule | Enforcer |
 |---|---|---|
 | L1 | Use natural, contemporary Thai that people say today. Casual lines may use current colloquial words that have stayed in use for years (โคตร, ชิล, เนียน, มโน, ฟิน, เว่อร์). Stiff literal phrasing is a fault where the Japanese is casual. | reviewer |
-| L2 | Slang level matches the Japanese line. Plain Japanese stays plain Thai. Narration and Murasame never use slang. Chat spellings and 555 never appear. Dated forms are not used: ตู, เอ็ง, ยัยบ๊อง, ตาบ้า, อะจ๊าก, ไอ้หยา. | reviewer |
+| L2 | Slang level matches the Japanese line. Plain Japanese stays plain Thai. Narration and Murasame never use slang. Chat spellings and 555 never appear. Dated forms are not used: ตู, เอ็ง, ยัยบ๊อง, ตาบ้า, อะจ๊าก, ไอ้หยา. Thai-Chinese family words (อาตี๋, อาหมวย, อาเฮีย, อาเจ๊, อาม่า, อากง) never stand in for a Japanese pronoun or name. | lint (the Thai-Chinese family words, ยัยบ๊อง, อะจ๊าก, ไอ้หยา), reviewer |
 | L3 | Ritual set phrases are translated by function (いただきます, ただいま, お疲れ様), unless a joke depends on the Japanese form. | reviewer |
 | L4 | Screams, gasps and sound effects become Thai sound words that fit the emotion, not a syllable copy of the kana. Lengthening repeats a final letter a few times and matches the length of the voiced line. | reviewer |
 
