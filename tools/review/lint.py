@@ -58,6 +58,12 @@ RUBY = re.compile(r"\[[^\]]*\]")
 FORMAT_TAG = re.compile(r"%\d+;")
 LEADING_FORMAT_TAGS = re.compile(r"^(?:%\d+;)+")
 LITERAL_LINE_BREAK = "\\n"
+UTTERANCE_BREAK = re.compile(r"[」』]\s*\\n\s*[「『]")
+QUOTE_OPENERS = ("「", "『")
+QUOTE_BRACKETS = frozenset("「」『』（）()")
+THAI_COMBINING_MARKS = frozenset("ัิีึืฺุู็่้๊๋์ํ๎")
+SENTENCE_ENDINGS = tuple("…!?！？♪～~―—。.")
+MINIMUM_SEGMENT_LETTERS = 6
 
 ROYAL_PREFIX = "ทรง"
 NOT_ROYAL_BEFORE = ("ความ", "รูป", "ทรวด", "เป็น", "เปลี่ยน", "เสีย", "ผม", "ร่าง", "คน", "เข้า")
@@ -229,9 +235,42 @@ def format_tags(record: Record, tables: Tables) -> list[Finding]:
     problems = []
     if thai_tags not in (japanese_tags, japanese_tags - droppable):
         problems.append("%d format tags in Japanese, %d in Thai" % (japanese_tags, thai_tags))
-    if record.jp.count(LITERAL_LINE_BREAK) != record.th.count(LITERAL_LINE_BREAK):
-        problems.append("literal line break count differs")
+    if len(UTTERANCE_BREAK.findall(record.jp)) != len(UTTERANCE_BREAK.findall(record.th)):
+        problems.append("line breaks between quoted utterances differ")
+    elif record.th.count(LITERAL_LINE_BREAK) > record.jp.count(LITERAL_LINE_BREAK):
+        problems.append("more literal line breaks than the Japanese")
     return [finding(record, "F4", MINOR, "; ".join(problems))] if problems else []
+
+
+def letters(segment: str) -> int:
+    return sum(1 for character in segment
+               if character not in THAI_COMBINING_MARKS and character not in QUOTE_BRACKETS
+               and not character.isspace())
+
+
+def is_quoted_utterance(segment: str) -> bool:
+    return segment.strip().startswith(QUOTE_OPENERS)
+
+
+def ends_a_sentence(segment: str) -> bool:
+    return segment.rstrip().endswith(SENTENCE_ENDINGS)
+
+
+def splits_a_clause(before: str, after: str) -> bool:
+    return not ends_a_sentence(before) and min(letters(before), letters(after)) \
+        < MINIMUM_SEGMENT_LETTERS
+
+
+def orphaned_line_break(record: Record, tables: Tables) -> list[Finding]:
+    segments = record.th.split(LITERAL_LINE_BREAK)
+    if len(segments) < 2 or all(is_quoted_utterance(segment) for segment in segments):
+        return []
+    if any(not letters(segment) for segment in segments):
+        return [finding(record, "F6", MAJOR, "a literal line break leaves an empty line")]
+    if any(splits_a_clause(before, after) for before, after in zip(segments, segments[1:])):
+        return [finding(record, "F6", MAJOR, "a literal line break leaves fewer than %d letters "
+                        "of an unfinished sentence alone on a line" % MINIMUM_SEGMENT_LETTERS)]
+    return []
 
 
 def bare_text(text: str) -> str:
@@ -265,6 +304,7 @@ RULES = {
     "F3": thai_empty,
     "F4": format_tags,
     "F5": undrawable_characters,
+    "F6": orphaned_line_break,
     "S2": possible_summarization,
 }
 
