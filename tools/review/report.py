@@ -4,7 +4,7 @@ import collections
 import html
 from dataclasses import dataclass
 
-from . import workspace as workspace_module
+from . import apply, history
 from .workspace import Workspace
 
 STYLE = """
@@ -72,14 +72,24 @@ class Change:
     after: str
 
 
-def change_from_fields(fields: dict) -> Change:
-    return Change(fields["chapter"], fields["idx"], fields["speaker"], tuple(fields["rules"]),
-                  fields["problem"], fields["jp"], fields["before"], fields["after"])
+def current_texts(workspace: Workspace, chapters: set) -> dict[tuple, str]:
+    return {(chapter, line.idx): line.text for chapter in sorted(chapters)
+            for line in apply.read_thai_file(workspace.thai_file(chapter)).lines if line.idx}
+
+
+def net_change(line: history.LineHistory, current: str) -> Change:
+    leading = history.entries_since_original(line)
+    return Change(line.chapter, line.idx, line.speaker,
+                  tuple(dict.fromkeys(rule for entry in leading for rule in entry.rules)),
+                  "; ".join(dict.fromkeys(entry.problem for entry in leading)),
+                  line.jp, line.original, current)
 
 
 def load_changes(workspace: Workspace) -> list[Change]:
-    return [change_from_fields(fields)
-            for fields in workspace_module.read_json_lines(workspace.changes_file)]
+    histories = history.load_histories(workspace)
+    current = current_texts(workspace, {chapter for chapter, idx in histories})
+    return [net_change(line, current.get(where, "")) for where, line in histories.items()
+            if current.get(where, "") != line.original]
 
 
 def escaped(text: str) -> str:
@@ -132,5 +142,5 @@ def run(workspace: Workspace) -> int:
     changes = load_changes(workspace)
     with open(workspace.report_file, "w", encoding="utf-8", newline="\n") as report_file:
         report_file.write(render(changes))
-    print("%d changes -> %s" % (len(changes), workspace.report_file))
+    print("%d net changed lines -> %s" % (len(changes), workspace.report_file))
     return 0

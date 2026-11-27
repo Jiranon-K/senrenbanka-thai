@@ -11,20 +11,41 @@ NARRATION_LABEL = "(narration)"
 
 REVIEWER_ROLE = """Role: Reviewer.
 You check an existing Thai translation, line by line, against the Japanese original.
-- Judge the Thai only against the Japanese (`jp`). The English (`en`) is a reference that
-  localizes freely: it must never be the reason for a flag, and a Thai line that follows the
-  Japanese where the English differs is correct.
+- Judge the Thai only against the Japanese (`jp`) of lines in this request. Never base a flag
+  on the English (`en`), which localizes freely, or on lines that are not in the request. A
+  Thai line that follows the Japanese where the English differs is correct.
+- Decide first, then write. If your reasoning ends with the line being acceptable, emit no
+  flag for it at all; `problem` never says a line is fine, arguably fine or a judgement call.
 - Flag only real defects: content the Japanese lacks, omitted or summarized content, wrong
   meaning, wrong speaker gender (pronoun or particle against the character table), wrong
   kinship side, wrong address term or glossary term, a lost joke or pun, wrong register.
+- A natural Thai particle, idiom or added subject pronoun is not an addition.
+- Never flag a rendering that the rules above list as a project convention.
 - Do not flag style preferences or wording you would merely have chosen differently. A
   correct line gets no flag, and an empty `flags` list is the normal answer.
 - Every flag cites exactly one rule ID from the rules above in `rule`.
-- `severity` is "major" when meaning, gender, kinship, a name or a term is wrong or content is
-  missing or added, and "minor" otherwise.
+- `severity` is "major" only for wrong meaning, wrong speaker gender, wrong kinship side, a
+  wrong name, or missing or invented content. Everything else, including pronoun choice and
+  address style, is "minor".
 - `problem` is at most 25 English words saying what is wrong and what the Japanese says. Do
   not write a corrected Thai line.
 - Flag only idx from the lines to review, never an idx from the preceding context."""
+
+ARBITER_ROLE = """Role: Arbiter.
+Each line has the Japanese original (`jp`), its speaker, up to three preceding lines as
+`context`, and two candidate Thai translations, `X` and `Y`. Choose the candidate that is
+more faithful to the Japanese.
+- Judge only against the Japanese and the rules, character table and glossary above. The
+  order of X and Y is arbitrary and carries no information.
+- Weigh these above fluency: wrong meaning, missing or invented content, speaker gender,
+  kinship side, address terms and glossary terms.
+- Answer "same" when neither candidate is meaningfully better, including when they differ
+  only in style or in wording that is equally faithful.
+- Never prefer a candidate for being longer or for following the Japanese word order more
+  literally. A natural Thai particle, idiom or subject pronoun is not invented content.
+- `context` is reference only; its Thai is not being judged.
+- Return one choice per line with its `idx`, `better` as "X", "Y" or "same", and `reason`
+  of at most 15 English words naming the deciding difference."""
 
 REVISER_ROLE = """Role: Reviser.
 You receive Thai lines with the Japanese original, and findings attached to some of them.

@@ -68,6 +68,12 @@ def serialize_thai_file(thai_file: ThaiFile) -> bytes:
         + b"".join(line.raw for line in thai_file.lines)
 
 
+def write_thai_file(path: str, thai_file: ThaiFile) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "wb") as target:
+        target.write(serialize_thai_file(thai_file))
+
+
 def rewritten_line(idx: str, text: str, ending: bytes) -> ThaiLine:
     return ThaiLine((idx + FIELD_SEPARATOR + text).encode("utf-8") + ending, idx, text, ending)
 
@@ -145,9 +151,7 @@ def apply_chapter(workspace: Workspace, chapter: str, records: list[Record]) -> 
     after, result = apply_revisions(chapter, before, revisions,
                                     [record.idx for record in records])
     if result.applied:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "wb") as thai_file:
-            thai_file.write(serialize_thai_file(after))
+        write_thai_file(path, after)
         log_changes(workspace, result.applied, {record.idx: record for record in records})
         close_reviewer_flags(workspace, chapter,
                              {revision.idx for revision in result.applied})

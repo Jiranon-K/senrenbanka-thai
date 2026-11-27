@@ -66,6 +66,17 @@ pipeline live in [RULES.md](RULES.md) and are a different list.
 | F3 | A Thai line is not empty when its Japanese line has words. | lint |
 | F4 | Size tags and literal `\n` keep their count. Ruby readings are dropped. | lint |
 
+## Project conventions that are never a defect
+
+A reviewer flag against any of these is itself wrong.
+
+- さん written as คุณ in front of the name, ちゃん kept as จัง, 様 as ท่าน.
+- Japanese quote brackets `「」 『』` kept in the Thai line.
+- Masaomi's ผม in narration and speech, and a subject pronoun added where Thai needs one.
+- A natural Thai sentence particle or idiom that carries no meaning the Japanese lacks.
+- Contemporary colloquial Thai on a casual Japanese line.
+- Name spellings and terms exactly as the glossary has them.
+
 ## Process
 
 | ID | Rule | Enforcer |

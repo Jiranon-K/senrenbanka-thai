@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import apply, ledger, lint, prompt, report, reviewer, reviser, runner
+from . import apply, arbiter, ledger, lint, prompt, report, reviewer, reviser, revert, runner
 from .workspace import repository_workspace
 
 
@@ -33,7 +33,9 @@ def build_parser() -> argparse.ArgumentParser:
                                              default=[], metavar="NNN")
     add_stage(commands, "review", with_full=False)
     add_stage(commands, "revise", with_full=True)
+    add_stage(commands, "arbitrate", with_full=False)
     add_chapter_selection(commands.add_parser("apply"))
+    add_chapter_selection(commands.add_parser("revert"))
     commands.add_parser("report")
     commands.add_parser("cost")
     return parser
@@ -63,6 +65,10 @@ def main() -> int:
         return run_stage(reviewer.STAGE, arguments)
     if arguments.command == "revise":
         return run_stage(reviser.STAGE, arguments)
+    if arguments.command == "arbitrate":
+        return run_stage(arbiter.STAGE, arguments)
+    if arguments.command == "revert":
+        return revert.run(repository_workspace(), arguments.chapter, arguments.all)
     if arguments.command == "apply":
         return apply.run(repository_workspace(), arguments.chapter, arguments.all)
     if arguments.command == "report":

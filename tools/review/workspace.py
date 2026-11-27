@@ -13,7 +13,7 @@ import mt
 import paths
 import tsv
 
-from .shapes import Finding, Record, Revision, revision_from_fields
+from .shapes import Arbitration, Finding, Record, Revision, revision_from_fields
 
 csv.field_size_limit(10 ** 9)
 
@@ -60,6 +60,9 @@ class Workspace:
 
     def revised_file(self, chapter: str) -> str:
         return os.path.join(self.review_directory, "revised", chapter + ".json")
+
+    def arbitration_file(self, chapter: str) -> str:
+        return os.path.join(self.review_directory, "arbitration", chapter + ".json")
 
     def thai_file(self, chapter: str) -> str:
         return os.path.join(self.thai_directory, chapter + ".tsv")
@@ -129,3 +132,14 @@ def read_findings(path: str) -> list[Finding]:
 
 def read_revisions(path: str) -> list[Revision]:
     return [revision_from_fields(fields) for fields in read_fields(path)]
+
+
+def read_arbitrations(path: str) -> list[Arbitration]:
+    return [Arbitration(**fields) for fields in read_fields(path)]
+
+
+def stored_chapters(directory: str) -> list[str]:
+    if not os.path.isdir(directory):
+        return []
+    return sorted(name[:-len(".json")] for name in os.listdir(directory)
+                  if name.endswith(".json"))

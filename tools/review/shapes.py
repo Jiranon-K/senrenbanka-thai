@@ -8,6 +8,10 @@ LINT = "lint"
 REVIEWER = "reviewer"
 REVIEW_STAGE = "review"
 REVISE_STAGE = "revise"
+ARBITRATE_STAGE = "arbitrate"
+ORIGINAL = "original"
+CURRENT = "current"
+SAME = "same"
 
 
 @dataclass(frozen=True)
@@ -38,6 +42,23 @@ class Revision:
     after: str
     rules: tuple
     problem: str
+
+
+@dataclass(frozen=True)
+class Contest:
+    record: Record
+    preceding: tuple
+    original: str
+
+
+@dataclass(frozen=True)
+class Arbitration:
+    chapter: str
+    idx: str
+    original: str
+    current: str
+    verdict: str
+    reason: str
 
 
 @dataclass(frozen=True)

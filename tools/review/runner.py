@@ -44,6 +44,7 @@ class Chunk:
 class StageRequest:
     chunk: Chunk
     findings: tuple
+    contests: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,31 @@ class Outcome:
     accepted: int
     dropped: int
     detail: str
+
+
+def findings_message(heading: str, request: StageRequest) -> str:
+    return prompt.user_message(heading, request.chunk.context, request.chunk.records,
+                               request.findings)
+
+
+def findings_input_tokens(request: StageRequest) -> int:
+    lines = len(request.chunk.context) + len(request.chunk.records)
+    return (lines * (ledger.INPUT_TOKENS_PER_RECORD + ledger.THAI_TOKENS_PER_RECORD)
+            + len(request.findings) * ledger.TOKENS_PER_FINDING)
+
+
+def findings_bookkeeping(requests: list[StageRequest]) -> dict:
+    return {"findings": {request.chunk.request_id: [dataclasses.asdict(found)
+                                                    for found in request.findings]
+                         for request in requests}}
+
+
+def requests_from_findings(workspace: Workspace, entry: dict) -> dict[str, StageRequest]:
+    selection = Selection(tuple(entry["chapters"]), entry["all"], tuple(entry["full"]), 0)
+    chunks = {chunk.request_id: chunk for chunk in build_chunks(workspace, selection)}
+    return {request_id: StageRequest(chunks[request_id],
+                                     tuple(Finding(**fields) for fields in findings))
+            for request_id, findings in entry["findings"].items() if request_id in chunks}
 
 
 @dataclass(frozen=True)
@@ -62,6 +88,10 @@ class Stage:
     select_requests: Callable
     store: Callable
     projected_output_tokens: Callable
+    user_message: Callable = findings_message
+    projected_input_tokens: Callable = findings_input_tokens
+    bookkeeping_fields: Callable = findings_bookkeeping
+    restore_requests: Callable = requests_from_findings
 
 
 class UnusableResponse(Exception):
@@ -106,22 +136,15 @@ def parameters(stage: Stage, shared_text: str, request: StageRequest) -> dict:
             "output_config": {"effort": EFFORT,
                               "format": {"type": "json_schema", "schema": stage.schema}},
             "system": prompt.system_blocks(shared_text, stage.role),
-            "messages": [{"role": "user", "content": prompt.user_message(
-                stage.heading, request.chunk.context, request.chunk.records,
-                request.findings)}]}
-
-
-def projected_input_tokens(request: StageRequest) -> int:
-    lines = len(request.chunk.context) + len(request.chunk.records)
-    return (lines * (ledger.INPUT_TOKENS_PER_RECORD + ledger.THAI_TOKENS_PER_RECORD)
-            + len(request.findings) * ledger.TOKENS_PER_FINDING)
+            "messages": [{"role": "user",
+                          "content": stage.user_message(stage.heading, request)}]}
 
 
 def project(stage: Stage, shared_text: str, requests: list[StageRequest],
             batch: bool) -> ledger.Projection:
     return ledger.project(
         MODEL, batch, ledger.system_tokens(shared_text + stage.role), len(requests),
-        sum(projected_input_tokens(request) for request in requests),
+        sum(stage.projected_input_tokens(request) for request in requests),
         sum(stage.projected_output_tokens(request) for request in requests))
 
 
@@ -175,10 +198,7 @@ def bookkeeping(batch_id: str, stage: Stage, selection: Selection,
                 requests: list[StageRequest]) -> dict:
     return {"id": batch_id, "stage": stage.name, "chapters": list(selection.chapters),
             "all": selection.everything, "full": list(selection.full_chapters),
-            "limit": selection.limit,
-            "findings": {request.chunk.request_id: [dataclasses.asdict(found)
-                                                    for found in request.findings]
-                         for request in requests}}
+            "limit": selection.limit, **stage.bookkeeping_fields(requests)}
 
 
 def submit_batch(workspace: Workspace, stage: Stage, shared_text: str, selection: Selection,
@@ -221,14 +241,6 @@ def find_bookkeeping(workspace: Workspace, stage: Stage, batch_id: str) -> dict:
                      % (batch_id, stage.name, workspace.batches_file))
 
 
-def requests_from_bookkeeping(workspace: Workspace, entry: dict) -> dict[str, StageRequest]:
-    selection = Selection(tuple(entry["chapters"]), entry["all"], tuple(entry["full"]), 0)
-    chunks = {chunk.request_id: chunk for chunk in build_chunks(workspace, selection)}
-    return {request_id: StageRequest(chunks[request_id],
-                                     tuple(Finding(**fields) for fields in findings))
-            for request_id, findings in entry["findings"].items() if request_id in chunks}
-
-
 def handle_batch_result(workspace: Workspace, stage: Stage, batch_id: str,
                         request: StageRequest, result: dict, logged: set) -> Outcome:
     if result["type"] != BATCH_SUCCEEDED:
@@ -249,7 +261,7 @@ def collect(workspace: Workspace, stage: Stage, batch_id: str,
     if state["processing_status"] != BATCH_ENDED:
         return 0
     requests = {custom_id(stage, request): request
-                for request in requests_from_bookkeeping(workspace, entry).values()}
+                for request in stage.restore_requests(workspace, entry).values()}
     logged = {logged_entry.request_id for logged_entry in ledger.load_entries(workspace)}
     outcomes = []
     results = transport("GET", "/messages/batches/%s/results" % batch_id, key=key, raw=True)
