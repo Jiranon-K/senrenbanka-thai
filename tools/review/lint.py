@@ -59,6 +59,16 @@ FORMAT_TAG = re.compile(r"%\d+;")
 LEADING_FORMAT_TAGS = re.compile(r"^(?:%\d+;)+")
 LITERAL_LINE_BREAK = "\\n"
 
+ROYAL_PREFIX = "ทรง"
+NOT_ROYAL_BEFORE = ("ความ", "รูป", "ทรวด", "เป็น", "เปลี่ยน", "เสีย", "ผม", "ร่าง", "คน", "เข้า")
+NOT_ROYAL_AFTER = ("จำ", "พลัง", "ตัว", "กลม", "ผม", "เดิม", "สี่", "สาม", "แบน", "ลูก", "ดู", "ก็",
+                   "นี้", "นั้น", "ไหน", "อะไร", "ของ", "ที่", "เสน่ห์", "อิทธิพล", "คุณ", "เจ้า",
+                   "กระบอก", "เหลี่ยม", "รี", "สูง", "」", "』", " ")
+ROYAL_PREFIX_PATTERN = re.compile(
+    "".join("(?<!%s)" % prefix for prefix in NOT_ROYAL_BEFORE)
+    + ROYAL_PREFIX + "(?!%s|$)" % "|".join(re.escape(suffix) for suffix in NOT_ROYAL_AFTER))
+REVERED_IN_JAPANESE = ("女神", "神様", "神さま", "祟り神", "姫", "殿下", "陛下", "ムラサメ様", "叢雨様")
+
 WORDS_FROM_OUTSIDE_THE_SETTING = ("อาตี๋", "อาหมวย", "อาเฮีย", "อาเจ๊", "อาม่า", "อากง",
                                   "ยัยบ๊อง", "อะจ๊าก", "ไอ้หยา")
 
@@ -156,6 +166,13 @@ def glossary_forbidden_rendering(record: Record, tables: Tables) -> list[Finding
             if wrong in thai_outside_the_correct_term(record.th, entry, wrong)]
 
 
+def royal_vocabulary(record: Record, tables: Tables) -> list[Finding]:
+    if any(revered in record.jp for revered in REVERED_IN_JAPANESE):
+        return []
+    return [finding(record, "C5", MAJOR, "royal verb prefix ทรง where the Japanese names no "
+                    "deity or royalty")] if ROYAL_PREFIX_PATTERN.search(record.th) else []
+
+
 def words_from_outside_the_setting(record: Record, tables: Tables) -> list[Finding]:
     used = [word for word in WORDS_FROM_OUTSIDE_THE_SETTING if word in record.th]
     return [finding(record, "L2", MAJOR, "word that never fits this setting: " + " ".join(used))] \
@@ -239,6 +256,7 @@ def possible_summarization(record: Record, tables: Tables) -> list[Finding]:
 RULES = {
     "C1": speaker_sex,
     "C3": kinship_side,
+    "C5": royal_vocabulary,
     "L2": words_from_outside_the_setting,
     "N1": glossary_term_missing,
     "N2": glossary_forbidden_rendering,

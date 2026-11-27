@@ -160,6 +160,21 @@ class Form(unittest.TestCase):
         self.assertEqual(rules_hit(record("「ทด\\nสอบ」", jp="「これは\\n試験です」"), "F4"), [])
 
 
+class RoyalVocabulary(unittest.TestCase):
+    def test_royal_prefix_on_a_commoner(self):
+        self.assertEqual(rules_hit(record("「คุณครูทรงยุ่งอยู่ค่ะ」", jp="「先生は忙しいです」"), "C5"),
+                         ["C5"])
+
+    def test_royal_prefix_for_a_deity_passes(self):
+        self.assertEqual(rules_hit(record("คนที่เทพธิดาทรงรัก", jp="女神様の思い人"), "C5"), [])
+        self.assertEqual(rules_hit(record("「โปรดอย่าทรงล้อเล่น」", jp="「ムラサメ様、お戯れを」"), "C5"), [])
+
+    def test_shape_and_memory_words_pass(self):
+        for thai in ("「ทรงผมใหม่สวยค่ะ」", "「ความทรงจำดีๆ ค่ะ」", "「รูปทรงแปลกค่ะ」", "「ทรงตัวไม่อยู่ค่ะ」",
+                     "「ทรงพลังมากค่ะ」", "「เป็นทรงกลมค่ะ」", "「ผมทรงนี้ค่ะ」"):
+            self.assertEqual(rules_hit(record(thai), "C5"), [], thai)
+
+
 class WordsFromOutsideTheSetting(unittest.TestCase):
     def test_thai_chinese_family_word(self):
         self.assertEqual(rules_hit(record("「อาตี๋ก็รู้สึกเหมือนกันนะ」"), "L2"), ["L2"])
@@ -208,7 +223,7 @@ class Command(unittest.TestCase):
 
     def test_every_rule_is_registered(self):
         self.assertEqual(sorted(lint.RULES),
-                         ["C1", "C3", "F1", "F2", "F3", "F4", "F5", "L2", "N1", "N2", "S2"])
+                         ["C1", "C3", "C5", "F1", "F2", "F3", "F4", "F5", "L2", "N1", "N2", "S2"])
 
 
 if __name__ == "__main__":
