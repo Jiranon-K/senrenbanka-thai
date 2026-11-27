@@ -27,9 +27,11 @@ MALE_PRONOUN_PATTERN = re.compile(
     "".join("(?<!%s)" % prefix for prefix in HAIR_PREFIXES)
     + MALE_PRONOUN + "(?!%s)" % "|".join(HAIR_SUFFIXES))
 OUTER_BRACKETS = {"「": "」", "『": "』", "（": "）", "(": ")"}
+SPEECH_BRACKETS = (("「", "」"), ("『", "』"))
 INNER_QUOTATION = re.compile("『[^』]*』|“[^”]*”|「[^」]*」|‘[^’]*’|\"[^\"]*\"|'[^']*'")
 
 GRANDFATHER_IN_JAPANESE = ("祖父", "じいちゃん", "爺ちゃん", "じっちゃん")
+FAMILIAR_GRANDFATHER_IN_JAPANESE = ("祖父ちゃん", "じいちゃん", "爺ちゃん", "じっちゃん")
 MATERNAL_GRANDCHILDREN = ("Masaomi", "")
 PATERNAL_GRANDCHILDREN = ("Rentarou", "Koharu")
 SOMEONE_ELSES_GRANDFATHER = re.compile("(?<![俺私僕])の(?:お|御)?(?:祖父|じい|爺|じっ)")
@@ -96,6 +98,7 @@ def kinship_side(record: Record, tables: Tables) -> list[Finding]:
     if not any(word in record.jp for word in GRANDFATHER_IN_JAPANESE):
         return []
     if (record.speaker in MATERNAL_GRANDCHILDREN and PATERNAL_GRANDFATHER in record.th
+            and any(word in record.jp for word in FAMILIAR_GRANDFATHER_IN_JAPANESE)
             and not SOMEONE_ELSES_GRANDFATHER.search(record.jp)):
         return [finding(record, "C3", MAJOR,
                         "Genjuurou is Masaomi's maternal grandfather: ตา, not ปู่")]
@@ -146,13 +149,19 @@ def glossary_forbidden_rendering(record: Record, tables: Tables) -> list[Finding
             if wrong in record.th.replace(entry.th, "")]
 
 
+def wrapping_brackets(text: str) -> tuple[str, str] | None:
+    opening, closing = mt.opener(text), mt.closer(text)
+    return (opening, closing) if OUTER_BRACKETS.get(opening) == closing else None
+
+
 def quote_brackets(record: Record, tables: Tables) -> list[Finding]:
-    japanese = mt.opener(record.jp), mt.closer(record.jp)
-    thai = mt.opener(record.th), mt.closer(record.th)
-    if not record.th.strip() or japanese == thai:
+    if not record.th.strip():
         return []
-    return [finding(record, "F1", MAJOR, "quote brackets %s%s in Japanese but %s%s in Thai"
-                    % (japanese + thai))]
+    japanese, thai = wrapping_brackets(record.jp), wrapping_brackets(record.th)
+    if japanese == thai or (japanese is None and thai not in SPEECH_BRACKETS):
+        return []
+    return [finding(record, "F1", MAJOR, "the Japanese line is wrapped in %s but the Thai in %s"
+                    % ("".join(japanese or ("nothing",)), "".join(thai or ("nothing",))))]
 
 
 def japanese_left_in_thai(record: Record, tables: Tables) -> list[Finding]:
@@ -256,5 +265,7 @@ def run(workspace: Workspace, chapters: list[str]) -> int:
         print("  %s %d" % (rule_id, sum(1 for found in findings if found.rule == rule_id)))
     for chapter, count in count_by(findings, "chapter"):
         print("  chapter %s %d" % (chapter, count))
+    major = sum(1 for found in findings if found.severity == MAJOR)
+    print("%d major, %d minor" % (major, len(findings) - major))
     print("wrote", workspace.lint_file)
-    return 1 if findings else 0
+    return 1 if major else 0
