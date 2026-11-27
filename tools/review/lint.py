@@ -57,6 +57,10 @@ FORMAT_TAG = re.compile(r"%\d+;")
 LEADING_FORMAT_TAGS = re.compile(r"^(?:%\d+;)+")
 LITERAL_LINE_BREAK = "\\n"
 
+THAI_BLOCK_START, THAI_BLOCK_END = 0x0E00, 0x0E7F
+PRINTABLE_ASCII_START, PRINTABLE_ASCII_END = 0x20, 0x7E
+GAME_FONT_SYMBOLS = frozenset("「」『』【】（）、。・〜～…―—！？♪“”‘’")
+
 
 def finding(record: Record, rule: str, severity: str, problem: str) -> Finding:
     return Finding(record.chapter, record.idx, rule, severity, problem, LINT)
@@ -161,6 +165,21 @@ def thai_empty(record: Record, tables: Tables) -> list[Finding]:
         if not record.th.strip() and mt.WORDS.search(record.jp) else []
 
 
+def outside_game_font(thai: str) -> list[str]:
+    return sorted({character for character in thai
+                   if not (THAI_BLOCK_START <= ord(character) <= THAI_BLOCK_END
+                           or PRINTABLE_ASCII_START <= ord(character) <= PRINTABLE_ASCII_END
+                           or character in GAME_FONT_SYMBOLS
+                           or mt.KANA_HAN.match(character))})
+
+
+def undrawable_characters(record: Record, tables: Tables) -> list[Finding]:
+    undrawable = outside_game_font(record.th)
+    return [finding(record, "F5", MAJOR, "characters the game font cannot draw: %s"
+                    % " ".join("U+%04X" % ord(character) for character in undrawable))] \
+        if undrawable else []
+
+
 def format_tags(record: Record, tables: Tables) -> list[Finding]:
     if not record.th.strip():
         return []
@@ -204,6 +223,7 @@ RULES = {
     "F2": japanese_left_in_thai,
     "F3": thai_empty,
     "F4": format_tags,
+    "F5": undrawable_characters,
     "S2": possible_summarization,
 }
 

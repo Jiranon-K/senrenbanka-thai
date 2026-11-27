@@ -65,6 +65,7 @@ pipeline live in [RULES.md](RULES.md) and are a different list.
 | F2 | No kana or kanji remains in a Thai line. | lint |
 | F3 | A Thai line is not empty when its Japanese line has words. | lint |
 | F4 | Size tags and literal `\n` keep their count. Ruby readings are dropped. | lint |
+| F5 | A Thai line uses only characters the game font draws: Thai, ASCII, and the punctuation `「」『』【】（）、。・〜～…―—！？♪“”‘’`. A Japanese censor mark such as ○ becomes `*`, and ☆ becomes ♪. | lint |
 
 ## Project conventions that are never a defect
 

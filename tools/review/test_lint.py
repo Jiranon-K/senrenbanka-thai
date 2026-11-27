@@ -125,6 +125,11 @@ class Form(unittest.TestCase):
         self.assertEqual(rules_hit(record("「ทดสอบです」"), "F2"), ["F2"])
         self.assertEqual(rules_hit(record("「ทดสอบ……！？」"), "F2"), [])
 
+    def test_characters_outside_the_game_font(self):
+        self.assertEqual(rules_hit(record("「ทดสอบ☆」"), "F5"), ["F5"])
+        self.assertEqual(rules_hit(record("「ทด○○สอบ」"), "F5"), ["F5"])
+        self.assertEqual(rules_hit(record("「ทดสอบ♪……！？ ABC 12*」"), "F5"), [])
+
     def test_empty_thai(self):
         self.assertEqual(rules_hit(record(" "), "F3"), ["F3"])
         self.assertEqual(rules_hit(record("", jp="……"), "F3"), [])
@@ -178,7 +183,7 @@ class Command(unittest.TestCase):
 
     def test_every_rule_is_registered(self):
         self.assertEqual(sorted(lint.RULES),
-                         ["C1", "C3", "F1", "F2", "F3", "F4", "N1", "N2", "S2"])
+                         ["C1", "C3", "F1", "F2", "F3", "F4", "F5", "N1", "N2", "S2"])
 
 
 if __name__ == "__main__":

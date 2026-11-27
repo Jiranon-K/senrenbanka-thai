@@ -10,7 +10,7 @@ from .tables import Tables, load_tables
 from .workspace import Workspace, mt
 
 FULL_RETRANSLATION = "FULL"
-ACCEPTANCE_RULES = ("F1", "F2", "F3", "N2")
+ACCEPTANCE_RULES = ("F1", "F2", "F3", "F5", "N2")
 LINE_BREAKS = str.maketrans({"\t": " ", "\r": " ", "\n": " "})
 
 SCHEMA = {
