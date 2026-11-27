@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import argparse
 import os
 import shutil
@@ -13,7 +12,7 @@ REPO = os.path.dirname(os.path.dirname(GUI))
 sys.path.insert(0, HERE)
 sys.stdout.reconfigure(encoding="utf-8")
 
-import imgtool  # noqa: E402
+import imgtool
 
 BUILD_ONLY = ("imgtool", "make_bg", "make_logo", "build_gui")
 

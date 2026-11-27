@@ -1,20 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-ui_render.py — draw Thai over the CN-slot UI layers listed in tools/ui_labels.tsv.
-
-For each layer the CN text is found by comparing the CN layer with its JP and EN
-twins (same name, placed by their own left/top): a pixel is CN text when it differs
-from both. Those pixels are refilled from a twin that has no text there. Then the
-Thai label is shaped with harfbuzz, rasterized with FreeType, and drawn in the CN
-text colour, inside the area the CN text occupied.
-
-    python tools/ui_render.py sys_page0 sys_base   # -> thai_work/ui/th/<sheet>/
-                                                   #    thai_work/ui/review/<sheet>.png
-
-Inputs : thai_work/ui/pimg/<sheet>_{cn,jp,en}.json + layer PNGs (ui_assets inventory)
-         thai_work/fonts/ui/NotoSerifThai.ttf, tools/gui/ui/fonts/Sarabun-*.ttf
-"""
 from __future__ import annotations
 
 import csv

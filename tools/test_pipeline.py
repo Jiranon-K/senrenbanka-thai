@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import json
@@ -13,10 +12,10 @@ import zlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.stdout.reconfigure(encoding="utf-8")
 
-import paths as P                                             # noqa: E402
-import scenario                                               # noqa: E402
-import xp3                                                    # noqa: E402
-import freemote                                               # noqa: E402
+import paths as P
+import scenario
+import xp3
+import freemote
 
 fails = []
 skipped = []
@@ -561,7 +560,7 @@ def test_freemote_pimg():
 
 def _has_pil(label):
     try:
-        import PIL  # noqa: F401
+        import PIL
         return True
     except ImportError:
         skip(label, "ไม่มี Pillow")
@@ -681,6 +680,13 @@ def test_screenshots_rule():
     chk("docs/screenshots มีแต่ไฟล์ภาพ", [f for f in files if not f.lower().endswith((".webp", ".png", ".jpg"))], [])
 
 
+def test_no_comments():
+    print("=" * 70)
+    print("code rules — โค้ดไม่มีคอมเมนต์หรือ docstring")
+    from code_rules import comments
+    chk("ไม่มีไฟล์ที่ยังมีคอมเมนต์หรือ docstring", comments.files_with_comments(), [])
+
+
 def test_ui_text_shadowing():
     print("=" * 70)
     print("ui text — ไฟล์เมนูไทยใน data.xp3 ไม่ถูก archive อื่นบัง")
@@ -752,6 +758,7 @@ def main():
     test_ui_labels()
     test_ui_render_helpers()
     test_screenshots_rule()
+    test_no_comments()
 
     print("=" * 70)
     if skipped:

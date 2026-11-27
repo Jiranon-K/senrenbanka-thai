@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os
 import shutil
 import subprocess
@@ -10,8 +9,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(HERE))
 sys.stdout.reconfigure(encoding="utf-8")
-import core                                                   # noqa: E402
-import paths                                                  # noqa: E402
+import core
+import paths
 
 GAME_DIR = paths.game_dir()
 SANDBOX = os.path.join(GAME_DIR, "_gui_test")

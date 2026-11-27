@@ -1,23 +1,4 @@
-﻿<#
-  check_shadowing.ps1 - บอกว่า "บทพูดแต่ละบทเกมจะอ่านจาก archive ไหน"
-  ใช้ตรวจว่าแพตช์ไทย (ที่เขียนลง patch.xp3) ถูก archive อื่นทับอยู่หรือเปล่า
-
-  ลำดับโหลด (ต่ำ -> สูง):  scn.xp3 < patch_extra.xp3 < patch.xp3 < adult.xp3
-  อ่านชื่อไฟล์จริงจาก sen: -> hnfn blob (ตาราง adler32 -> ชื่อไฟล์ ของ Yuzusoft)
-
-  exit 0 = PASS (ไทยขึ้นครบ) / exit 1 = FAIL (โดนทับ)
-
-  ตัวอย่าง:
-    # สถานะเกมตอนนี้
-    powershell -File tools\check_shadowing.ps1 -GameDir "E:\SteamLibrary\steamapps\common\SenrenBanka"
-
-    # จำลอง "ลง R18 แล้ว" โดยไม่ต้องก๊อป archive 2.5 GB
-    powershell -File tools\check_shadowing.ps1 -GameDir "...\SenrenBanka" -ExtraDir "...\senrenbanka_r18patch"
-
-    # จำลอง "ยังไม่ลง adult.xp3"
-    powershell -File tools\check_shadowing.ps1 -GameDir "...\SenrenBanka" -Ignore adult.xp3
-#>
-param(
+﻿param(
     [Parameter(Mandatory=$true)][string]$GameDir,
     [string]$ExtraDir = "",
     [string[]]$Ignore = @()
@@ -32,7 +13,6 @@ function Inflate([byte[]]$raw) {
     return $o.ToArray()
 }
 
-# -> List[string] of *.ks.scn real filenames in the archive
 function Get-ScenarioNames([string]$path) {
     $fs = [System.IO.File]::Open($path, 'Open', 'Read', 'ReadWrite')
     $br = New-Object System.IO.BinaryReader($fs)
@@ -66,7 +46,6 @@ function Get-ScenarioNames([string]$path) {
     } finally { $fs.Dispose() }
 }
 
-# lowest priority first
 $order = @("scn.xp3", "patch_extra.xp3", "patch.xp3", "adult.xp3")
 $layers = New-Object 'System.Collections.Generic.List[object]'
 foreach ($n in $order) {

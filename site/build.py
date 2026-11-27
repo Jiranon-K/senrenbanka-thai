@@ -14,10 +14,6 @@ JS_TOKEN = re.compile(r"""['"`](--[\w-]+)['"`]""")
 
 
 def undefined_tokens() -> set[str]:
-    """Custom properties read with var() that nothing declares, sets inline, or sets from JS.
-
-    A typo like var(--shuu) fails silently in CSS (the property just vanishes), so catch it here.
-    """
     defined: set[str] = set()
     used: set[str] = set()
     for f in sorted(SITE.iterdir()):

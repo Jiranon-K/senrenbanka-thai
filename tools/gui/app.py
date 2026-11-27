@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import os
@@ -10,14 +9,14 @@ import traceback
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import tkinter as tk                                          # noqa: E402
-from tkinter import filedialog                                # noqa: E402
+import tkinter as tk
+from tkinter import filedialog
 
-import anim as A                                              # noqa: E402
-import core                                                   # noqa: E402
-import theme as T                                             # noqa: E402
-import widgets as W                                           # noqa: E402
-import window                                                 # noqa: E402
+import anim as A
+import core
+import theme as T
+import widgets as W
+import window
 
 WIN_W, WIN_H = 880, 600
 STEPS = ["หาโฟลเดอร์เกม", "รายการติดตั้ง", "ติดตั้ง", "เสร็จสิ้น"]

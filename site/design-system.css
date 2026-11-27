@@ -1,4 +1,3 @@
-/* Only the scaffolding of the style-guide page. Every component shown here comes from styles.css. */
 .ds-grid { display: grid; gap: var(--sp-4); grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); }
 .ds-sw { display: grid; gap: var(--sp-2); padding: var(--sp-2); background: var(--c-surface); border: 1px solid var(--c-border-strong); }
 .ds-sw__chip { height: 56px; border: 1px solid rgba(61, 44, 34, .15); background: var(--sw); }

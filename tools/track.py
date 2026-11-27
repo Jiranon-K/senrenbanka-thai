@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
+USAGE = """
 Progress tracker for the Senren Banka Thai translation.
   track.py scan            -> build/update scenarios.json + progress.json (auto-detect)
   track.py report          -> render PROGRESS.md dashboard
@@ -104,4 +103,4 @@ def cmd_set():
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv)>1 else ""
-    {"scan":cmd_scan, "report":cmd_report, "set":cmd_set}.get(cmd, lambda: print(__doc__))()
+    {"scan":cmd_scan, "report":cmd_report, "set":cmd_set}.get(cmd, lambda: print(USAGE))()

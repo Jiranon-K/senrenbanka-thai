@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os, sys, argparse, hashlib, json, shutil, subprocess, zipfile
 
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import paths as P                                             # noqa: E402
-import targets as T                                           # noqa: E402
+import paths as P
+import targets as T
 
 
 def sha256(path):

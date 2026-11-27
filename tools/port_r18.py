@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-r"""
+USAGE = r"""
 port_r18.py — ย้ายคำแปลไทยจากสคริปต์ all-ages (patch.xp3) ไปใส่สคริปต์ R18
               (adult.xp3 / patch_extra.xp3) เพื่อให้ไทยยังแสดงผลหลังลงแพตช์ R18
 
@@ -268,4 +267,4 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     {"decompile": cmd_decompile, "align": cmd_align, "report": cmd_report,
      "import": cmd_import, "recompile": cmd_recompile, "pack": cmd_pack
-     }.get(cmd, lambda: print(__doc__))()
+     }.get(cmd, lambda: print(USAGE))()
