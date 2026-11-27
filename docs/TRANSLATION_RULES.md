@@ -65,7 +65,7 @@ pipeline live in [RULES.md](RULES.md) and are a different list.
 | F1 | A Thai line opens and closes with the same quote bracket as its Japanese line, and has none when the Japanese has none. | lint |
 | F2 | No kana or kanji remains in a Thai line. | lint |
 | F3 | A Thai line is not empty when its Japanese line has words. | lint |
-| F4 | Size tags keep their count. Ruby readings are dropped. A literal `\n` between two quoted utterances is kept. Any other `\n` in the Japanese is Japanese line wrapping: the Thai line may drop it, and never has more than the Japanese. | lint |
+| F4 | Size tags keep their count. Ruby readings are dropped. A literal `\n` between two quoted utterances is kept. Any other `\n` in the Japanese is Japanese line wrapping: the Thai line may drop it, and never has more than the Japanese. Emphasis brackets `【】` appear in the Thai line exactly as often as in its Japanese line. | lint |
 | F5 | A Thai line uses only characters the game font draws: Thai, ASCII, and the punctuation `「」『』【】（）、。・〜～…―—！？♪“”‘’`. A Japanese censor mark such as ○ becomes `*`, and ☆ becomes ♪. | lint |
 | F6 | A literal `\n` never strands a fragment. No line is left empty, and a piece shorter than six letters stands alone only after a finished sentence or as its own quoted utterance. A line that fits the text box without the break has none. | lint (fragments); the fit is measured by hand against the 1154 px text box |
 

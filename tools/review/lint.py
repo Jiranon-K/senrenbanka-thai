@@ -59,6 +59,7 @@ FORMAT_TAG = re.compile(r"%\d+;")
 LEADING_FORMAT_TAGS = re.compile(r"^(?:%\d+;)+")
 LITERAL_LINE_BREAK = "\\n"
 UTTERANCE_BREAK = re.compile(r"[」』]\s*\\n\s*[「『]")
+EMPHASIS_BRACKETS = ("【", "】")
 QUOTE_OPENERS = ("「", "『")
 QUOTE_BRACKETS = frozenset("「」『』（）()")
 THAI_COMBINING_MARKS = frozenset("ัิีึืฺุู็่้๊๋์ํ๎")
@@ -239,6 +240,9 @@ def format_tags(record: Record, tables: Tables) -> list[Finding]:
         problems.append("line breaks between quoted utterances differ")
     elif record.th.count(LITERAL_LINE_BREAK) > record.jp.count(LITERAL_LINE_BREAK):
         problems.append("more literal line breaks than the Japanese")
+    if any(record.jp.count(bracket) != record.th.count(bracket)
+           for bracket in EMPHASIS_BRACKETS):
+        problems.append("emphasis bracket count differs")
     return [finding(record, "F4", MINOR, "; ".join(problems))] if problems else []
 
 

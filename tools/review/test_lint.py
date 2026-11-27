@@ -167,6 +167,12 @@ class Form(unittest.TestCase):
     def test_thai_must_not_add_line_breaks(self):
         self.assertEqual(rules_hit(record("「ทด\\nสอบ」"), "F4"), ["F4"])
 
+    def test_emphasis_brackets_keep_their_count(self):
+        emphasised = "これは【試験】です"
+        self.assertEqual(rules_hit(record("นี่คือ【การทดสอบ】", jp=emphasised), "F4"), [])
+        self.assertEqual(rules_hit(record("นี่คือการทดสอบ", jp=emphasised), "F4"), ["F4"])
+        self.assertEqual(rules_hit(record("「นี่คือ【การทดสอบ】」"), "F4"), ["F4"])
+
 
 class LineBreakPlacement(unittest.TestCase):
     WRAPPED = "「これはとても長い試験の\\n文です」"
